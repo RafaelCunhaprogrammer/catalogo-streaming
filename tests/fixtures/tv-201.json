@@ -1,0 +1,10 @@
+{
+  "id": 201, "name": "Série Brilhante", "first_air_date": "2021-03-03", "overview": "Uma série.",
+  "poster_path": "/p201.jpg", "backdrop_path": "/b201.jpg", "vote_average": 8.1, "popularity": 85, "number_of_seasons": 2,
+  "genres": [{ "id": 18, "name": "Drama" }],
+  "credits": { "cast": [] },
+  "videos": { "results": [] },
+  "watch/providers": { "results": { "BR": { "link": "https://www.themoviedb.org/tv/201/watch?locale=BR", "flatrate": [{ "provider_id": 307, "provider_name": "Globoplay", "logo_path": "/globoplay.png" }] } } },
+  "content_ratings": { "results": [{ "iso_3166_1": "BR", "rating": "14" }] },
+  "recommendations": { "results": [] }
+}

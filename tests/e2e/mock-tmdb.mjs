@@ -1,0 +1,34 @@
+// TMDB simulado para os testes de ponta a ponta. Uso: node tests/e2e/mock-tmdb.mjs
+import http from 'node:http';
+import { readFileSync } from 'node:fs';
+
+const fixture = (name) => JSON.parse(readFileSync(new URL(`../fixtures/${name}.json`, import.meta.url), 'utf8'));
+
+const routes = [
+  [/^\/3\/discover\/movie$/, () => fixture('discover-movie')],
+  [/^\/3\/discover\/tv$/, () => fixture('discover-tv')],
+  [/^\/3\/genre\/movie\/list$/, () => fixture('genres-movie')],
+  [/^\/3\/genre\/tv\/list$/, () => fixture('genres-tv')],
+  [/^\/3\/search\/multi$/, () => fixture('search-multi')],
+  [/^\/3\/search\/keyword$/, (url) => ({ results: [{ id: 1, name: url.searchParams.get('query') }] })],
+  [/^\/3\/(movie|tv)\/\d+\/videos$/, () => fixture('videos')],
+  [/^\/3\/(movie|tv)\/(\d+)\/watch\/providers$/, (url, match) => (match[2] === '777' ? { results: {} } : fixture('providers'))],
+  [/^\/3\/movie\/101$/, () => fixture('movie-101')],
+  [/^\/3\/tv\/201$/, () => fixture('tv-201')],
+];
+
+http
+  .createServer((req, res) => {
+    const url = new URL(req.url, 'http://localhost');
+    for (const [pattern, handler] of routes) {
+      const match = url.pathname.match(pattern);
+      if (match) {
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify(handler(url, match)));
+        return;
+      }
+    }
+    res.writeHead(404, { 'content-type': 'application/json' });
+    res.end(JSON.stringify({ status_message: 'não encontrado' }));
+  })
+  .listen(4010, () => console.log('TMDB simulado em http://localhost:4010'));
