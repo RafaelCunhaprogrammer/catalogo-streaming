@@ -1,8 +1,10 @@
 'use client';
 
+import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { APP_NAME } from '@/lib/brand';
+import { SettingsPanel } from '@/components/settings/SettingsPanel';
 
 const NAV = [
   { href: '/', label: 'Início' },
@@ -11,6 +13,8 @@ const NAV = [
 
 export function Header() {
   const pathname = usePathname();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-[var(--header-bg)] backdrop-blur-md">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-8">
@@ -29,7 +33,17 @@ export function Header() {
             </Link>
           ))}
         </nav>
-        <div data-slot="header-actions" className="ml-auto flex items-center gap-2" />
+        <div data-slot="header-actions" className="ml-auto flex items-center gap-2">
+          <button
+            onClick={() => setSettingsOpen(true)}
+            aria-label="Abrir configurações"
+            aria-haspopup="dialog"
+            className="rounded-full p-2 text-lg hover:bg-surface-2"
+          >
+            ⚙️
+          </button>
+        </div>
+        <SettingsPanel open={settingsOpen} onClose={closeSettings} />
       </div>
     </header>
   );
