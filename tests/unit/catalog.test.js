@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mockTmdb, calledPaths } from '../helpers/mock-tmdb';
 import {
-  discoverMixed, getHomeData, searchAvailable, discoverPage, getTitleDetails, resolveKeywordIds,
+  discoverMixed, getHomeData, searchAvailable, discoverPage, getTitleDetails, resolveKeywordIds, filterAvailable,
 } from '@/lib/tmdb/catalog';
 import { parseExploreParams } from '@/lib/explore-params';
 import { PROVIDERS } from '@/lib/providers';
@@ -161,5 +161,34 @@ describe('getTitleDetails', () => {
     await expect(getTitleDetails('movie', 'abc')).resolves.toBeNull();
     await expect(getTitleDetails('movie', '5')).resolves.toBeNull();
     expect(calledPaths(fetchMock)).not.toContain('/movie/abc');
+  });
+});
+
+describe('limite de chamadas simultâneas', () => {
+  it('confere a disponibilidade de no máximo 8 títulos ao mesmo tempo', async () => {
+    vi.stubEnv('TMDB_READ_TOKEN', 'token-teste');
+    vi.stubEnv('TMDB_BASE_URL', 'https://tmdb.teste/3');
+    let inFlight = 0;
+    let maxInFlight = 0;
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((r) => setTimeout(r, 5));
+      inFlight -= 1;
+      return new Response(JSON.stringify(available), { status: 200 });
+    }));
+    const titles = Array.from({ length: 20 }, (_, i) => ({ id: i + 1, type: 'movie', title: `F${i}` }));
+    const result = await filterAvailable(titles);
+    expect(result).toHaveLength(20);
+    expect(maxInFlight).toBeLessThanOrEqual(8);
+  });
+
+  it('a busca mostra erro em vez de esconder títulos quando a conferência falha', async () => {
+    mockTmdb({
+      '/search/multi': { total_pages: 1, results: [{ id: 1, media_type: 'movie', title: 'A' }, { id: 2, media_type: 'movie', title: 'B' }] },
+      '/movie/1/watch/providers': available,
+      '/movie/2/watch/providers': 500,
+    });
+    await expect(searchAvailable('ab')).rejects.toThrow();
   });
 });
