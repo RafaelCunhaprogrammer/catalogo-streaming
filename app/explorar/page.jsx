@@ -6,6 +6,8 @@ import { getMood } from '@/lib/moods';
 import { ExploreFilters } from '@/components/ExploreFilters';
 import { ExploreGrid } from '@/components/ExploreGrid';
 
+export const metadata = { title: 'Explorar' };
+
 export default async function ExplorePage({ searchParams }) {
   const filters = { ...parseExploreParams(await searchParams), pagina: 1 };
   const cookieStore = await cookies();

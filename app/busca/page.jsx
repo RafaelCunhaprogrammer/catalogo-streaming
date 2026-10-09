@@ -3,9 +3,15 @@ import { PosterCard } from '@/components/PosterCard';
 
 const MAX_PAGES = 3;
 
+const queryOf = (q = '') => (Array.isArray(q) ? q[0] : q).trim();
+
+export async function generateMetadata({ searchParams }) {
+  const query = queryOf((await searchParams).q);
+  return { title: query ? `Busca: ${query}` : 'Buscar' };
+}
+
 export default async function SearchPage({ searchParams }) {
-  const { q = '' } = await searchParams;
-  const query = (Array.isArray(q) ? q[0] : q).trim();
+  const query = queryOf((await searchParams).q);
 
   const first = await searchAvailable(query, 1);
   const extraPages = Math.min(first.totalPages, MAX_PAGES) - 1;

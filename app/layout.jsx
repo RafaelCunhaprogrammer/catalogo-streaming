@@ -8,7 +8,7 @@ import { BrightnessOverlay } from '@/components/BrightnessOverlay';
 import { EntryScreen } from '@/components/EntryScreen';
 
 export const metadata = {
-  title: APP_NAME,
+  title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: 'Filmes e séries incluídos nas assinaturas de streaming no Brasil.',
 };
 

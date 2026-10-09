@@ -84,6 +84,12 @@ export function TitleView({ title }) {
   );
 }
 
+// getTitleDetails usa o cache do fetch, então a página e o título da aba fazem uma só chamada ao TMDB.
+export async function titleMetadata(type, id) {
+  const title = await getTitleDetails(type, id);
+  return { title: title ? title.title : 'Não encontrado' };
+}
+
 export async function TitlePage({ type, id }) {
   const title = await getTitleDetails(type, id);
   if (!title) notFound();
