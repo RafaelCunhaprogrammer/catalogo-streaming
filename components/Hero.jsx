@@ -16,14 +16,18 @@ export function Hero({ items }) {
   const { prefs, loaded } = useSettings();
   const [index, setIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const [trailerOpen, setTrailerOpen] = useState(false);
   const iframeRef = useRef(null);
   const closeTrailer = useCallback(() => setTrailerOpen(false), []);
 
   const current = items[index];
-  const autoplay = loaded && shouldAutoplayTrailer(prefs) && Boolean(current?.trailerKey);
-  const rotate = loaded && shouldRotateHero(prefs) && items.length > 1 && !hovered && !soundOn && !trailerOpen;
+  const autoplay = loaded && !paused && shouldAutoplayTrailer(prefs) && Boolean(current?.trailerKey);
+  // WCAG 2.2.2: a troca para com o mouse, com o foco do teclado ou com o botão Pausar.
+  const rotate = loaded && !paused && shouldRotateHero(prefs) && items.length > 1
+    && !hovered && !focused && !soundOn && !trailerOpen;
 
   useEffect(() => {
     if (!rotate) return undefined;
@@ -50,6 +54,10 @@ export function Hero({ items }) {
       aria-label={`Destaque: ${current.title}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onFocus={() => setFocused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false);
+      }}
       className="relative h-[70vh] min-h-[420px] w-full overflow-hidden bg-[#0d0820] text-white"
     >
       <AnimatePresence mode="wait">
@@ -91,6 +99,16 @@ export function Hero({ items }) {
               className="rounded-full border border-white/40 bg-white/10 px-6 py-2.5 font-bold backdrop-blur hover:bg-white/20"
             >
               ▶ Ver trailer
+            </button>
+          )}
+          {loaded && (current.trailerKey || items.length > 1) && (
+            <button
+              onClick={() => setPaused((p) => !p)}
+              aria-pressed={paused}
+              aria-label={paused ? 'Retomar destaque' : 'Pausar destaque'}
+              className="rounded-full border border-white/40 bg-white/10 px-4 py-2.5 backdrop-blur hover:bg-white/20"
+            >
+              <span aria-hidden="true">{paused ? '▶' : '⏸'}</span>
             </button>
           )}
           {autoplay && (

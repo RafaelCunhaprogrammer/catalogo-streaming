@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { act, screen } from '@testing-library/react';
+import { act, fireEvent, screen } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import userEvent from '@testing-library/user-event';
 import { renderWithSettings } from '../helpers/render-with-settings';
@@ -74,6 +74,29 @@ describe('Hero', () => {
     expect(iframe.getAttribute('src')).not.toContain('mute=1');
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('não troca de destaque enquanto o foco do teclado está nele', async () => {
+    vi.useFakeTimers();
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    fireEvent.focus(screen.getByRole('link', { name: 'Ver detalhes' }));
+    await act(async () => { vi.advanceTimersByTime(HERO_ROTATE_MS * 2); });
+    expect(screen.getByRole('heading', { name: 'Primeiro' })).toBeInTheDocument();
+    fireEvent.blur(screen.getByRole('link', { name: 'Ver detalhes' }));
+    await act(async () => { vi.advanceTimersByTime(HERO_ROTATE_MS); });
+    expect(screen.getByRole('heading', { name: 'Segundo' })).toBeInTheDocument();
+  });
+
+  it('o botão Pausar destaque para a troca e o vídeo', async () => {
+    vi.useFakeTimers();
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Pausar destaque' }));
+    expect(screen.getByRole('button', { name: 'Retomar destaque' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByTestId('hero-video')).not.toBeInTheDocument();
+    await act(async () => { vi.advanceTimersByTime(HERO_ROTATE_MS * 2); });
+    expect(screen.getByRole('heading', { name: 'Primeiro' })).toBeInTheDocument();
   });
 
   it('sem itens não mostra nada', () => {
