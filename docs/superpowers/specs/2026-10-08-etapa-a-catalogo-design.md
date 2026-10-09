@@ -1,7 +1,7 @@
 # Etapa A – Catálogo de streaming: especificação de design
 
 **Data:** 2026-10-08
-**Status:** aguardando revisão
+**Status:** aprovada em 2026-10-08
 
 ## 1. Contexto e objetivo
 
