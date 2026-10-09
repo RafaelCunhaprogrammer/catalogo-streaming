@@ -1,0 +1,6 @@
+import { TitlePage } from '@/components/TitlePage';
+
+export default async function SeriesPage({ params }) {
+  const { id } = await params;
+  return <TitlePage type="tv" id={id} />;
+}
