@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { APP_NAME } from '@/lib/brand';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
+import { SearchBox } from '@/components/SearchBox';
 
 const NAV = [
   { href: '/', label: 'Início' },
@@ -33,6 +34,7 @@ export function Header() {
             </Link>
           ))}
         </nav>
+        <SearchBox />
         <div data-slot="header-actions" className="ml-auto flex items-center gap-2">
           <button
             onClick={() => setSettingsOpen(true)}
