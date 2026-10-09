@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { parseExploreParams, toExploreQuery, toDiscoverRequest } from '@/lib/explore-params';
+import { parseExploreParams, toExploreQuery, toDiscoverRequest, exploreResultsKey } from '@/lib/explore-params';
 import { ALL_PROVIDER_IDS } from '@/lib/providers';
 
 const parse = (query) => parseExploreParams(new URLSearchParams(query));
@@ -118,5 +118,14 @@ describe('toDiscoverRequest', () => {
 
   it('inclui as palavras-chave já resolvidas', () => {
     expect(toDiscoverRequest(parse('humor=fe'), { keywordIds: [10, 20] }).params.with_keywords).toBe('10|20');
+  });
+});
+
+describe('exploreResultsKey', () => {
+  it('muda quando Meus streamings muda, para a grade recomeçar', () => {
+    const f = parse('genero=28');
+    expect(exploreResultsKey(f, [8])).not.toBe(exploreResultsKey(f, []));
+    expect(exploreResultsKey(f, [8])).toBe(exploreResultsKey(parse('genero=28'), [8]));
+    expect(exploreResultsKey(f, [8])).not.toBe(exploreResultsKey(parse('genero=27'), [8]));
   });
 });
