@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSettings } from '@/components/settings/SettingsProvider';
@@ -18,14 +18,14 @@ function alreadyEntered() {
   }
 }
 
+const subscribeNever = () => () => {};
+
 export function EntryScreen() {
   const pathname = usePathname();
   const { prefs, resolvedTheme, loaded } = useSettings();
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (pathname === '/' && !alreadyEntered()) setVisible(true);
-  }, [pathname]);
+  const [dismissed, setDismissed] = useState(false);
+  const entered = useSyncExternalStore(subscribeNever, alreadyEntered, () => true);
+  const visible = pathname === '/' && !entered && !dismissed;
 
   function enter() {
     // O navegador só deixa tocar som depois de um clique; por isso o som fica aqui.
@@ -35,7 +35,7 @@ export function EntryScreen() {
     } catch {
       // aba anônima com armazenamento bloqueado: a tela volta na próxima visita
     }
-    setVisible(false);
+    setDismissed(true);
   }
 
   return (

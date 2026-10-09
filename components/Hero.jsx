@@ -31,8 +31,6 @@ export function Hero({ items }) {
     return () => clearTimeout(timer);
   }, [rotate, index, items.length]);
 
-  useEffect(() => setSoundOn(false), [index]);
-
   function toggleSound() {
     const next = !soundOn;
     // API de mensagens do player do YouTube (o vídeo é carregado com enablejsapi=1).

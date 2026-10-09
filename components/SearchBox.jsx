@@ -18,10 +18,7 @@ export function SearchBox() {
   const trimmed = query.trim();
 
   useEffect(() => {
-    if (trimmed.length < MIN_CHARS) {
-      setResults([]);
-      return undefined;
-    }
+    if (trimmed.length < MIN_CHARS) return undefined;
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
@@ -48,6 +45,7 @@ export function SearchBox() {
   }
 
   const listId = `${id}-sugestoes`;
+  const suggestions = trimmed.length >= MIN_CHARS ? results : [];
   return (
     <form role="search" onSubmit={submit} className="relative order-last w-full sm:order-none sm:w-64">
       <label htmlFor={`${id}-campo`} className="sr-only">Buscar filmes e séries</label>
@@ -57,19 +55,19 @@ export function SearchBox() {
         role="combobox"
         aria-autocomplete="list"
         aria-controls={listId}
-        aria-expanded={open && results.length > 0}
+        aria-expanded={open && suggestions.length > 0}
         autoComplete="off"
         placeholder="🔍 Buscar filmes e séries"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onFocus={() => results.length && setOpen(true)}
+        onFocus={() => suggestions.length && setOpen(true)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
         className="w-full rounded-full border border-line bg-surface px-4 py-1.5 text-sm text-fg placeholder:text-muted"
       />
-      {open && results.length > 0 && (
+      {open && suggestions.length > 0 && (
         <ul id={listId} className="absolute right-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-line bg-surface shadow-glow sm:w-80">
-          {results.map((t) => (
+          {suggestions.map((t) => (
             <li key={`${t.type}-${t.id}`}>
               <Link href={titleHref(t)} onClick={() => setOpen(false)} className="flex items-center gap-3 p-2 hover:bg-surface-2">
                 {t.posterPath ? (

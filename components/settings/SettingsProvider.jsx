@@ -25,11 +25,14 @@ export function SettingsProvider({ children }) {
   const [systemDark, setSystemDark] = useState(true);
   const [loaded, setLoaded] = useState(false);
 
+  // Lê o navegador só depois da hidratação, para o HTML do servidor e o do cliente baterem.
+  /* eslint-disable react-hooks/set-state-in-effect -- carga única de armazenamento externo após hidratar */
   useEffect(() => {
     setPrefs(loadPrefs(safeLocalStorage()));
     setSystemDark(systemPrefersDark());
     setLoaded(true);
   }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const resolvedTheme = resolveTheme(prefs, systemDark);
 
