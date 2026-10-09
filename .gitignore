@@ -1,0 +1,16 @@
+# dependências e build
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+
+# segredos
+.env*.local
+.env
+
+# ferramentas
+.superpowers/
+.DS_Store
+Thumbs.db
