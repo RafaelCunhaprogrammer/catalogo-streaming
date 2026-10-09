@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSettings } from './SettingsProvider';
+import { useDialogFocus } from '@/components/useDialogFocus';
 import { PROVIDERS } from '@/lib/providers';
 import { writeProvidersCookie } from '@/lib/preferences';
 
@@ -63,17 +64,8 @@ function Toggle({ label, description, checked, onChange }) {
 export function SettingsPanel({ open, onClose }) {
   const { prefs, resolvedTheme, updatePrefs } = useSettings();
   const router = useRouter();
-  const closeRef = useRef(null);
-
-  useEffect(() => {
-    if (!open) return undefined;
-    closeRef.current?.focus();
-    const onKey = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, onClose]);
+  const panelRef = useRef(null);
+  const guards = useDialogFocus(panelRef, open, onClose);
 
   function toggleProvider(id) {
     const next = prefs.myProviders.includes(id)
@@ -99,6 +91,7 @@ export function SettingsPanel({ open, onClose }) {
           />
           <motion.aside
             key="painel"
+            ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby="config-titulo"
@@ -108,9 +101,10 @@ export function SettingsPanel({ open, onClose }) {
             exit={{ x: '100%' }}
             transition={{ type: 'tween', duration: 0.25 }}
           >
+            {guards.start}
             <div className="flex items-center justify-between">
               <h2 id="config-titulo" className="text-xl font-bold">Configurações</h2>
-              <button ref={closeRef} onClick={onClose} aria-label="Fechar configurações" className="rounded p-2 hover:bg-surface-2">
+              <button onClick={onClose} aria-label="Fechar configurações" className="rounded p-2 hover:bg-surface-2">
                 ✕
               </button>
             </div>
@@ -170,6 +164,7 @@ export function SettingsPanel({ open, onClose }) {
                 ))}
               </div>
             </fieldset>
+            {guards.end}
           </motion.aside>
         </>
       )}
