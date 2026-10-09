@@ -1,26 +1,115 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant calm (&:where([data-calm="true"], [data-calm="true"] *));
+
+:root,
+[data-theme="escuro"] {
+  --bg: #0d0820;
+  --surface: #1a1033;
+  --surface-2: #241646;
+  --text: #f4f1fb;
+  --muted: #b9b0cf;
+  --accent: #8b5cf6;
+  --accent-2: #ec4899;
+  --border: rgb(255 255 255 / 0.12);
+  --glow: 0 0 18px rgb(236 72 153 / 0.55);
+  --header-bg: rgb(13 8 32 / 0.7);
 }
+
+[data-theme="claro"] {
+  --bg: #f6f3fb;
+  --surface: #ffffff;
+  --surface-2: #ede7f8;
+  --text: #1e1433;
+  --muted: #5b5170;
+  --accent: #7c3aed;
+  --accent-2: #db2777;
+  --border: rgb(30 20 51 / 0.12);
+  --glow: 0 4px 14px rgb(124 58 237 / 0.25);
+  --header-bg: rgb(255 255 255 / 0.8);
+}
+
+[data-theme="noturno"] {
+  --bg: #05030a;
+  --surface: #0f0a1a;
+  --surface-2: #160f26;
+  --text: #a59fb3;
+  --muted: #8a8399;
+  --accent: #8b7bc0;
+  --accent-2: #a0708f;
+  --border: rgb(255 255 255 / 0.08);
+  --glow: none;
+  --header-bg: rgb(5 3 10 / 0.9);
+}
+
+[data-calm="true"] {
+  --glow: none;
+}
+
+[data-contrast="true"][data-theme="claro"] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f0f0f0;
+  --text: #000000;
+  --muted: #1a1a1a;
+  --accent: #5b21b6;
+  --accent-2: #9d174d;
+  --border: #000000;
+}
+
+[data-contrast="true"]:not([data-theme="claro"]) {
+  --bg: #000000;
+  --surface: #000000;
+  --surface-2: #141414;
+  --text: #ffffff;
+  --muted: #f0f0f0;
+  --accent: #c4b5fd;
+  --accent-2: #f9a8d4;
+  --border: #ffffff;
+}
+
+html[data-text="grande"] { font-size: 125%; }
+html[data-text="muito-grande"] { font-size: 150%; }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-fg: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-line: var(--border);
+  --shadow-glow: var(--glow);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent-2);
+  outline-offset: 2px;
+}
+
+/* @utility (e não uma classe comum) para aceitar variantes como has-checked:neon-gradient */
+@utility neon-gradient {
+  background-image: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+[data-calm="true"] *,
+[data-calm="true"] *::before,
+[data-calm="true"] *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
