@@ -4,6 +4,13 @@ import { GENRE_ROWS } from '@/lib/genres';
 import { MOODS, getMood } from '@/lib/moods';
 
 describe('plataformas', () => {
+  it('usam os nomes e IDs conferidos no TMDB (região BR, out/2026)', () => {
+    expect(PROVIDERS.map((p) => `${p.id} ${p.name}`)).toEqual([
+      '8 Netflix', '119 Amazon Prime Video', '337 Disney+', '1899 HBO Max',
+      '307 Globoplay', '350 Apple TV', '531 Paramount+', '2302 Mercado Play',
+    ]);
+  });
+
   it('têm IDs inteiros e únicos, na ordem definida', () => {
     expect(PROVIDERS[0].name).toBe('Netflix');
     expect(new Set(ALL_PROVIDER_IDS).size).toBe(PROVIDERS.length);
