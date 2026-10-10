@@ -116,6 +116,12 @@ describe('toDiscoverRequest', () => {
     expect(toDiscoverRequest(parse('humor=relaxar&genero=12&nota=8')).params).toMatchObject({ with_genres: '12', 'vote_average.gte': 8 });
   });
 
+  it('humor com gêneros excluídos usa without_genres', () => {
+    expect(toDiscoverRequest(parse('humor=fe')).params.without_genres).toBe('27,53');
+    expect(toDiscoverRequest(parse('humor=fe&tipo=serie')).params.without_genres).toBe('9648');
+    expect(toDiscoverRequest(parse('humor=rir')).params).not.toHaveProperty('without_genres');
+  });
+
   it('inclui as palavras-chave já resolvidas', () => {
     expect(toDiscoverRequest(parse('humor=fe'), { keywordIds: [10, 20] }).params.with_keywords).toBe('10|20');
   });

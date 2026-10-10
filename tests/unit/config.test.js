@@ -47,6 +47,20 @@ describe('humores', () => {
     );
   });
 
+  it('Fé e espiritualidade exclui terror e suspense (o TMDB marca filmes de possessão com "religion")', () => {
+    expect(getMood('fe').movie.excludeGenres).toEqual([27, 53]);
+    expect(getMood('fe').tv.excludeGenres).toEqual([9648]);
+  });
+
+  it('Fé não usa "religion", que traz filmes de máfia e drama com cenas de igreja', () => {
+    expect(getMood('fe').movie.keywords).not.toContain('religion');
+  });
+
+  it('Superação não usa "based on true story", que é amplo demais', () => {
+    expect(getMood('superacao').movie.keywords).not.toContain('based on true story');
+    expect(getMood('superacao').movie.keywords).toEqual(['sports', 'overcoming adversity', 'underdog']);
+  });
+
   it('getMood devolve undefined para slug desconhecido', () => {
     expect(getMood('xyz')).toBeUndefined();
     expect(getMood(null)).toBeUndefined();
