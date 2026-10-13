@@ -10,6 +10,7 @@ const items = [
   { id: 1, type: 'movie', title: 'Primeiro', overview: 'Sinopse 1', backdropPath: '/b1.jpg', trailerKey: 'k1' },
   { id: 2, type: 'tv', title: 'Segundo', overview: 'Sinopse 2', backdropPath: '/b2.jpg', trailerKey: null },
 ];
+const withSubtitles = [{ ...items[0], trailerSubtitles: true }, items[1]];
 
 const flush = () => act(async () => {});
 
@@ -24,6 +25,12 @@ describe('Hero', () => {
     expect(video.getAttribute('src')).toContain('/embed/k1');
     expect(video.getAttribute('src')).toContain('mute=1');
     expect(screen.getByRole('link', { name: 'Ver detalhes' })).toHaveAttribute('href', '/filme/1');
+  });
+
+  it('trailer sem dublagem brasileira toca com legendas em português', async () => {
+    renderWithSettings(<Hero items={withSubtitles} />);
+    await flush();
+    expect(screen.getByTestId('hero-video').getAttribute('src')).toContain('cc_load_policy=1');
   });
 
   it('no Modo sensorial calmo não toca o trailer sozinho', async () => {

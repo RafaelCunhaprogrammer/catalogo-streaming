@@ -75,7 +75,7 @@ export function Hero({ items }) {
               ref={iframeRef}
               data-testid="hero-video"
               title={`Trailer de ${current.title} (sem som)`}
-              src={trailerEmbedUrl(current.trailerKey, { autoplay: true, muted: true, loop: true })}
+              src={trailerEmbedUrl(current.trailerKey, { autoplay: true, muted: true, loop: true, subtitles: current.trailerSubtitles })}
               allow="autoplay; encrypted-media"
               tabIndex={-1}
               className="pointer-events-none absolute left-1/2 top-1/2 h-[56.25vw] min-h-full w-[177.78vh] min-w-full -translate-x-1/2 -translate-y-1/2"
@@ -124,7 +124,7 @@ export function Hero({ items }) {
         </div>
       </div>
 
-      {trailerOpen && <TrailerModal trailerKey={current.trailerKey} title={current.title} onClose={closeTrailer} />}
+      {trailerOpen && <TrailerModal trailerKey={current.trailerKey} subtitles={current.trailerSubtitles} title={current.title} onClose={closeTrailer} />}
     </section>
   );
 }

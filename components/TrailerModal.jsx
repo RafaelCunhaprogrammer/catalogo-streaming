@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import { useDialogFocus } from '@/components/useDialogFocus';
 import { trailerEmbedUrl } from '@/lib/trailer';
 
-export function TrailerModal({ trailerKey, title, onClose }) {
+export function TrailerModal({ trailerKey, subtitles = false, title, onClose }) {
   const dialogRef = useRef(null);
   const guards = useDialogFocus(dialogRef, true, onClose);
 
@@ -25,7 +25,7 @@ export function TrailerModal({ trailerKey, title, onClose }) {
         <div className="aspect-video w-full">
           <iframe
             title={`Trailer de ${title}`}
-            src={trailerEmbedUrl(trailerKey, { autoplay: true })}
+            src={trailerEmbedUrl(trailerKey, { autoplay: true, subtitles })}
             allow="autoplay; encrypted-media; fullscreen"
             allowFullScreen
             className="h-full w-full rounded-lg"

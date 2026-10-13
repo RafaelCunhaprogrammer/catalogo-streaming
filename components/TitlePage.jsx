@@ -38,7 +38,7 @@ export function TitleView({ title }) {
               {title.rating ? <span>★ {title.rating.toFixed(1)}</span> : null}
             </div>
             {title.overview && <p className="mt-5 text-base leading-relaxed text-white/90">{title.overview}</p>}
-            {title.trailerKey && <TrailerButton trailerKey={title.trailerKey} title={title.title} className="mt-6" />}
+            {title.trailerKey && <TrailerButton trailerKey={title.trailerKey} subtitles={title.trailerSubtitles} title={title.title} className="mt-6" />}
           </div>
         </div>
       </section>

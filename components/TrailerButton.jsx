@@ -3,7 +3,7 @@
 import { useCallback, useState } from 'react';
 import { TrailerModal } from '@/components/TrailerModal';
 
-export function TrailerButton({ trailerKey, title, className = '' }) {
+export function TrailerButton({ trailerKey, subtitles = false, title, className = '' }) {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
   return (
@@ -14,7 +14,7 @@ export function TrailerButton({ trailerKey, title, className = '' }) {
       >
         ▶ Ver trailer
       </button>
-      {open && <TrailerModal trailerKey={trailerKey} title={title} onClose={close} />}
+      {open && <TrailerModal trailerKey={trailerKey} subtitles={subtitles} title={title} onClose={close} />}
     </>
   );
 }

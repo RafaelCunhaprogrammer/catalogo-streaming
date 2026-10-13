@@ -6,20 +6,24 @@ import { formatRuntime, formatSeasons, certificationLabel } from '@/lib/format';
 const v = (key, iso_639_1, type, extra = {}) => ({ key, site: 'YouTube', iso_639_1, type, official: true, ...extra });
 
 describe('pickTrailer', () => {
-  it('prefere trailer em português', () => {
-    expect(pickTrailer([v('en1', 'en', 'Trailer'), v('pt1', 'pt', 'Trailer')])).toBe('pt1');
+  const br = (key, type = 'Trailer') => v(key, 'pt', type, { iso_3166_1: 'BR' });
+  const pt = (key, type = 'Trailer') => v(key, 'pt', type, { iso_3166_1: 'PT' });
+
+  it('prefere o trailer dublado do Brasil', () => {
+    expect(pickTrailer([v('en1', 'en', 'Trailer'), pt('pt1'), br('br1')])).toEqual({ key: 'br1', lang: 'pt-BR' });
   });
-  it('prefere o português do Brasil ao de Portugal', () => {
-    expect(pickTrailer([
-      v('ptpt', 'pt', 'Trailer', { iso_3166_1: 'PT' }),
-      v('ptbr', 'pt', 'Trailer', { iso_3166_1: 'BR' }),
-    ])).toBe('ptbr');
+  it('sem dublagem brasileira, usa o inglês (que ganha legendas em português)', () => {
+    expect(pickTrailer([pt('pt1'), v('en1', 'en', 'Trailer')])).toEqual({ key: 'en1', lang: 'en' });
   });
-  it('usa teaser em português antes de trailer em inglês', () => {
-    expect(pickTrailer([v('en1', 'en', 'Trailer'), v('pt-teaser', 'pt', 'Teaser')])).toBe('pt-teaser');
+  it('usa teaser brasileiro antes de trailer em inglês', () => {
+    expect(pickTrailer([v('en1', 'en', 'Trailer'), br('br-teaser', 'Teaser')])).toEqual({ key: 'br-teaser', lang: 'pt-BR' });
   });
-  it('cai para inglês e ignora vídeos fora do YouTube', () => {
-    expect(pickTrailer([{ ...v('vimeo', 'pt', 'Trailer'), site: 'Vimeo' }, v('en1', 'en', 'Trailer')])).toBe('en1');
+  it('a versão de Portugal é a última opção', () => {
+    expect(pickTrailer([pt('pt1'), v('x', 'fr', 'Trailer')])).toEqual({ key: 'pt1', lang: 'pt-PT' });
+  });
+  it('prefere o oficial e ignora vídeos fora do YouTube', () => {
+    expect(pickTrailer([{ ...br('vimeo'), site: 'Vimeo' }, v('fan', 'en', 'Trailer', { official: false }), v('oficial', 'en', 'Trailer')]))
+      .toEqual({ key: 'oficial', lang: 'en' });
   });
   it('devolve null sem vídeos adequados', () => {
     expect(pickTrailer([v('x', 'pt', 'Featurette')])).toBeNull();
@@ -36,6 +40,12 @@ describe('trailerEmbedUrl', () => {
     expect(url.searchParams.get('mute')).toBe('1');
     expect(url.searchParams.get('playlist')).toBe('abc');
     expect(url.searchParams.get('enablejsapi')).toBe('1');
+  });
+  it('pode ligar as legendas em português', () => {
+    const url = new URL(trailerEmbedUrl('abc', { subtitles: true }));
+    expect(url.searchParams.get('cc_load_policy')).toBe('1');
+    expect(url.searchParams.get('cc_lang_pref')).toBe('pt');
+    expect(url.searchParams.get('hl')).toBe('pt-BR');
   });
   it('sem opções não toca sozinho nem fica mudo', () => {
     const url = new URL(trailerEmbedUrl('abc'));

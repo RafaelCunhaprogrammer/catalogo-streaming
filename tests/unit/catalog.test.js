@@ -38,15 +38,15 @@ describe('getHomeData', () => {
     mockTmdb({
       '/discover/movie': (url) => (url.searchParams.get('with_watch_providers') === '8' ? 500 : { results: [movie(1, 9)] }),
       '/discover/tv': (url) => (url.searchParams.get('with_watch_providers') === '8' ? 500 : { results: [tv(2, 1)] }),
-      '/movie/1/videos': { results: [{ key: 'k1', site: 'YouTube', iso_639_1: 'pt', type: 'Trailer' }] },
+      '/movie/1/videos': { results: [{ key: 'k1', site: 'YouTube', iso_639_1: 'en', type: 'Trailer' }] },
       '/tv/2/videos': { results: [] },
     });
     const { hero, rows } = await getHomeData();
     expect(rows.find((r) => r.key === 'plataforma-8')).toBeUndefined();
     expect(rows.find((r) => r.key === 'plataforma-119')).toMatchObject({ title: 'Em alta na Amazon Prime Video', href: '/explorar?plataforma=119' });
     expect(rows.find((r) => r.key === 'genero-terror')).toMatchObject({ title: 'Terror', href: '/explorar?genero=27' });
-    expect(hero[0]).toMatchObject({ id: 1, trailerKey: 'k1' });
-    expect(hero[1]).toMatchObject({ id: 2, trailerKey: null });
+    expect(hero[0]).toMatchObject({ id: 1, trailerKey: 'k1', trailerSubtitles: true });
+    expect(hero[1]).toMatchObject({ id: 2, trailerKey: null, trailerSubtitles: false });
   });
 
   it('com Meus streamings mostra só as fileiras dessas plataformas', async () => {
@@ -129,7 +129,7 @@ describe('getTitleDetails', () => {
   const details = {
     id: 101, title: 'Aventura Neon', release_date: '2024-05-10', runtime: 128, genres: [{ id: 28, name: 'Ação' }],
     credits: { cast: Array.from({ length: 15 }, (_, i) => ({ id: i, name: `Ator ${i}`, character: `P${i}`, profile_path: null })) },
-    videos: { results: [{ key: 'abc', site: 'YouTube', iso_639_1: 'pt', type: 'Trailer' }] },
+    videos: { results: [{ key: 'abc', site: 'YouTube', iso_639_1: 'pt', iso_3166_1: 'BR', type: 'Trailer' }] },
     'watch/providers': { results: { BR: { link: 'https://tmdb/watch', flatrate: [{ provider_id: 8, provider_name: 'Netflix', logo_path: '/n.png' }] } } },
     release_dates: { results: [{ iso_3166_1: 'BR', release_dates: [{ certification: '12' }] }] },
     recommendations: { results: [{ id: 102, media_type: 'movie', title: 'Rec ok' }, { id: 103, media_type: 'movie', title: 'Rec fora' }] },
@@ -140,7 +140,7 @@ describe('getTitleDetails', () => {
     const t = await getTitleDetails('movie', '101');
     expect(t).toMatchObject({
       id: 101, type: 'movie', title: 'Aventura Neon', year: 2024, runtime: 128, seasons: null,
-      genres: ['Ação'], certification: '12', trailerKey: 'abc', watchLink: 'https://tmdb/watch',
+      genres: ['Ação'], certification: '12', trailerKey: 'abc', trailerSubtitles: false, watchLink: 'https://tmdb/watch',
       providers: [{ id: 8, name: 'Netflix', logoPath: '/n.png' }],
     });
     expect(t.cast).toHaveLength(12);
