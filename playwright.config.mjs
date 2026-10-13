@@ -8,7 +8,7 @@ export default defineConfig({
   webServer: [
     { command: 'node tests/e2e/mock-tmdb.mjs', port: 4010, reuseExistingServer: !process.env.CI },
     {
-      command: 'npm run build && npm run start -- -p 3100',
+      command: 'node tests/e2e/clear-fetch-cache.mjs && npm run build && npm run start -- -p 3100',
       port: 3100,
       timeout: 240_000,
       reuseExistingServer: !process.env.CI,

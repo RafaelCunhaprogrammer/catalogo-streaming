@@ -13,7 +13,7 @@ describe('PosterCard', () => {
   it('liga para a página do título e descreve o cartaz com título e ano', () => {
     render(<PosterCard title={title(1)} />);
     expect(screen.getByRole('link')).toHaveAttribute('href', '/filme/1');
-    expect(screen.getByRole('img', { name: 'Filme 1 (2020)' })).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w342/p1.jpg');
+    expect(screen.getByRole('img', { name: 'Filme 1 (2020)' })).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w500/p1.jpg');
     expect(screen.getByLabelText('Nota 7.3 de 10')).toBeInTheDocument();
   });
 

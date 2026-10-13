@@ -8,26 +8,31 @@ import { useSettings } from '@/components/settings/SettingsProvider';
 import { TrailerModal } from '@/components/TrailerModal';
 import { shouldAutoplayTrailer, shouldRotateHero } from '@/lib/preferences';
 import { trailerEmbedUrl } from '@/lib/trailer';
-import { imageUrl } from '@/lib/images';
+import { imageSet } from '@/lib/images';
 import { titleHref } from '@/lib/tmdb/normalize';
 
 // Título sem trailer fica este tempo na tela antes do próximo.
 export const HERO_BACKDROP_MS = 10000;
 // Rede de segurança: se o player nunca avisar que terminou, passa adiante depois disto.
 const VIDEO_MAX_MS = 4 * 60 * 1000;
+// A imagem continua por cima do vídeo até ele tocar há este tempo: esconde a tela preta de
+// carregamento e a barra de título que o YouTube mostra nos primeiros segundos.
+export const HERO_REVEAL_MS = 2500;
 const YOUTUBE_ORIGIN = /^https:\/\/www\.youtube(-nocookie)?\.com$/;
 const ENDED = 0;
+const PLAYING = 1;
 
-function playerEnded(event) {
-  if (!YOUTUBE_ORIGIN.test(event.origin) || typeof event.data !== 'string') return false;
+// Estado do player (protocolo de postMessage da IFrame API do YouTube), ou null.
+function playerState(event) {
+  if (!YOUTUBE_ORIGIN.test(event.origin) || typeof event.data !== 'string') return null;
   try {
     const data = JSON.parse(event.data);
-    if (data.event === 'onStateChange') return data.info === ENDED;
-    if (data.event === 'infoDelivery') return data.info?.playerState === ENDED;
+    if (data.event === 'onStateChange') return data.info;
+    if (data.event === 'infoDelivery') return data.info?.playerState ?? null;
   } catch {
     // mensagem que não é do protocolo do player
   }
-  return false;
+  return null;
 }
 
 const roundButton = 'inline-flex items-center justify-center rounded-full border border-white/40 bg-black/30 backdrop-blur hover:bg-white/20';
@@ -39,6 +44,8 @@ export function Hero({ items }) {
   const [paused, setPaused] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const [ended, setEnded] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const [revealed, setRevealed] = useState(false);
   const [trailerOpen, setTrailerOpen] = useState(false);
   const iframeRef = useRef(null);
   const closeTrailer = useCallback(() => setTrailerOpen(false), []);
@@ -52,6 +59,8 @@ export function Hero({ items }) {
   const goTo = useCallback((next) => {
     setIndex(((next % count) + count) % count);
     setEnded(false);
+    setPlaying(false);
+    setRevealed(false);
     setSoundOn(false);
   }, [count]);
 
@@ -59,7 +68,9 @@ export function Hero({ items }) {
   useEffect(() => {
     if (!autoplay) return undefined;
     const onMessage = (event) => {
-      if (playerEnded(event)) setEnded(true);
+      const state = playerState(event);
+      if (state === ENDED) setEnded(true);
+      if (state === PLAYING) setPlaying(true);
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
@@ -81,6 +92,12 @@ export function Hero({ items }) {
     return () => clearTimeout(timer);
   }, [canAdvance, ended, autoplay, index, goTo]);
 
+  useEffect(() => {
+    if (!playing) return undefined;
+    const timer = setTimeout(() => setRevealed(true), HERO_REVEAL_MS);
+    return () => clearTimeout(timer);
+  }, [playing]);
+
   function listenToPlayer() {
     // Pede ao player que mande os eventos de estado (o mesmo protocolo da IFrame API do YouTube).
     iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: 'destaque', channel: 'widget' }), '*');
@@ -96,7 +113,7 @@ export function Hero({ items }) {
   }
 
   if (!current) return null;
-  const backdrop = imageUrl(current.backdropPath, 'w1280');
+  const backdrop = imageSet(current.backdropPath, 'backdrop');
 
   return (
     <section
@@ -119,17 +136,27 @@ export function Hero({ items }) {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.6 }}
           >
-            {backdrop && <img src={backdrop} alt="" className="absolute inset-0 h-full w-full object-cover" />}
             {autoplay && (
               <iframe
                 ref={iframeRef}
                 data-testid="hero-video"
                 title={`Trailer de ${current.title} (sem som)`}
-                src={trailerEmbedUrl(current.trailerKey, { autoplay: true, muted: true, subtitles: current.trailerSubtitles })}
+                src={trailerEmbedUrl(current.trailerKey, { autoplay: true, muted: true, background: true, subtitles: current.trailerSubtitles })}
                 allow="autoplay; encrypted-media"
                 tabIndex={-1}
                 onLoad={listenToPlayer}
                 className="pointer-events-none absolute inset-0 h-full w-full"
+              />
+            )}
+            {backdrop && (
+              <img
+                data-testid="hero-cover"
+                data-revealed={String(autoplay && revealed)}
+                src={backdrop.src}
+                srcSet={backdrop.srcSet}
+                sizes="100vw"
+                alt=""
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${autoplay && revealed ? 'opacity-0' : 'opacity-100'}`}
               />
             )}
           </motion.div>
@@ -140,17 +167,17 @@ export function Hero({ items }) {
 
         {count > 1 && (
           <>
-            <button onClick={() => goTo(index - 1)} aria-label="Destaque anterior" className={`${roundButton} absolute left-3 top-1/2 h-12 w-12 -translate-y-1/2 sm:left-6`}>
+            <button onClick={() => goTo(index - 1)} aria-label="Destaque anterior" className={`${roundButton} absolute left-3 top-1/2 z-20 h-12 w-12 -translate-y-1/2 sm:left-6`}>
               <ChevronLeft aria-hidden="true" className="h-7 w-7" />
             </button>
-            <button onClick={() => goTo(index + 1)} aria-label="Próximo destaque" className={`${roundButton} absolute right-3 top-1/2 h-12 w-12 -translate-y-1/2 sm:right-6`}>
+            <button onClick={() => goTo(index + 1)} aria-label="Próximo destaque" className={`${roundButton} absolute right-3 top-1/2 z-20 h-12 w-12 -translate-y-1/2 sm:right-6`}>
               <ChevronRight aria-hidden="true" className="h-7 w-7" />
             </button>
           </>
         )}
       </div>
 
-      <div className="relative px-4 pb-6 sm:absolute sm:bottom-0 sm:left-0 sm:max-w-2xl sm:p-8 sm:pb-16">
+      <div className="relative z-10 px-4 pb-6 sm:absolute sm:bottom-0 sm:left-0 sm:max-w-2xl sm:p-8 sm:pb-16">
         <h2 className="text-2xl font-black drop-shadow-lg sm:text-5xl">{current.title}</h2>
         {current.overview && <p className="mt-3 line-clamp-3 text-sm text-white/90 sm:text-base">{current.overview}</p>}
         <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -187,7 +214,7 @@ export function Hero({ items }) {
       </div>
 
       {count > 1 && (
-        <div className="flex justify-center gap-2 pb-5 sm:absolute sm:bottom-5 sm:left-1/2 sm:-translate-x-1/2 sm:pb-0">
+        <div className="relative z-20 flex justify-center gap-2 pb-5 sm:absolute sm:bottom-5 sm:left-1/2 sm:-translate-x-1/2 sm:pb-0">
           {items.map((item, i) => (
             <button
               key={`${item.type}-${item.id}`}

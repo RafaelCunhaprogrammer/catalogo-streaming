@@ -26,7 +26,7 @@ describe('TitleView', () => {
   it('mostra onde assistir com logo e link', () => {
     render(<TitleView title={base} />);
     const where = screen.getByRole('region', { name: 'Onde assistir' });
-    expect(within(where).getByRole('img', { name: 'Netflix' })).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w92/n.png');
+    expect(within(where).getByRole('img', { name: 'Netflix' })).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w154/n.png');
     expect(within(where).getByRole('link', { name: 'Ver detalhes de disponibilidade' })).toHaveAttribute('href', 'https://tmdb/watch');
   });
 

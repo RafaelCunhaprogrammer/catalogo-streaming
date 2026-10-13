@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { normalizeTitle, titleHref } from '@/lib/tmdb/normalize';
-import { imageUrl } from '@/lib/images';
+import { imageUrl, imageSet } from '@/lib/images';
 
 describe('normalizeTitle', () => {
   it('normaliza um filme', () => {
@@ -50,5 +50,27 @@ describe('imageUrl', () => {
     expect(imageUrl('/p.jpg')).toBe('https://image.tmdb.org/t/p/w342/p.jpg');
     expect(imageUrl('/b.jpg', 'w1280')).toBe('https://image.tmdb.org/t/p/w1280/b.jpg');
     expect(imageUrl(null)).toBeNull();
+  });
+});
+
+describe('imageSet', () => {
+  it('cartaz oferece tamanhos até 780 px para telas de alta densidade', () => {
+    const set = imageSet('/p.jpg', 'poster');
+    expect(set.src).toBe('https://image.tmdb.org/t/p/w500/p.jpg');
+    expect(set.srcSet).toBe([
+      'https://image.tmdb.org/t/p/w342/p.jpg 342w',
+      'https://image.tmdb.org/t/p/w500/p.jpg 500w',
+      'https://image.tmdb.org/t/p/w780/p.jpg 780w',
+    ].join(', '));
+  });
+
+  it('imagem de fundo chega ao arquivo original para telas grandes', () => {
+    const set = imageSet('/b.jpg', 'backdrop');
+    expect(set.src).toBe('https://image.tmdb.org/t/p/w1280/b.jpg');
+    expect(set.srcSet).toContain('https://image.tmdb.org/t/p/original/b.jpg 3840w');
+  });
+
+  it('sem imagem devolve null', () => {
+    expect(imageSet(null, 'poster')).toBeNull();
   });
 });

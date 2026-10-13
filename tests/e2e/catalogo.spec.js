@@ -30,10 +30,22 @@ test.describe('catálogo', () => {
   test('Início mostra destaque, humores e fileiras', async ({ page }) => {
     await skipEntry(page);
     await page.goto('/');
-    await expect(page.getByRole('region', { name: 'Destaque: Aventura Neon' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Destaque: Aventura Neon: A Longa Jornada do Herói Esquecido' })).toBeVisible();
     await expect(page.getByRole('link', { name: /Relaxar/ })).toHaveAttribute('href', '/explorar?humor=relaxar');
     await expect(page.getByRole('heading', { name: 'Em alta na Netflix' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Terror' })).toBeVisible();
+  });
+
+  test('setas do destaque voltam e avançam com cliques reais', async ({ page }) => {
+    await skipEntry(page);
+    await page.goto('/');
+    await page.setViewportSize({ width: 1280, height: 640 });
+    const hero = page.getByRole('region', { name: /^Destaque:/ });
+    await expect(hero).toHaveAttribute('aria-label', 'Destaque: Aventura Neon: A Longa Jornada do Herói Esquecido');
+    await page.getByRole('button', { name: 'Destaque anterior' }).click();
+    await expect(hero).not.toHaveAttribute('aria-label', 'Destaque: Aventura Neon: A Longa Jornada do Herói Esquecido');
+    await page.getByRole('button', { name: 'Próximo destaque' }).click();
+    await expect(hero).toHaveAttribute('aria-label', 'Destaque: Aventura Neon: A Longa Jornada do Herói Esquecido');
   });
 
   test('busca mostra só títulos disponíveis e Enter abre os resultados', async ({ page }) => {
@@ -83,7 +95,7 @@ test.describe('catálogo', () => {
     await skipEntry(page);
     await page.goto('/explorar');
     await page.getByRole('button', { name: 'Abrir configurações' }).click();
-    await page.getByRole('dialog', { name: 'Configurações' }).getByText('Claro', { exact: true }).click();
+    await page.getByRole('dialog', { name: 'Configurações' }).locator('label', { has: page.getByRole('radio', { name: 'Claro' }) }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'claro');
     await page.reload();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'claro');

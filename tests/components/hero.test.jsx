@@ -3,7 +3,7 @@ import { act, fireEvent, screen } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import userEvent from '@testing-library/user-event';
 import { renderWithSettings } from '../helpers/render-with-settings';
-import { Hero, HERO_BACKDROP_MS } from '@/components/Hero';
+import { Hero, HERO_BACKDROP_MS, HERO_REVEAL_MS } from '@/components/Hero';
 import { SettingsProvider } from '@/components/settings/SettingsProvider';
 
 const items = [
@@ -34,6 +34,27 @@ describe('Hero', () => {
     expect(src).toContain('mute=1');
     expect(src).not.toContain('loop=1');
     expect(screen.getByRole('link', { name: 'Ver detalhes' })).toHaveAttribute('href', '/filme/1');
+  });
+
+  it('player do destaque sem controles nem anotações do YouTube', async () => {
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    const src = new URL(screen.getByTestId('hero-video').getAttribute('src'));
+    expect(src.searchParams.get('controls')).toBe('0');
+    expect(src.searchParams.get('iv_load_policy')).toBe('3');
+  });
+
+  it('a imagem cobre o vídeo até ele tocar há alguns segundos (esconde carregamento e barra de título)', async () => {
+    vi.useFakeTimers();
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    const cover = screen.getByTestId('hero-cover');
+    expect(cover).toHaveAttribute('data-revealed', 'false');
+    await youtubeSays({ event: 'infoDelivery', info: { playerState: 1 } });
+    await act(async () => { vi.advanceTimersByTime(HERO_REVEAL_MS - 1); });
+    expect(cover).toHaveAttribute('data-revealed', 'false');
+    await act(async () => { vi.advanceTimersByTime(1); });
+    expect(cover).toHaveAttribute('data-revealed', 'true');
   });
 
   it('passa para o próximo quando o trailer termina', async () => {

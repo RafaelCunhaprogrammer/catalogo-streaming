@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useDialogFocus } from '@/components/useDialogFocus';
 import { X } from 'lucide-react';
 import { trailerEmbedUrl } from '@/lib/trailer';
@@ -9,7 +10,8 @@ export function TrailerModal({ trailerKey, subtitles = false, title, onClose }) 
   const dialogRef = useRef(null);
   const guards = useDialogFocus(dialogRef, true, onClose);
 
-  return (
+  // Portal no <body>, para a janela cobrir a tela inteira mesmo dentro de áreas com transform/blur.
+  return createPortal(
     <div
       ref={dialogRef}
       role="dialog"
@@ -34,6 +36,7 @@ export function TrailerModal({ trailerKey, subtitles = false, title, onClose }) 
         </div>
       </div>
       {guards.end}
-    </div>
+    </div>,
+    document.body,
   );
 }

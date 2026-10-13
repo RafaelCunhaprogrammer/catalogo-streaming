@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getTitleDetails } from '@/lib/tmdb/catalog';
-import { imageUrl } from '@/lib/images';
+import { imageSet } from '@/lib/images';
 import { formatRuntime, formatSeasons, certificationLabel, CERTIFICATION_STYLES } from '@/lib/format';
 import { TrailerButton } from '@/components/TrailerButton';
 import { Row } from '@/components/Row';
@@ -19,18 +19,18 @@ function Certification({ value }) {
 }
 
 export function TitleView({ title }) {
-  const backdrop = imageUrl(title.backdropPath, 'w1280');
-  const poster = imageUrl(title.posterPath, 'w342');
+  const backdrop = imageSet(title.backdropPath, 'backdrop');
+  const poster = imageSet(title.posterPath, 'poster');
   const duration = title.type === 'movie' ? formatRuntime(title.runtime) : formatSeasons(title.seasons);
   const meta = [title.year, title.genres.join(', '), duration].filter(Boolean);
 
   return (
     <article>
       <section className="relative overflow-hidden bg-[#0d0820] text-white">
-        {backdrop && <img src={backdrop} alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />}
+        {backdrop && <img src={backdrop.src} srcSet={backdrop.srcSet} sizes="100vw" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0d0820] via-[#0d0820]/70 to-transparent" />
         <div className="relative flex flex-col gap-6 px-4 py-10 sm:flex-row sm:px-8 sm:py-16">
-          {poster && <img src={poster} alt={`Cartaz de ${title.title}`} className="w-40 self-start rounded-xl shadow-glow sm:w-56" />}
+          {poster && <img src={poster.src} srcSet={poster.srcSet} sizes="(min-width: 640px) 224px, 160px" alt={`Cartaz de ${title.title}`} className="w-40 self-start rounded-xl shadow-glow sm:w-56" />}
           <div className="max-w-3xl">
             <h1 className="text-3xl font-black sm:text-5xl">{title.title}</h1>
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-white/85">
@@ -54,7 +54,7 @@ export function TitleView({ title }) {
         <ul className="mt-4 flex flex-wrap gap-3">
           {title.providers.map((p) => (
             <li key={p.id} className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2">
-              {p.logoPath && <img src={imageUrl(p.logoPath, 'w92')} alt={p.name} className="h-8 w-8 rounded-lg" />}
+              {p.logoPath && <img {...imageSet(p.logoPath, 'logo')} sizes="32px" alt={p.name} className="h-8 w-8 rounded-lg" />}
               <span aria-hidden={Boolean(p.logoPath)}>{p.name}</span>
             </li>
           ))}
@@ -73,7 +73,7 @@ export function TitleView({ title }) {
             {title.cast.map((person) => (
               <li key={person.id} className="w-24 shrink-0 text-center">
                 {person.profilePath ? (
-                  <img src={imageUrl(person.profilePath, 'w185')} alt="" className="mx-auto h-24 w-24 rounded-full object-cover" />
+                  <img {...imageSet(person.profilePath, 'profile')} sizes="96px" alt="" className="mx-auto h-24 w-24 rounded-full object-cover" />
                 ) : (
                   <span aria-hidden="true" className="neon-gradient mx-auto block h-24 w-24 rounded-full" />
                 )}

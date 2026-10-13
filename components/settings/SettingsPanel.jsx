@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, Moon, MoonStar, Sun, X } from 'lucide-react';
@@ -91,7 +92,10 @@ export function SettingsPanel({ open, onClose }) {
     router.refresh();
   }
 
-  return (
+  // Portal: a janela é desenhada direto no <body>. Dentro do topo (que tem backdrop-blur),
+  // position: fixed ficaria presa ao tamanho do topo em vez da tela inteira.
+  if (typeof document === 'undefined') return null;
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
@@ -222,6 +226,7 @@ export function SettingsPanel({ open, onClose }) {
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }

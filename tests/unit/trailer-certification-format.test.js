@@ -41,6 +41,13 @@ describe('trailerEmbedUrl', () => {
     expect(url.searchParams.get('playlist')).toBe('abc');
     expect(url.searchParams.get('enablejsapi')).toBe('1');
   });
+  it('modo de fundo esconde controles, anotações e atalhos do player', () => {
+    const url = new URL(trailerEmbedUrl('abc', { background: true }));
+    expect(url.searchParams.get('controls')).toBe('0');
+    expect(url.searchParams.get('iv_load_policy')).toBe('3');
+    expect(url.searchParams.get('disablekb')).toBe('1');
+    expect(url.searchParams.get('fs')).toBe('0');
+  });
   it('pode ligar as legendas em português', () => {
     const url = new URL(trailerEmbedUrl('abc', { subtitles: true }));
     expect(url.searchParams.get('cc_load_policy')).toBe('1');
