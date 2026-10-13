@@ -38,6 +38,12 @@ describe('getHomeData', () => {
     mockTmdb({
       '/discover/movie': (url) => (url.searchParams.get('with_watch_providers') === '8' ? 500 : { results: [movie(1, 9)] }),
       '/discover/tv': (url) => (url.searchParams.get('with_watch_providers') === '8' ? 500 : { results: [tv(2, 1)] }),
+      '/trending/all/week': { results: [
+        { id: 1, media_type: 'movie', title: 'Filme 1', backdrop_path: '/b1.jpg' },
+        { id: 2, media_type: 'tv', name: 'Série 2', backdrop_path: '/b2.jpg' },
+      ] },
+      '/movie/1/watch/providers': available,
+      '/tv/2/watch/providers': available,
       '/movie/1/videos': { results: [{ key: 'k1', site: 'YouTube', iso_639_1: 'en', type: 'Trailer' }] },
       '/tv/2/videos': { results: [] },
     });
@@ -190,5 +196,72 @@ describe('limite de chamadas simultâneas', () => {
       '/movie/2/watch/providers': 500,
     });
     await expect(searchAvailable('ab')).rejects.toThrow();
+  });
+});
+
+describe('conteúdo em alta recente', () => {
+  const NOW = new Date('2026-10-12T12:00:00Z');
+  const trendingRoutes = (extra = {}) => ({
+    '/trending/all/week': {
+      results: [
+        { id: 1, media_type: 'movie', title: 'Clássico em alta', release_date: '2010-01-01', backdrop_path: '/b1.jpg', popularity: 99 },
+        { id: 2, media_type: 'tv', name: 'Série nova', first_air_date: '2026-08-01', backdrop_path: '/b2.jpg', popularity: 50 },
+        { id: 3, media_type: 'movie', title: 'Filme novo', release_date: '2026-05-01', backdrop_path: '/b3.jpg', popularity: 40 },
+        { id: 4, media_type: 'movie', title: 'Fora do streaming', release_date: '2026-09-01', backdrop_path: '/b4.jpg', popularity: 80 },
+        { id: 5, media_type: 'person', name: 'Pessoa' },
+      ],
+    },
+    '/movie/1/watch/providers': available,
+    '/tv/2/watch/providers': available,
+    '/movie/3/watch/providers': available,
+    '/movie/4/watch/providers': unavailable,
+    '/movie/1/videos': { results: [] },
+    '/tv/2/videos': { results: [] },
+    '/movie/3/videos': { results: [] },
+    '/discover/movie': { results: [] },
+    '/discover/tv': { results: [] },
+    ...extra,
+  });
+
+  it('destaque: tendências da semana disponíveis, lançamentos dos últimos 12 meses primeiro', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+    mockTmdb(trendingRoutes());
+    const { hero } = await getHomeData();
+    vi.useRealTimers();
+    expect(hero.map((t) => t.title)).toEqual(['Série nova', 'Filme novo', 'Clássico em alta']);
+  });
+
+  it('destaque respeita Meus streamings', async () => {
+    mockTmdb(trendingRoutes({ '/tv/2/watch/providers': { results: { BR: { flatrate: [{ provider_id: 119 }] } } } }));
+    const { hero } = await getHomeData([119]);
+    expect(hero.map((t) => t.title)).toEqual(['Série nova']);
+  });
+
+  it('fileiras "Em alta na…" só trazem títulos recentes', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+    const fetchMock = mockTmdb(trendingRoutes());
+    await getHomeData([8]);
+    vi.useRealTimers();
+    const calls = fetchMock.mock.calls.map(([u]) => new URL(u));
+    const netflixMovies = calls.find((u) => u.pathname.endsWith('/discover/movie') && u.searchParams.get('with_watch_providers') === '8' && !u.searchParams.has('with_genres') && u.searchParams.get('primary_release_date.gte') === '2024-10-12');
+    const netflixTv = calls.find((u) => u.pathname.endsWith('/discover/tv') && u.searchParams.get('with_watch_providers') === '8' && u.searchParams.get('air_date.gte') === '2025-10-12');
+    expect(netflixMovies).toBeDefined();
+    expect(netflixTv).toBeDefined();
+  });
+
+  it('cria a fileira Lançamentos recentes (últimos 90 dias) logo no começo', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(NOW);
+    mockTmdb(trendingRoutes({
+      '/discover/movie': (url) => (url.searchParams.get('primary_release_date.gte') === '2026-07-14'
+        ? { results: [{ id: 9, title: 'Estreia', release_date: '2026-09-20', popularity: 5 }] }
+        : { results: [] }),
+    }));
+    const { rows } = await getHomeData();
+    vi.useRealTimers();
+    expect(rows[0]).toMatchObject({ key: 'lancamentos', title: 'Lançamentos recentes' });
+    expect(rows[0].items.map((t) => t.title)).toEqual(['Estreia']);
   });
 });

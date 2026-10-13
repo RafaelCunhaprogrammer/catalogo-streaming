@@ -1,0 +1,47 @@
+{
+  "page": 1,
+  "results": [
+    {
+      "id": 101,
+      "title": "Aventura Neon: A Longa Jornada do Herói Esquecido",
+      "release_date": "2024-05-10",
+      "overview": "Uma aventura brilhante e longa, com uma sinopse de várias linhas como as que o TMDB devolve de verdade, para que o bloco de texto do destaque cresça até perto do meio da tela e possa cobrir os botões de navegação. Uma aventura brilhante e longa, com uma sinopse de várias linhas como as que o TMDB devolve de verdade, para que o bloco de texto do destaque cresça até perto do meio da tela e possa cobrir os botões de navegação. ",
+      "poster_path": "/p101.jpg",
+      "backdrop_path": "/b101.jpg",
+      "vote_average": 7.8,
+      "popularity": 90,
+      "genre_ids": [
+        28
+      ],
+      "media_type": "movie"
+    },
+    {
+      "id": 102,
+      "title": "Risos no Escuro",
+      "release_date": "2023-02-01",
+      "overview": "Uma comédia.",
+      "poster_path": null,
+      "backdrop_path": "/b102.jpg",
+      "vote_average": 6.9,
+      "popularity": 80,
+      "genre_ids": [
+        35
+      ],
+      "media_type": "movie"
+    },
+    {
+      "id": 201,
+      "name": "Série Brilhante",
+      "first_air_date": "2021-03-03",
+      "overview": "Uma série.",
+      "poster_path": "/p201.jpg",
+      "backdrop_path": "/b201.jpg",
+      "vote_average": 8.1,
+      "popularity": 85,
+      "genre_ids": [
+        18
+      ],
+      "media_type": "tv"
+    }
+  ]
+}

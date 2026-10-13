@@ -9,7 +9,7 @@ describe('normalizeTitle', () => {
       poster_path: '/p.jpg', backdrop_path: '/b.jpg', vote_average: 7.84, popularity: 50, genre_ids: [28],
     }, 'movie');
     expect(t).toEqual({
-      id: 101, type: 'movie', title: 'Aventura Neon', year: 2024, overview: 'Sinopse',
+      id: 101, type: 'movie', title: 'Aventura Neon', year: 2024, releaseDate: '2024-05-10', overview: 'Sinopse',
       posterPath: '/p.jpg', backdropPath: '/b.jpg', rating: 7.8, popularity: 50, genreIds: [28],
     });
   });

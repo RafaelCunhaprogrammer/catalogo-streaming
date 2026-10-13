@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs';
 const fixture = (name) => JSON.parse(readFileSync(new URL(`../fixtures/${name}.json`, import.meta.url), 'utf8'));
 
 const routes = [
+  [/^\/3\/trending\/all\/week$/, () => fixture('trending-week')],
   [/^\/3\/discover\/movie$/, () => fixture('discover-movie')],
   [/^\/3\/discover\/tv$/, () => fixture('discover-tv')],
   [/^\/3\/genre\/movie\/list$/, () => fixture('genres-movie')],
