@@ -37,7 +37,7 @@ describe('Hero', () => {
     renderWithSettings(<Hero items={items} />, { calm: true });
     await flush();
     expect(screen.queryByTestId('hero-video')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '▶ Ver trailer' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ver trailer' })).toBeInTheDocument();
   });
 
   it('não começa o trailer antes de as preferências carregarem', () => {
@@ -74,7 +74,7 @@ describe('Hero', () => {
   it('abre o trailer com som e fecha com Esc', async () => {
     renderWithSettings(<Hero items={items} />);
     await flush();
-    await userEvent.click(screen.getByRole('button', { name: '▶ Ver trailer' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Ver trailer' }));
     const dialog = screen.getByRole('dialog', { name: 'Trailer de Primeiro' });
     const iframe = dialog.querySelector('iframe');
     expect(iframe.getAttribute('src')).toContain('autoplay=1');

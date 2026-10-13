@@ -4,6 +4,7 @@ import { imageUrl } from '@/lib/images';
 import { formatRuntime, formatSeasons, certificationLabel, CERTIFICATION_STYLES } from '@/lib/format';
 import { TrailerButton } from '@/components/TrailerButton';
 import { Row } from '@/components/Row';
+import { Star } from 'lucide-react';
 
 function Certification({ value }) {
   if (!value) return <span className="text-sm text-white/70">Classificação não informada</span>;
@@ -35,7 +36,12 @@ export function TitleView({ title }) {
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-white/85">
               <Certification value={title.certification} />
               {meta.map((item) => <span key={item}>{item}</span>)}
-              {title.rating ? <span>★ {title.rating.toFixed(1)}</span> : null}
+              {title.rating ? (
+                <span aria-label={`Nota ${title.rating.toFixed(1)} de 10`} className="inline-flex items-center gap-1">
+                  <Star aria-hidden="true" className="h-4 w-4 fill-amber-400 text-amber-400" />
+                  {title.rating.toFixed(1)}
+                </span>
+              ) : null}
             </div>
             {title.overview && <p className="mt-5 text-base leading-relaxed text-white/90">{title.overview}</p>}
             {title.trailerKey && <TrailerButton trailerKey={title.trailerKey} subtitles={title.trailerSubtitles} title={title.title} className="mt-6" />}

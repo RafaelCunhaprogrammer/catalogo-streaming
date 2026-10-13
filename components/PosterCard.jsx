@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Star } from 'lucide-react';
 import { imageUrl } from '@/lib/images';
 import { titleHref } from '@/lib/tmdb/normalize';
 
@@ -16,8 +17,12 @@ export function PosterCard({ title, fluid = false, priority = false }) {
           </div>
         )}
         {title.rating ? (
-          <span className="absolute right-1.5 top-1.5 rounded bg-black/75 px-1.5 text-xs font-semibold text-white">
-            ★ {title.rating.toFixed(1)}
+          <span
+            aria-label={`Nota ${title.rating.toFixed(1)} de 10`}
+            className="absolute right-1.5 top-1.5 inline-flex items-center gap-1 rounded bg-black/75 px-1.5 py-0.5 text-xs font-semibold text-white"
+          >
+            <Star aria-hidden="true" className="h-3 w-3 fill-amber-400 text-amber-400" />
+            {title.rating.toFixed(1)}
           </span>
         ) : null}
       </div>

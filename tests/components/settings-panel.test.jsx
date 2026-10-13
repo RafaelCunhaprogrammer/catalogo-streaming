@@ -22,7 +22,7 @@ describe('SettingsPanel', () => {
     renderWithSettings(<SettingsPanel open onClose={() => {}} />, { theme: 'escuro' });
     const dialog = await screen.findByRole('dialog', { name: 'Configurações' });
     expect(screen.queryByRole('slider', { name: /Brilho/ })).not.toBeInTheDocument();
-    await userEvent.click(screen.getByRole('radio', { name: 'Noturno 🔅' }));
+    await userEvent.click(screen.getByRole('radio', { name: 'Noturno' }));
     await waitFor(() => expect(saved().theme).toBe('noturno'));
     expect(screen.getByRole('slider', { name: /Brilho/ })).toHaveValue('60');
     expect(dialog).toBeInTheDocument();

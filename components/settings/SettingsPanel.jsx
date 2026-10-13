@@ -5,13 +5,14 @@ import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSettings } from './SettingsProvider';
 import { useDialogFocus } from '@/components/useDialogFocus';
+import { X } from 'lucide-react';
 import { PROVIDERS } from '@/lib/providers';
 import { writeProvidersCookie } from '@/lib/preferences';
 
 const THEME_OPTIONS = [
   { value: 'escuro', label: 'Escuro' },
   { value: 'claro', label: 'Claro' },
-  { value: 'noturno', label: 'Noturno 🔅' },
+  { value: 'noturno', label: 'Noturno' },
 ];
 
 const TEXT_OPTIONS = [
@@ -105,7 +106,7 @@ export function SettingsPanel({ open, onClose }) {
             <div className="flex items-center justify-between">
               <h2 id="config-titulo" className="text-xl font-bold">Configurações</h2>
               <button onClick={onClose} aria-label="Fechar configurações" className="rounded p-2 hover:bg-surface-2">
-                ✕
+                <X aria-hidden="true" className="h-6 w-6" />
               </button>
             </div>
 

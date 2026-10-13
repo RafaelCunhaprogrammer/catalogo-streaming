@@ -9,6 +9,7 @@ import { shouldAutoplayTrailer, shouldRotateHero } from '@/lib/preferences';
 import { trailerEmbedUrl } from '@/lib/trailer';
 import { imageUrl } from '@/lib/images';
 import { titleHref } from '@/lib/tmdb/normalize';
+import { Pause, Play, Volume2, VolumeX } from 'lucide-react';
 
 export const HERO_ROTATE_MS = 15000;
 
@@ -96,9 +97,10 @@ export function Hero({ items }) {
           {current.trailerKey && (
             <button
               onClick={() => setTrailerOpen(true)}
-              className="rounded-full border border-white/40 bg-white/10 px-6 py-2.5 font-bold backdrop-blur hover:bg-white/20"
+              className="inline-flex items-center gap-2 rounded-full border border-white/40 bg-white/10 px-6 py-2.5 font-bold backdrop-blur hover:bg-white/20"
             >
-              ▶ Ver trailer
+              <Play aria-hidden="true" className="h-5 w-5 fill-current" />
+              Ver trailer
             </button>
           )}
           {loaded && (current.trailerKey || items.length > 1) && (
@@ -108,7 +110,7 @@ export function Hero({ items }) {
               aria-label={paused ? 'Retomar destaque' : 'Pausar destaque'}
               className="rounded-full border border-white/40 bg-white/10 px-4 py-2.5 backdrop-blur hover:bg-white/20"
             >
-              <span aria-hidden="true">{paused ? '▶' : '⏸'}</span>
+              {paused ? <Play aria-hidden="true" className="h-5 w-5" /> : <Pause aria-hidden="true" className="h-5 w-5" />}
             </button>
           )}
           {autoplay && (
@@ -118,7 +120,7 @@ export function Hero({ items }) {
               aria-label={soundOn ? 'Desativar som do trailer' : 'Ativar som do trailer'}
               className="rounded-full border border-white/40 bg-white/10 px-4 py-2.5 backdrop-blur hover:bg-white/20"
             >
-              <span aria-hidden="true">{soundOn ? '🔊' : '🔇'}</span>
+              {soundOn ? <Volume2 aria-hidden="true" className="h-5 w-5" /> : <VolumeX aria-hidden="true" className="h-5 w-5" />}
             </button>
           )}
         </div>

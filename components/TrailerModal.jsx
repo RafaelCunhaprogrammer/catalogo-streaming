@@ -2,6 +2,7 @@
 
 import { useRef } from 'react';
 import { useDialogFocus } from '@/components/useDialogFocus';
+import { X } from 'lucide-react';
 import { trailerEmbedUrl } from '@/lib/trailer';
 
 export function TrailerModal({ trailerKey, subtitles = false, title, onClose }) {
@@ -20,7 +21,7 @@ export function TrailerModal({ trailerKey, subtitles = false, title, onClose }) 
       {guards.start}
       <div className="relative w-full max-w-5xl" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} aria-label="Fechar trailer" className="absolute -top-11 right-0 rounded p-2 text-2xl text-white">
-          ✕
+          <X aria-hidden="true" className="h-7 w-7" />
         </button>
         <div className="aspect-video w-full">
           <iframe

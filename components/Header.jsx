@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { APP_NAME } from '@/lib/brand';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { SearchBox } from '@/components/SearchBox';
+import { Settings } from 'lucide-react';
 
 const NAV = [
   { href: '/', label: 'Início' },
@@ -40,9 +41,9 @@ export function Header() {
             onClick={() => setSettingsOpen(true)}
             aria-label="Abrir configurações"
             aria-haspopup="dialog"
-            className="rounded-full p-2 text-lg hover:bg-surface-2"
+            className="rounded-full p-2 text-fg hover:bg-surface-2"
           >
-            ⚙️
+            <Settings aria-hidden="true" className="h-6 w-6" strokeWidth={1.75} />
           </button>
         </div>
         <SettingsPanel open={settingsOpen} onClose={closeSettings} />

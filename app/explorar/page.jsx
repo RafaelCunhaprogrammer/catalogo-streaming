@@ -17,7 +17,7 @@ export default async function ExplorePage({ searchParams }) {
 
   return (
     <div className="px-4 py-8 sm:px-8">
-      <h1 className="text-2xl font-black sm:text-3xl">{mood ? `${mood.emoji} ${mood.label}` : 'Explorar'}</h1>
+      <h1 className="text-2xl font-black sm:text-3xl">{mood ? mood.label : 'Explorar'}</h1>
       <ExploreFilters filters={filters} genres={genres[filters.tipo]} />
       <ExploreGrid key={exploreResultsKey(filters, myProviders)} filters={filters} initial={first} />
     </div>

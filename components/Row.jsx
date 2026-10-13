@@ -3,6 +3,7 @@
 import { useId, useRef } from 'react';
 import Link from 'next/link';
 import { PosterCard } from '@/components/PosterCard';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function Row({ title, href, items }) {
   const listRef = useRef(null);
@@ -38,9 +39,9 @@ export function Row({ title, href, items }) {
           onClick={() => scrollByPage(-1)}
           aria-label={`Rolar ${title} para a esquerda`}
           tabIndex={-1}
-          className="absolute left-0 top-0 z-10 hidden h-full w-10 bg-gradient-to-r from-bg to-transparent text-3xl sm:block"
+          className="absolute left-0 top-0 z-10 hidden h-full w-10 bg-gradient-to-r from-bg to-transparent sm:flex sm:items-center sm:justify-center"
         >
-          ‹
+          <ChevronLeft aria-hidden="true" className="h-8 w-8" />
         </button>
         <ul ref={listRef} onKeyDown={onKeyDown} className="flex gap-3 overflow-x-auto scroll-smooth px-4 pb-3 pt-3 [scrollbar-width:none] sm:px-8">
           {items.map((item) => (
@@ -53,9 +54,9 @@ export function Row({ title, href, items }) {
           onClick={() => scrollByPage(1)}
           aria-label={`Rolar ${title} para a direita`}
           tabIndex={-1}
-          className="absolute right-0 top-0 z-10 hidden h-full w-10 bg-gradient-to-l from-bg to-transparent text-3xl sm:block"
+          className="absolute right-0 top-0 z-10 hidden h-full w-10 bg-gradient-to-l from-bg to-transparent sm:flex sm:items-center sm:justify-center"
         >
-          ›
+          <ChevronRight aria-hidden="true" className="h-8 w-8" />
         </button>
       </div>
     </section>

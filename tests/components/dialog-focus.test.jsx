@@ -22,7 +22,7 @@ describe('foco do teclado nas janelas', () => {
 
   it('a janela do trailer prende o Tab e devolve o foco ao botão', async () => {
     renderWithSettings(<TrailerButton trailerKey="abc" title="Filme" />);
-    const opener = screen.getByRole('button', { name: '▶ Ver trailer' });
+    const opener = screen.getByRole('button', { name: 'Ver trailer' });
     await userEvent.click(opener);
     const dialog = screen.getByRole('dialog', { name: 'Trailer de Filme' });
     for (let i = 0; i < 4; i += 1) {

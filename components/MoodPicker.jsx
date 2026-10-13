@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { MOODS } from '@/lib/moods';
+import { MoodIcon } from '@/components/MoodIcon';
 
 export function MoodPicker() {
   return (
@@ -12,7 +13,7 @@ export function MoodPicker() {
               href={`/explorar?humor=${mood.slug}`}
               className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 transition hover:border-accent hover:shadow-glow"
             >
-              <span aria-hidden="true">{mood.emoji}</span>
+              <MoodIcon name={mood.icon} className="h-5 w-5" />
               {mood.label}
             </Link>
           </li>

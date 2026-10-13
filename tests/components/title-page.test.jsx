@@ -20,7 +20,7 @@ describe('TitleView', () => {
     expect(screen.getByText('2h 8min')).toBeInTheDocument();
     expect(screen.getByLabelText('Classificação indicativa: 12 anos')).toHaveTextContent('12');
     expect(screen.getByText('Uma aventura.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '▶ Ver trailer' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ver trailer' })).toBeInTheDocument();
   });
 
   it('mostra onde assistir com logo e link', () => {
@@ -40,7 +40,7 @@ describe('TitleView', () => {
     render(<TitleView title={{ ...base, type: 'tv', runtime: null, seasons: 3, certification: null, trailerKey: null, recommendations: [] }} />);
     expect(screen.getByText('3 temporadas')).toBeInTheDocument();
     expect(screen.getByText('Classificação não informada')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '▶ Ver trailer' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Ver trailer' })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Você também pode gostar' })).not.toBeInTheDocument();
   });
 });

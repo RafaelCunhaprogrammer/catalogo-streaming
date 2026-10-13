@@ -35,6 +35,13 @@ describe('humores', () => {
     expect(new Set(MOODS.map((m) => m.slug)).size).toBe(8);
   });
 
+  it('humores usam ícones, não emojis', () => {
+    for (const mood of MOODS) {
+      expect(mood.emoji).toBeUndefined();
+      expect(mood.icon).toMatch(/^[A-Z][A-Za-z]+$/);
+    }
+  });
+
   it('todo humor tem configuração para filmes', () => {
     for (const mood of MOODS) {
       expect(mood.movie.genres?.length || mood.movie.keywords?.length).toBeTruthy();

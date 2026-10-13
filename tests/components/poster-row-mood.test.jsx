@@ -14,14 +14,14 @@ describe('PosterCard', () => {
     render(<PosterCard title={title(1)} />);
     expect(screen.getByRole('link')).toHaveAttribute('href', '/filme/1');
     expect(screen.getByRole('img', { name: 'Filme 1 (2020)' })).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w342/p1.jpg');
-    expect(screen.getByText('★ 7.3')).toBeInTheDocument();
+    expect(screen.getByLabelText('Nota 7.3 de 10')).toBeInTheDocument();
   });
 
   it('sem imagem mostra um cartaz neon com o nome', () => {
     render(<PosterCard title={title(2, { type: 'tv', posterPath: null, year: null, rating: null })} />);
     expect(screen.getByRole('link')).toHaveAttribute('href', '/serie/2');
     expect(screen.getByTestId('poster-fallback')).toHaveTextContent('Filme 2');
-    expect(screen.queryByText(/★/)).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/^Nota/)).not.toBeInTheDocument();
   });
 });
 
