@@ -114,6 +114,18 @@ body {
   scroll-behavior: auto !important;
 }
 
+/* Cobertura enquanto a abertura carrega (o IntroScene tira o data-intro). Por segurança,
+   some sozinha depois de 8 s, caso o JavaScript não carregue. */
+html[data-intro="pending"]::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 94;
+  background: #1b1220;
+  animation: intro-cobertura 0s 8s forwards;
+}
+@keyframes intro-cobertura { to { visibility: hidden; } }
+
 /* Abertura (IntroScene). No Modo calmo e com prefers-reduced-motion as regras acima zeram a
    duração das animações, então a cena aparece direto no quadro final. */
 .intro-run .intro-ceu { animation: intro-aparece 1.2s ease-out both; }

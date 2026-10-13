@@ -13,8 +13,10 @@ export const INTRO_CALM_MS = 1500;
 // Vídeo de abertura (public/abertura.mp4) e o tempo máximo de espera, caso ele trave.
 export const INTRO_VIDEO_SRC = '/abertura.mp4';
 export const INTRO_MAX_MS = 15000;
-// Transição para o Início: quando o vídeo termina, a logo se afasta, desfoca e some (e o som diminui junto).
-export const INTRO_FADE_MS = 900;
+// Transição para o Início: começa no último segundo do vídeo (sem pausa no fim) e vai aos poucos:
+// a logo se afasta, desfoca e some, e o som diminui junto.
+export const INTRO_LEAD_MS = 1000;
+export const INTRO_FADE_MS = 2500;
 
 const subscribeNever = () => () => {};
 
@@ -218,6 +220,12 @@ export function IntroScene() {
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
+  // Tira a cobertura do Início (posta pelo script do <head>) quando a transição começa
+  // ou quando a abertura não vai aparecer.
+  useEffect(() => {
+    if (leaving || (loaded && !visible)) document.documentElement.removeAttribute('data-intro');
+  }, [leaving, loaded, visible]);
+
   // Sai com transição (ou na hora, no Modo calmo).
   // Só marca como vista no fim: marcar antes faria a abertura sumir na hora, sem a transição.
   const close = useCallback(() => {
@@ -297,8 +305,8 @@ export function IntroScene() {
       aria-modal="true"
       aria-label={`Abertura do ${APP_NAME}`}
       data-leaving={String(leaving)}
-      className={`intro fixed inset-0 z-[95] cursor-pointer bg-[#1b1220] transition-[opacity,transform,filter] ease-in ${
-        leaving ? 'pointer-events-none scale-110 opacity-0 blur-md' : 'scale-100 opacity-100 blur-0'
+      className={`intro fixed inset-0 z-[95] cursor-pointer bg-[#1b1220] transition-[opacity,transform,filter] ease-in-out ${
+        leaving ? 'pointer-events-none scale-[1.08] opacity-0 blur-md' : 'scale-100 opacity-100 blur-0'
       }`}
       style={{ transitionDuration: `${INTRO_FADE_MS}ms` }}
       onClick={() => closeOnce()}
@@ -313,6 +321,10 @@ export function IntroScene() {
           muted={calm}
           playsInline
           preload="auto"
+          onTimeUpdate={(e) => {
+            const { currentTime, duration } = e.currentTarget;
+            if (duration && currentTime >= duration - INTRO_LEAD_MS / 1000) closeOnce();
+          }}
           onEnded={() => closeOnce()}
           onError={() => setVideoFailed(true)}
           aria-label={`Vídeo de abertura do ${APP_NAME}`}

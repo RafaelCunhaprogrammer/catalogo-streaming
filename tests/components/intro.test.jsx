@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import { renderWithSettings } from '../helpers/render-with-settings';
 import {
-  IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC, INTRO_FADE_MS,
+  IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC, INTRO_FADE_MS, INTRO_LEAD_MS,
 } from '@/components/IntroScene';
 
 let pathname = '/';
@@ -34,6 +34,23 @@ describe('IntroScene', () => {
     await act(async () => { vi.advanceTimersByTime(INTRO_FADE_MS); });
     expect(intro()).not.toBeInTheDocument();
     expect(sessionStorage.getItem(INTRO_SESSION_KEY)).toBe('1');
+  });
+
+  it('a transição começa no último segundo do vídeo, sem pausa no fim, e libera a cobertura do Início', async () => {
+    document.documentElement.setAttribute('data-intro', 'pending');
+    renderWithSettings(<IntroScene />);
+    await flush();
+    const video = screen.getByTestId('intro-video');
+    Object.defineProperty(video, 'duration', { value: 6, configurable: true });
+    Object.defineProperty(video, 'currentTime', { value: 4.5, configurable: true, writable: true });
+    fireEvent.timeUpdate(video);
+    expect(intro()).toHaveAttribute('data-leaving', 'false');
+    expect(document.documentElement).toHaveAttribute('data-intro', 'pending');
+    video.currentTime = 6 - INTRO_LEAD_MS / 1000;
+    await act(async () => { fireEvent.timeUpdate(video); });
+    expect(intro()).toHaveAttribute('data-leaving', 'true');
+    expect(document.documentElement).not.toHaveAttribute('data-intro');
+    expect(INTRO_FADE_MS).toBeGreaterThanOrEqual(2000);
   });
 
   it('se o navegador bloquear o som, toca mudo e oferece o botão Ativar som', async () => {

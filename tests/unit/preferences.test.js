@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import {
   STORAGE_KEY, defaultPrefs, parsePrefs, loadPrefs, savePrefs, resolveTheme, rootAttributes,
   nightOverlayOpacity, shouldAutoplayTrailer, shouldRotateHero, shouldPlayOpeningSound,
@@ -129,5 +129,35 @@ describe('bootstrapTheme', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, theme: 'claro' }));
     new Function(THEME_SCRIPT)();
     expect(document.documentElement.getAttribute('data-theme')).toBe('claro');
+  });
+});
+
+describe('cobertura da abertura (sem piscar o Início)', () => {
+  afterEach(() => {
+    document.documentElement.removeAttribute('data-intro');
+    window.history.pushState({}, '', '/');
+  });
+
+  it('no Início, antes da abertura, cobre a tela', () => {
+    window.history.pushState({}, '', '/');
+    bootstrapTheme();
+    expect(document.documentElement).toHaveAttribute('data-intro', 'pending');
+  });
+
+  it('não cobre se a abertura já foi vista nesta visita', () => {
+    sessionStorage.setItem('paidegua:abertura', '1');
+    window.history.pushState({}, '', '/');
+    bootstrapTheme();
+    expect(document.documentElement).not.toHaveAttribute('data-intro');
+  });
+
+  it('não cobre em outras páginas, mas cobre com ?abertura=1', () => {
+    window.history.pushState({}, '', '/filmes');
+    bootstrapTheme();
+    expect(document.documentElement).not.toHaveAttribute('data-intro');
+    sessionStorage.setItem('paidegua:abertura', '1');
+    window.history.pushState({}, '', '/?abertura=1');
+    bootstrapTheme();
+    expect(document.documentElement).toHaveAttribute('data-intro', 'pending');
   });
 });
