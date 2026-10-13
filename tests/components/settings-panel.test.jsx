@@ -40,8 +40,13 @@ describe('SettingsPanel', () => {
     await userEvent.click(await screen.findByRole('radio', { name: 'Muito grande' }));
     await userEvent.click(screen.getByRole('switch', { name: /Modo sensorial calmo/ }));
     await userEvent.click(screen.getByRole('switch', { name: /Alto contraste/ }));
-    await userEvent.click(screen.getByRole('switch', { name: /Som de abertura/ }));
-    await waitFor(() => expect(saved()).toMatchObject({ textSize: 'muito-grande', calm: true, highContrast: true, openingSound: false }));
+    await waitFor(() => expect(saved()).toMatchObject({ textSize: 'muito-grande', calm: true, highContrast: true }));
+  });
+
+  it('não mostra a opção de som de abertura (o som volta na Etapa B, na escolha de perfil)', async () => {
+    renderWithSettings(<SettingsPanel open onClose={() => {}} />);
+    await screen.findByRole('dialog', { name: 'Configurações' });
+    expect(screen.queryByRole('switch', { name: /Som de abertura/ })).not.toBeInTheDocument();
   });
 
   it('Meus streamings grava o cookie e atualiza a página', async () => {

@@ -13,15 +13,12 @@ async function skipEntry(page, prefs) {
   }, prefs ?? null);
 }
 
-test.describe('tela de entrada', () => {
-  test('aparece no Início e some ao clicar em Entrar', async ({ page }) => {
+test.describe('abertura', () => {
+  test('o site abre direto no Início, sem tela de entrada', async ({ page }) => {
     await blockExternal(page);
     await page.goto('/');
-    await page.getByRole('button', { name: 'Entrar' }).click();
-    await expect(page.getByRole('button', { name: 'Entrar' })).toBeHidden();
-    await page.reload();
     await expect(page.getByRole('heading', { name: 'Como você quer se sentir hoje?' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Entrar' })).toBeHidden();
+    await expect(page.getByRole('button', { name: 'Entrar' })).toHaveCount(0);
   });
 });
 

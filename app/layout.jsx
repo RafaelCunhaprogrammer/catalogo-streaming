@@ -5,7 +5,6 @@ import { SettingsProvider } from '@/components/settings/SettingsProvider';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { BrightnessOverlay } from '@/components/BrightnessOverlay';
-import { EntryScreen } from '@/components/EntryScreen';
 
 export const metadata = {
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
@@ -26,7 +25,6 @@ export default function RootLayout({ children }) {
           <Header />
           <main id="conteudo">{children}</main>
           <Footer />
-          <EntryScreen />
           <BrightnessOverlay />
         </SettingsProvider>
       </body>

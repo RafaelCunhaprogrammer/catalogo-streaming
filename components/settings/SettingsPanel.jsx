@@ -139,12 +139,6 @@ export function SettingsPanel({ open, onClose }) {
                 onChange={(calm) => updatePrefs({ calm })}
               />
               <Toggle label="Alto contraste" checked={prefs.highContrast} onChange={(highContrast) => updatePrefs({ highContrast })} />
-              <Toggle
-                label="Som de abertura"
-                description="Toca ao entrar no site, começando baixinho."
-                checked={prefs.openingSound}
-                onChange={(openingSound) => updatePrefs({ openingSound })}
-              />
             </fieldset>
 
             <fieldset className="mt-8">
