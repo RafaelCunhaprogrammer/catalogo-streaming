@@ -3,41 +3,130 @@ import { act, fireEvent, screen } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import userEvent from '@testing-library/user-event';
 import { renderWithSettings } from '../helpers/render-with-settings';
-import { Hero, HERO_ROTATE_MS } from '@/components/Hero';
+import { Hero, HERO_BACKDROP_MS } from '@/components/Hero';
 import { SettingsProvider } from '@/components/settings/SettingsProvider';
 
 const items = [
-  { id: 1, type: 'movie', title: 'Primeiro', overview: 'Sinopse 1', backdropPath: '/b1.jpg', trailerKey: 'k1' },
-  { id: 2, type: 'tv', title: 'Segundo', overview: 'Sinopse 2', backdropPath: '/b2.jpg', trailerKey: null },
+  { id: 1, type: 'movie', title: 'Primeiro', overview: 'Sinopse 1', backdropPath: '/b1.jpg', trailerKey: 'k1', trailerSubtitles: false },
+  { id: 2, type: 'tv', title: 'Segundo', overview: 'Sinopse 2', backdropPath: '/b2.jpg', trailerKey: null, trailerSubtitles: false },
+  { id: 3, type: 'movie', title: 'Terceiro', overview: 'Sinopse 3', backdropPath: '/b3.jpg', trailerKey: 'k3', trailerSubtitles: true },
 ];
-const withSubtitles = [{ ...items[0], trailerSubtitles: true }, items[1]];
 
 const flush = () => act(async () => {});
+const heading = (name) => screen.getByRole('heading', { level: 2, name });
+
+// O player do YouTube avisa a página por postMessage; estado 0 = vídeo terminou.
+function youtubeSays(data) {
+  return act(async () => {
+    window.dispatchEvent(new MessageEvent('message', { origin: 'https://www.youtube-nocookie.com', data: JSON.stringify(data) }));
+  });
+}
 
 afterEach(() => vi.useRealTimers());
 
 describe('Hero', () => {
-  it('mostra o título com o trailer automático e mudo', async () => {
+  it('toca o trailer inteiro, mudo, sem repetir', async () => {
     renderWithSettings(<Hero items={items} />);
     await flush();
-    expect(screen.getByRole('heading', { name: 'Primeiro' })).toBeInTheDocument();
-    const video = screen.getByTestId('hero-video');
-    expect(video.getAttribute('src')).toContain('/embed/k1');
-    expect(video.getAttribute('src')).toContain('mute=1');
+    expect(heading('Primeiro')).toBeInTheDocument();
+    const src = screen.getByTestId('hero-video').getAttribute('src');
+    expect(src).toContain('/embed/k1');
+    expect(src).toContain('mute=1');
+    expect(src).not.toContain('loop=1');
     expect(screen.getByRole('link', { name: 'Ver detalhes' })).toHaveAttribute('href', '/filme/1');
   });
 
+  it('passa para o próximo quando o trailer termina', async () => {
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    await youtubeSays({ event: 'onStateChange', info: 0 });
+    expect(heading('Segundo')).toBeInTheDocument();
+  });
+
+  it('também entende o aviso infoDelivery do player', async () => {
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    await youtubeSays({ event: 'infoDelivery', info: { playerState: 0 } });
+    expect(heading('Segundo')).toBeInTheDocument();
+  });
+
+  it('ignora mensagens que não vêm do YouTube', async () => {
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    await act(async () => {
+      window.dispatchEvent(new MessageEvent('message', { origin: 'https://site-estranho.com', data: JSON.stringify({ event: 'onStateChange', info: 0 }) }));
+    });
+    expect(heading('Primeiro')).toBeInTheDocument();
+  });
+
+  it('título sem trailer fica alguns segundos e passa para o próximo', async () => {
+    vi.useFakeTimers();
+    renderWithSettings(<Hero items={[items[1], items[2]]} />);
+    await flush();
+    expect(screen.queryByTestId('hero-video')).not.toBeInTheDocument();
+    await act(async () => { vi.advanceTimersByTime(HERO_BACKDROP_MS); });
+    expect(heading('Terceiro')).toBeInTheDocument();
+  });
+
   it('trailer sem dublagem brasileira toca com legendas em português', async () => {
-    renderWithSettings(<Hero items={withSubtitles} />);
+    renderWithSettings(<Hero items={[items[2]]} />);
     await flush();
     expect(screen.getByTestId('hero-video').getAttribute('src')).toContain('cc_load_policy=1');
   });
 
-  it('no Modo sensorial calmo não toca o trailer sozinho', async () => {
-    renderWithSettings(<Hero items={items} />, { calm: true });
+  it('setas voltam e avançam, dando a volta na lista', async () => {
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    await userEvent.click(screen.getByRole('button', { name: 'Próximo destaque' }));
+    expect(heading('Segundo')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Destaque anterior' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Destaque anterior' }));
+    expect(heading('Terceiro')).toBeInTheDocument();
+  });
+
+  it('pontinhos mostram quantos destaques há e levam direto a um deles', async () => {
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    const dots = screen.getAllByRole('button', { name: /^Destaque \d de 3/ });
+    expect(dots).toHaveLength(3);
+    expect(dots[0]).toHaveAttribute('aria-current', 'true');
+    await userEvent.click(screen.getByRole('button', { name: 'Destaque 3 de 3: Terceiro' }));
+    expect(heading('Terceiro')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Destaque 3 de 3: Terceiro' })).toHaveAttribute('aria-current', 'true');
+  });
+
+  it('com o foco do teclado no destaque, espera o foco sair para avançar', async () => {
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    fireEvent.focus(screen.getByRole('link', { name: 'Ver detalhes' }));
+    await youtubeSays({ event: 'onStateChange', info: 0 });
+    expect(heading('Primeiro')).toBeInTheDocument();
+    await act(async () => { fireEvent.blur(screen.getByRole('link', { name: 'Ver detalhes' })); });
+    expect(heading('Segundo')).toBeInTheDocument();
+  });
+
+  it('Pausar destaque para o vídeo e a troca automática', async () => {
+    vi.useFakeTimers();
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Pausar destaque' }));
+    expect(screen.getByRole('button', { name: 'Retomar destaque' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.queryByTestId('hero-video')).not.toBeInTheDocument();
+    await youtubeSays({ event: 'onStateChange', info: 0 });
+    await act(async () => { vi.advanceTimersByTime(HERO_BACKDROP_MS * 3); });
+    expect(heading('Primeiro')).toBeInTheDocument();
+  });
+
+  it('no Modo sensorial calmo nada toca nem troca sozinho, mas as setas funcionam', async () => {
+    vi.useFakeTimers();
+    renderWithSettings(<Hero items={[items[1], items[2]]} />, { calm: true });
     await flush();
     expect(screen.queryByTestId('hero-video')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Ver trailer' })).toBeInTheDocument();
+    await act(async () => { vi.advanceTimersByTime(HERO_BACKDROP_MS * 3); });
+    expect(heading('Segundo')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Próximo destaque' }));
+    expect(heading('Terceiro')).toBeInTheDocument();
+    expect(screen.queryByTestId('hero-video')).not.toBeInTheDocument();
   });
 
   it('não começa o trailer antes de as preferências carregarem', () => {
@@ -47,27 +136,10 @@ describe('Hero', () => {
     expect(html).not.toContain('hero-video');
   });
 
-  it('troca de destaque a cada 15 segundos', async () => {
-    vi.useFakeTimers();
-    renderWithSettings(<Hero items={items} />);
-    await flush();
-    await act(async () => { vi.advanceTimersByTime(HERO_ROTATE_MS); });
-    expect(screen.getByRole('heading', { name: 'Segundo' })).toBeInTheDocument();
-  });
-
-  it('não troca de destaque no Modo sensorial calmo', async () => {
-    vi.useFakeTimers();
-    renderWithSettings(<Hero items={items} />, { calm: true });
-    await flush();
-    await act(async () => { vi.advanceTimersByTime(HERO_ROTATE_MS * 2); });
-    expect(screen.getByRole('heading', { name: 'Primeiro' })).toBeInTheDocument();
-  });
-
   it('o botão de som liga e desliga o áudio do trailer', async () => {
     renderWithSettings(<Hero items={items} />);
     await flush();
-    const sound = screen.getByRole('button', { name: 'Ativar som do trailer' });
-    await userEvent.click(sound);
+    await userEvent.click(screen.getByRole('button', { name: 'Ativar som do trailer' }));
     expect(screen.getByRole('button', { name: 'Desativar som do trailer' })).toHaveAttribute('aria-pressed', 'true');
   });
 
@@ -75,35 +147,18 @@ describe('Hero', () => {
     renderWithSettings(<Hero items={items} />);
     await flush();
     await userEvent.click(screen.getByRole('button', { name: 'Ver trailer' }));
-    const dialog = screen.getByRole('dialog', { name: 'Trailer de Primeiro' });
-    const iframe = dialog.querySelector('iframe');
+    const iframe = screen.getByRole('dialog', { name: 'Trailer de Primeiro' }).querySelector('iframe');
     expect(iframe.getAttribute('src')).toContain('autoplay=1');
     expect(iframe.getAttribute('src')).not.toContain('mute=1');
     await userEvent.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('não troca de destaque enquanto o foco do teclado está nele', async () => {
-    vi.useFakeTimers();
-    renderWithSettings(<Hero items={items} />);
+  it('com um só item não mostra setas nem pontinhos', async () => {
+    renderWithSettings(<Hero items={[items[0]]} />);
     await flush();
-    fireEvent.focus(screen.getByRole('link', { name: 'Ver detalhes' }));
-    await act(async () => { vi.advanceTimersByTime(HERO_ROTATE_MS * 2); });
-    expect(screen.getByRole('heading', { name: 'Primeiro' })).toBeInTheDocument();
-    fireEvent.blur(screen.getByRole('link', { name: 'Ver detalhes' }));
-    await act(async () => { vi.advanceTimersByTime(HERO_ROTATE_MS); });
-    expect(screen.getByRole('heading', { name: 'Segundo' })).toBeInTheDocument();
-  });
-
-  it('o botão Pausar destaque para a troca e o vídeo', async () => {
-    vi.useFakeTimers();
-    renderWithSettings(<Hero items={items} />);
-    await flush();
-    fireEvent.click(screen.getByRole('button', { name: 'Pausar destaque' }));
-    expect(screen.getByRole('button', { name: 'Retomar destaque' })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.queryByTestId('hero-video')).not.toBeInTheDocument();
-    await act(async () => { vi.advanceTimersByTime(HERO_ROTATE_MS * 2); });
-    expect(screen.getByRole('heading', { name: 'Primeiro' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Próximo destaque' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Destaque 1 de 1/ })).not.toBeInTheDocument();
   });
 
   it('sem itens não mostra nada', () => {
