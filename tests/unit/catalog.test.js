@@ -265,3 +265,41 @@ describe('conteúdo em alta recente', () => {
     expect(rows[0].items.map((t) => t.title)).toEqual(['Estreia']);
   });
 });
+
+describe('páginas Filmes e Séries', () => {
+  it('Filmes: destaque das tendências de filmes e nenhuma busca de séries', async () => {
+    const fetchMock = mockTmdb({
+      '/trending/movie/week': { results: [{ id: 1, title: 'Filme', backdrop_path: '/b.jpg', release_date: '2026-09-01' }] },
+      '/movie/1/watch/providers': available,
+      '/movie/1/videos': { results: [] },
+      '/discover/movie': { results: [movie(7, 1)] },
+    });
+    const { hero, rows } = await getHomeData([], 'movie');
+    expect(hero.length).toBeGreaterThan(0);
+    expect(hero.every((t) => t.type === 'movie')).toBe(true);
+    expect(calledPaths(fetchMock)).not.toContain('/discover/tv');
+    expect(calledPaths(fetchMock)).not.toContain('/trending/all/week');
+    expect(rows.every((r) => r.items.every((t) => t.type === 'movie'))).toBe(true);
+  });
+
+  it('Séries: fileiras levam ao Explorar já em séries e pulam gêneros sem equivalente', async () => {
+    mockTmdb({
+      '/trending/tv/week': { results: [] },
+      '/discover/tv': { results: [tv(5, 1)] },
+    });
+    const { rows } = await getHomeData([], 'tv');
+    expect(rows.find((r) => r.key === 'plataforma-8').href).toBe('/explorar?tipo=serie&plataforma=8');
+    expect(rows.find((r) => r.key === 'genero-acao').href).toBe('/explorar?tipo=serie&genero=10759');
+    expect(rows.find((r) => r.key === 'genero-terror')).toBeUndefined();
+  });
+
+  it('busca só de filmes ou só de séries usa o endpoint do tipo', async () => {
+    const fetchMock = mockTmdb({
+      '/search/tv': { total_pages: 1, results: [{ id: 3, name: 'Série X' }] },
+      '/tv/3/watch/providers': available,
+    });
+    const { results } = await searchAvailable('série', 1, 'tv');
+    expect(results).toEqual([expect.objectContaining({ id: 3, type: 'tv', title: 'Série X' })]);
+    expect(calledPaths(fetchMock)).toContain('/search/tv');
+  });
+});
