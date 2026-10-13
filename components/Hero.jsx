@@ -35,6 +35,8 @@ function playerState(event) {
   return null;
 }
 
+// Setas discretas: invisíveis até o mouse passar pelo destaque ou o teclado chegar nelas; em telas de toque ficam sempre visíveis.
+const arrowVisibility = 'opacity-0 transition-opacity group-hover/hero:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-80';
 const roundButton = 'inline-flex items-center justify-center rounded-full border border-white/40 bg-black/30 backdrop-blur hover:bg-white/20';
 
 export function Hero({ items }) {
@@ -123,7 +125,7 @@ export function Hero({ items }) {
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false);
       }}
-      className="relative w-full overflow-hidden bg-[#0d0820] text-white"
+      className="group/hero relative w-full overflow-hidden bg-[#0d0820] text-white"
     >
       {/* Área do vídeo em 16:9: o trailer aparece inteiro, sem cortar as bordas. */}
       <div className="relative aspect-video max-h-[85vh] w-full">
@@ -167,17 +169,17 @@ export function Hero({ items }) {
 
         {count > 1 && (
           <>
-            <button onClick={() => goTo(index - 1)} aria-label="Destaque anterior" className={`${roundButton} absolute left-3 top-1/2 z-20 h-12 w-12 -translate-y-1/2 sm:left-6`}>
+            <button onClick={() => goTo(index - 1)} aria-label="Destaque anterior" className={`${roundButton} ${arrowVisibility} absolute left-3 top-1/2 z-20 h-12 w-12 -translate-y-1/2 sm:left-6`}>
               <ChevronLeft aria-hidden="true" className="h-7 w-7" />
             </button>
-            <button onClick={() => goTo(index + 1)} aria-label="Próximo destaque" className={`${roundButton} absolute right-3 top-1/2 z-20 h-12 w-12 -translate-y-1/2 sm:right-6`}>
+            <button onClick={() => goTo(index + 1)} aria-label="Próximo destaque" className={`${roundButton} ${arrowVisibility} absolute right-3 top-1/2 z-20 h-12 w-12 -translate-y-1/2 sm:right-6`}>
               <ChevronRight aria-hidden="true" className="h-7 w-7" />
             </button>
           </>
         )}
       </div>
 
-      <div className="relative z-10 px-4 pb-6 sm:absolute sm:bottom-0 sm:left-0 sm:max-w-2xl sm:p-8 sm:pb-16">
+      <div className="relative z-10 px-4 pb-6 sm:absolute sm:bottom-0 sm:left-0 sm:max-w-3xl sm:p-8 sm:pb-16 sm:pl-24">
         <h2 className="text-2xl font-black drop-shadow-lg sm:text-5xl">{current.title}</h2>
         {current.overview && <p className="mt-3 line-clamp-3 text-sm text-white/90 sm:text-base">{current.overview}</p>}
         <div className="mt-5 flex flex-wrap items-center gap-3">

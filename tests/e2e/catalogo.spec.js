@@ -48,6 +48,22 @@ test.describe('catálogo', () => {
     await expect(hero).toHaveAttribute('aria-label', 'Destaque: Aventura Neon: A Longa Jornada do Herói Esquecido');
   });
 
+  test('setas do destaque não ficam por cima do título e só aparecem ao passar o mouse', async ({ page }) => {
+    await skipEntry(page);
+    await page.setViewportSize({ width: 1280, height: 640 });
+    await page.goto('/');
+    const back = page.getByRole('button', { name: 'Destaque anterior' });
+    const title = page.getByRole('heading', { level: 2, name: /Aventura Neon/ });
+    const a = await back.boundingBox();
+    const b = await title.boundingBox();
+    const overlaps = a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+    expect(overlaps).toBe(false);
+    await page.mouse.move(5, 5);
+    await expect(back).toHaveCSS('opacity', '0');
+    await page.getByRole('region', { name: /^Destaque:/ }).hover();
+    await expect(back).toHaveCSS('opacity', '1');
+  });
+
   test('busca mostra só títulos disponíveis e Enter abre os resultados', async ({ page }) => {
     await skipEntry(page);
     await page.goto('/explorar');
