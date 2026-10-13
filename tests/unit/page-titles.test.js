@@ -3,6 +3,8 @@ import { describe, it, expect } from 'vitest';
 import { mockTmdb } from '../helpers/mock-tmdb';
 import { metadata as layoutMetadata } from '@/app/layout';
 import { metadata as exploreMetadata } from '@/app/explorar/page';
+import { metadata as moviesMetadata } from '@/app/filmes/page';
+import { metadata as seriesPageMetadata } from '@/app/series/page';
 import { generateMetadata as searchMetadata } from '@/app/busca/page';
 import { generateMetadata as movieMetadata } from '@/app/filme/[id]/page';
 import { generateMetadata as seriesMetadata } from '@/app/serie/[id]/page';
@@ -12,6 +14,11 @@ const available = { results: { BR: { flatrate: [{ provider_id: 8, provider_name:
 describe('títulos das páginas', () => {
   it('o layout define o modelo "Página · Pai d’Égua"', () => {
     expect(layoutMetadata.title).toEqual({ default: "Pai d'Égua", template: "%s · Pai d'Égua" });
+  });
+
+  it('Filmes e Séries têm título próprio', () => {
+    expect(moviesMetadata.title).toBe('Filmes');
+    expect(seriesPageMetadata.title).toBe('Séries');
   });
 
   it('Explorar e Busca têm título próprio', async () => {
