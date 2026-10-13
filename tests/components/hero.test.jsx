@@ -57,6 +57,12 @@ describe('Hero', () => {
     expect(cover).toHaveAttribute('data-revealed', 'true');
   });
 
+  it('degradê no topo esconde a faixa preta que vem embutida em trailers de cinema', async () => {
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    expect(screen.getByTestId('hero-top-fade')).toHaveAttribute('aria-hidden', 'true');
+  });
+
   it('passa para o próximo quando o trailer termina', async () => {
     renderWithSettings(<Hero items={items} />);
     await flush();

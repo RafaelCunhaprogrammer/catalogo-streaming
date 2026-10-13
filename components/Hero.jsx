@@ -166,6 +166,8 @@ export function Hero({ items }) {
         {/* Laterais escurecidas quando a tela é mais larga que o vídeo, e base escura para o texto. */}
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#0d0820] via-transparent to-[#0d0820] opacity-60" />
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#0d0820] to-transparent" />
+        {/* Trailers de cinema (2,39:1) vêm com faixas pretas embutidas no vídeo; o degradê funde a de cima com o fundo. */}
+        <div data-testid="hero-top-fade" aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[22%] bg-gradient-to-b from-[#0d0820] via-[#0d0820]/80 to-transparent" />
 
         {count > 1 && (
           <>
