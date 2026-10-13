@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
 import { useSettings } from '@/components/settings/SettingsProvider';
 import { APP_NAME } from '@/lib/brand';
@@ -12,6 +12,9 @@ export const INTRO_CALM_MS = 1500;
 // Vídeo de abertura (public/abertura.mp4) e o tempo máximo de espera, caso ele trave.
 export const INTRO_VIDEO_SRC = '/abertura.mp4';
 export const INTRO_MAX_MS = 15000;
+// Transição para o Início: segura o último quadro (a logo) e depois ela se afasta, desfoca e some.
+export const INTRO_HOLD_MS = 500;
+export const INTRO_FADE_MS = 900;
 
 const subscribeNever = () => () => {};
 
@@ -206,19 +209,38 @@ export function IntroScene() {
   const seen = useSyncExternalStore(subscribeNever, alreadySeen, () => true);
   const [dismissed, setDismissed] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const timers = useRef([]);
   const visible = loaded && pathname === '/' && !seen && !dismissed;
+  const calm = prefs.calm;
 
-  const close = useCallback(() => {
-    markSeen();
-    setDismissed(true);
-  }, []);
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+  // Sai com transição (ou na hora, no Modo calmo). holdFirst: segura o último quadro antes de sair.
+  // Só marca como vista no fim: marcar antes faria a abertura sumir na hora, sem a transição.
+  const close = useCallback((holdFirst = false) => {
+    const finish = () => {
+      markSeen();
+      setDismissed(true);
+    };
+    if (calm) {
+      finish();
+      return;
+    }
+    const startFade = () => {
+      setLeaving(true);
+      timers.current.push(setTimeout(finish, INTRO_FADE_MS));
+    };
+    if (holdFirst) timers.current.push(setTimeout(startFade, INTRO_HOLD_MS));
+    else startFade();
+  }, [calm]);
 
   useEffect(() => {
     if (!visible) return undefined;
     // Modo calmo: imagem parada por pouco tempo. Vídeo: some quando termina (com tempo máximo).
     // Cena desenhada: some quando a animação acaba.
     const wait = prefs.calm ? INTRO_CALM_MS : videoFailed ? INTRO_MS : INTRO_MAX_MS;
-    const timer = setTimeout(close, wait);
+    const timer = setTimeout(() => close(), wait);
     const onKey = (e) => {
       if (e.key === 'Escape') close();
     };
@@ -228,6 +250,8 @@ export function IntroScene() {
       window.removeEventListener('keydown', onKey);
     };
   }, [visible, prefs.calm, videoFailed, close]);
+  // durante a transição, nada de novos fechamentos
+  const closeOnce = leaving ? () => {} : close;
 
   if (!visible) return null;
 
@@ -236,8 +260,12 @@ export function IntroScene() {
       role="dialog"
       aria-modal="true"
       aria-label={`Abertura do ${APP_NAME}`}
-      className="intro fixed inset-0 z-[95] cursor-pointer bg-[linear-gradient(#1a1230_0_50%,#120c1f_50%)]"
-      onClick={close}
+      data-leaving={String(leaving)}
+      className={`intro fixed inset-0 z-[95] cursor-pointer bg-[#1b1220] transition-[opacity,transform,filter] ease-in ${
+        leaving ? 'pointer-events-none scale-110 opacity-0 blur-md' : 'scale-100 opacity-100 blur-0'
+      }`}
+      style={{ transitionDuration: `${INTRO_FADE_MS}ms` }}
+      onClick={() => closeOnce()}
     >
       {videoFailed ? (
         <VerOPesoScene />
@@ -249,7 +277,7 @@ export function IntroScene() {
           muted
           playsInline
           preload="auto"
-          onEnded={close}
+          onEnded={() => closeOnce(true)}
           onError={() => setVideoFailed(true)}
           aria-label={`Vídeo de abertura do ${APP_NAME}`}
           className="h-full w-full object-contain landscape:object-cover"
@@ -259,7 +287,7 @@ export function IntroScene() {
       <button
         onClick={(e) => {
           e.stopPropagation();
-          close();
+          closeOnce();
         }}
         className="absolute bottom-6 right-6 rounded-full border border-white/40 bg-black/40 px-5 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-white/20"
       >

@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import { renderWithSettings } from '../helpers/render-with-settings';
-import { IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC } from '@/components/IntroScene';
+import {
+  IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC, INTRO_HOLD_MS, INTRO_FADE_MS,
+} from '@/components/IntroScene';
 
 let pathname = '/';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
@@ -15,15 +17,21 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe('IntroScene', () => {
-  it('toca o vídeo de abertura, mudo, e some quando ele termina', async () => {
+  it('toca o vídeo de abertura, mudo; no fim segura a logo e faz a transição para o Início', async () => {
+    vi.useFakeTimers();
     renderWithSettings(<IntroScene />);
     await flush();
-    expect(intro()).toBeInTheDocument();
     const video = screen.getByTestId('intro-video');
     expect(video).toHaveAttribute('src', INTRO_VIDEO_SRC);
     expect(video.muted).toBe(true);
     expect(video).toHaveAttribute('autoplay');
     await act(async () => { fireEvent.ended(video); });
+    // segura o último quadro (a logo) um instante
+    expect(intro()).toHaveAttribute('data-leaving', 'false');
+    await act(async () => { vi.advanceTimersByTime(INTRO_HOLD_MS); });
+    // a logo se afasta e some, revelando o Início
+    expect(intro()).toHaveAttribute('data-leaving', 'true');
+    await act(async () => { vi.advanceTimersByTime(INTRO_FADE_MS); });
     expect(intro()).not.toBeInTheDocument();
     expect(sessionStorage.getItem(INTRO_SESSION_KEY)).toBe('1');
   });
@@ -32,7 +40,7 @@ describe('IntroScene', () => {
     vi.useFakeTimers();
     renderWithSettings(<IntroScene />);
     await flush();
-    await act(async () => { vi.advanceTimersByTime(INTRO_MAX_MS); });
+    await act(async () => { vi.advanceTimersByTime(INTRO_MAX_MS + INTRO_FADE_MS); });
     expect(intro()).not.toBeInTheDocument();
   });
 
@@ -42,20 +50,24 @@ describe('IntroScene', () => {
     await flush();
     await act(async () => { fireEvent.error(screen.getByTestId('intro-video')); });
     expect(screen.getByRole('img', { name: /Mercado de Ferro do Ver-o-Peso/ })).toBeInTheDocument();
-    await act(async () => { vi.advanceTimersByTime(INTRO_MS); });
+    await act(async () => { vi.advanceTimersByTime(INTRO_MS + INTRO_FADE_MS); });
     expect(intro()).not.toBeInTheDocument();
   });
 
-  it('dá para pular com o botão, com um clique na cena ou com Esc', async () => {
+  it('dá para pular com o botão, com um clique na cena ou com Esc, com a mesma transição', async () => {
+    vi.useFakeTimers();
     renderWithSettings(<IntroScene />);
     await flush();
     fireEvent.click(screen.getByRole('button', { name: 'Pular abertura' }));
+    expect(intro()).toHaveAttribute('data-leaving', 'true');
+    await act(async () => { vi.advanceTimersByTime(INTRO_FADE_MS); });
     expect(intro()).not.toBeInTheDocument();
 
     sessionStorage.clear();
     const { unmount } = renderWithSettings(<IntroScene />);
     await flush();
     fireEvent.keyDown(window, { key: 'Escape' });
+    await act(async () => { vi.advanceTimersByTime(INTRO_FADE_MS); });
     expect(intro()).not.toBeInTheDocument();
     unmount();
   });
