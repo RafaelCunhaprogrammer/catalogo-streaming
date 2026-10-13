@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mockTmdb, calledPaths } from '../helpers/mock-tmdb';
 import {
-  discoverMixed, getHomeData, searchAvailable, discoverPage, getTitleDetails, resolveKeywordIds, filterAvailable,
+  discoverMixed, getHomeData, searchAvailable, discoverPage, getTitleDetails, resolveKeywordIds, filterAvailable, getMoodCards,
 } from '@/lib/tmdb/catalog';
 import { parseExploreParams } from '@/lib/explore-params';
 import { PROVIDERS } from '@/lib/providers';
@@ -301,5 +301,35 @@ describe('páginas Filmes e Séries', () => {
     const { results } = await searchAvailable('série', 1, 'tv');
     expect(results).toEqual([expect.objectContaining({ id: 3, type: 'tv', title: 'Série X' })]);
     expect(calledPaths(fetchMock)).toContain('/search/tv');
+  });
+});
+
+describe('acabamentos visuais', () => {
+  it('fileiras "Em alta na…" trazem o logo oficial da plataforma', async () => {
+    mockTmdb({
+      '/trending/all/week': { results: [] },
+      '/watch/providers/movie': { results: [{ provider_id: 8, provider_name: 'Netflix', logo_path: '/netflix.png' }] },
+      '/discover/movie': { results: [movie(1, 1)] },
+      '/discover/tv': { results: [] },
+    });
+    const { rows } = await getHomeData([8]);
+    expect(rows.find((r) => r.key === 'plataforma-8')).toMatchObject({ logoPath: '/netflix.png' });
+    expect(rows.find((r) => r.key === 'genero-acao').logoPath).toBeUndefined();
+  });
+
+  it('cada humor ganha a imagem de fundo de um filme popular daquele humor', async () => {
+    mockTmdb({
+      '/search/keyword': (url) => ({ results: [{ id: 1, name: url.searchParams.get('query') }] }),
+      '/discover/movie': (url) => ({
+        results: [
+          { id: 1, title: 'Sem imagem', backdrop_path: null },
+          { id: Number(url.searchParams.get('with_genres')?.split('|')[0] ?? 99), title: 'Com imagem', backdrop_path: `/m${url.searchParams.get('with_genres') ?? 'kw'}.jpg` },
+        ],
+      }),
+    });
+    const cards = await getMoodCards();
+    expect(cards).toHaveLength(8);
+    expect(cards[0]).toMatchObject({ slug: 'relaxar', label: 'Relaxar', icon: 'Coffee', backdropPath: '/m35|10751|16.jpg' });
+    expect(cards.find((c) => c.slug === 'fe').backdropPath).toBe('/mkw.jpg');
   });
 });

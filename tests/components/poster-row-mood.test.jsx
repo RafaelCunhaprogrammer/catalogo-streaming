@@ -33,6 +33,13 @@ describe('Row', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(2);
   });
 
+  it('mostra o logo da plataforma ao lado do título', () => {
+    const { container } = render(<Row title="Em alta na Netflix" logoPath="/n.png" items={[title(1)]} />);
+    const logo = container.querySelector('h2 img');
+    expect(logo).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w154/n.png');
+    expect(logo).toHaveAttribute('alt', '');
+  });
+
   it('as setas do teclado andam entre os cartazes', async () => {
     render(<Row title="Ação" items={[title(1), title(2), title(3)]} />);
     const links = screen.getAllByRole('link', { name: /Filme/ });
@@ -43,6 +50,17 @@ describe('Row', () => {
     expect(links[2]).toHaveFocus();
     await userEvent.keyboard('{ArrowLeft}');
     expect(links[1]).toHaveFocus();
+  });
+});
+
+describe('MoodPicker com imagens', () => {
+  it('cada humor vira um cartão com a imagem de fundo do filme', () => {
+    const cards = [{ slug: 'rir', label: 'Rir', icon: 'Laugh', backdropPath: '/rir.jpg' }, { slug: 'medo', label: 'Sentir medo', icon: 'Ghost', backdropPath: null }];
+    const { container } = render(<MoodPicker cards={cards} />);
+    expect(screen.getByRole('link', { name: 'Rir' })).toHaveAttribute('href', '/explorar?humor=rir');
+    expect(container.querySelector('a[href="/explorar?humor=rir"] img')).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w780/rir.jpg');
+    expect(container.querySelector('a[href="/explorar?humor=medo"] img')).toBeNull();
+    expect(screen.getAllByRole('link')).toHaveLength(2);
   });
 });
 

@@ -3,9 +3,10 @@
 import { useId, useRef } from 'react';
 import Link from 'next/link';
 import { PosterCard } from '@/components/PosterCard';
+import { imageSet } from '@/lib/images';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-export function Row({ title, href, items }) {
+export function Row({ title, href, items, logoPath }) {
   const listRef = useRef(null);
   const headingId = useId();
 
@@ -27,7 +28,10 @@ export function Row({ title, href, items }) {
   return (
     <section aria-labelledby={headingId} className="mt-10">
       <div className="flex items-baseline justify-between px-4 sm:px-8">
-        <h2 id={headingId} className="text-lg font-bold sm:text-xl">{title}</h2>
+        <h2 id={headingId} className="flex items-center gap-2 text-lg font-bold sm:text-xl">
+          {logoPath && <img {...imageSet(logoPath, 'logo')} sizes="28px" alt="" className="h-7 w-7 rounded-md" />}
+          {title}
+        </h2>
         {href && (
           <Link href={href} aria-label={`Ver tudo: ${title}`} className="text-sm font-semibold text-accent hover:underline">
             Ver tudo
