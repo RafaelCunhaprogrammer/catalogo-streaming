@@ -22,7 +22,7 @@ export function Header({ genres }) {
           <BrandLogo />
         </Link>
         <DesktopNav pathname={pathname} genres={genres} />
-        <SearchBox />
+        <SearchBox genres={genres} />
         <div data-slot="header-actions" className="ml-auto flex items-center gap-2">
           <MobileMenu pathname={pathname} genres={genres} />
           <button

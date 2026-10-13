@@ -11,6 +11,8 @@ const routes = [
   [/^\/3\/genre\/movie\/list$/, () => fixture('genres-movie')],
   [/^\/3\/genre\/tv\/list$/, () => fixture('genres-tv')],
   [/^\/3\/search\/multi$/, () => fixture('search-multi')],
+  [/^\/3\/search\/movie$/, () => ({ ...fixture('search-multi'), results: fixture('search-multi').results.filter((r) => r.media_type === 'movie') })],
+  [/^\/3\/search\/tv$/, () => ({ ...fixture('search-multi'), results: fixture('search-multi').results.filter((r) => r.media_type === 'tv') })],
   [/^\/3\/search\/keyword$/, (url) => ({ results: [{ id: 1, name: url.searchParams.get('query') }] })],
   [/^\/3\/(movie|tv)\/\d+\/videos$/, () => fixture('videos')],
   [/^\/3\/(movie|tv)\/(\d+)\/watch\/providers$/, (url, match) => (match[2] === '777' ? { results: {} } : fixture('providers'))],

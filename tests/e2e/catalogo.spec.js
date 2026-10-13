@@ -80,6 +80,19 @@ test.describe('catálogo', () => {
     await expect(page.getByRole('heading', { name: 'Resultados para “Aventura”' })).toBeVisible();
   });
 
+  test('resultados da busca têm Todos, Filmes e Séries, e "Ver todos" responde na hora', async ({ page }) => {
+    await skipEntry(page);
+    await page.goto('/explorar');
+    await page.getByRole('combobox', { name: 'Buscar filmes e séries' }).fill('Aventura');
+    await page.getByRole('link', { name: 'Ver todos os resultados' }).click();
+    await expect(page).toHaveURL(/\/busca\?q=Aventura$/);
+    const tipos = page.getByRole('navigation', { name: 'Tipo de resultado' });
+    await expect(tipos.getByRole('link', { name: 'Todos' })).toHaveAttribute('aria-current', 'page');
+    await tipos.getByRole('link', { name: 'Filmes' }).click();
+    await expect(page).toHaveURL(/\/busca\?q=Aventura&tipo=filme$/);
+    await expect(page.getByRole('link', { name: /Aventura Neon/ }).first()).toBeVisible();
+  });
+
   test('página do filme mostra detalhes, onde assistir e recomendações', async ({ page }) => {
     await skipEntry(page);
     await page.goto('/filme/101');
@@ -107,7 +120,7 @@ test.describe('catálogo', () => {
   test('Explorar troca para séries pelo endereço', async ({ page }) => {
     await skipEntry(page);
     await page.goto('/explorar');
-    await page.getByRole('link', { name: 'Séries' }).click();
+    await page.getByRole('navigation', { name: 'Tipo' }).getByRole('link', { name: 'Séries' }).click();
     await expect(page).toHaveURL(/tipo=serie/);
     await expect(page.getByRole('link', { name: /Série Brilhante/ })).toBeVisible();
   });

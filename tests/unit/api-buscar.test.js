@@ -25,6 +25,13 @@ describe('GET /api/buscar', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('tipo=serie busca só séries', async () => {
+    const fetchMock = mockTmdb({ '/search/tv': { total_pages: 1, results: [{ id: 3, name: 'Série' }] }, '/tv/3/watch/providers': available });
+    const response = await GET(new NextRequest('http://localhost/api/buscar?q=s%C3%A9rie&tipo=serie'));
+    expect((await response.json()).results[0]).toMatchObject({ id: 3, type: 'tv' });
+    expect(new URL(fetchMock.mock.calls[0][0]).pathname).toBe('/3/search/tv');
+  });
+
   it('responde 502 quando o TMDB falha', async () => {
     mockTmdb({ '/search/multi': 500 });
     const response = await GET(new NextRequest('http://localhost/api/buscar?q=matrix'));
