@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { APP_NAME } from '@/lib/brand';
@@ -11,12 +11,44 @@ import { Settings } from 'lucide-react';
 import { DesktopNav, MobileMenu } from '@/components/NavMenus';
 
 
+// Páginas com destaque em vídeo: o topo fica transparente por cima do trailer.
+const HERO_PAGES = ['/', '/filmes', '/series'];
+const SCROLL_LIMIT = 24;
+
+function subscribeScroll(callback) {
+  window.addEventListener('scroll', callback, { passive: true });
+  return () => window.removeEventListener('scroll', callback);
+}
+const scrolledPastTop = () => window.scrollY > SCROLL_LIMIT;
+
 export function Header({ genres }) {
   const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const scrolled = useSyncExternalStore(subscribeScroll, scrolledPastTop, () => false);
+  const overHero = HERO_PAGES.includes(pathname) && !scrolled;
+  const headerRef = useRef(null);
+
+  // Altura do topo numa variável CSS, para o destaque subir por baixo dele (--header-h).
+  useEffect(() => {
+    const el = headerRef.current;
+    if (!el || typeof ResizeObserver === 'undefined') return undefined;
+    const observer = new ResizeObserver(() => {
+      document.documentElement.style.setProperty('--header-h', `${el.offsetHeight}px`);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-[var(--header-bg)] backdrop-blur-md">
+    // Sobre o trailer usa as cores do modo escuro (data-theme), para ficar legível também no modo Claro.
+    <header
+      ref={headerRef}
+      data-over-hero={String(overHero)}
+      data-theme={overHero ? 'escuro' : undefined}
+      className={`sticky top-0 z-30 border-b transition-colors duration-300 ${
+        overHero ? 'border-transparent bg-gradient-to-b from-black/75 via-black/35 to-transparent' : 'border-line bg-[var(--header-bg)] backdrop-blur-md'
+      }`}
+    >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-8">
         <Link href="/" aria-label={`${APP_NAME} — Início`} className="shrink-0">
           <BrandLogo />

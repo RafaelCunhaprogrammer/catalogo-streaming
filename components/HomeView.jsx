@@ -50,9 +50,12 @@ export async function HomeView({ heading, type, showMoods = true }) {
   return (
     <>
       <h1 className="sr-only">{heading}</h1>
-      <Suspense fallback={<HeroSkeleton />}>
-        <HeroSection myProviders={myProviders} type={type} />
-      </Suspense>
+      {/* O destaque sobe por baixo do topo transparente (altura medida no Header). */}
+      <div className="mt-[calc(var(--header-h,0px)*-1)]">
+        <Suspense fallback={<HeroSkeleton />}>
+          <HeroSection myProviders={myProviders} type={type} />
+        </Suspense>
+      </div>
       {showMoods && (
         <Suspense fallback={<MoodPicker />}>
           <MoodSection />

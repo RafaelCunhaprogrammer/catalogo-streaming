@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithSettings } from '../helpers/render-with-settings';
 import { Header } from '@/components/Header';
@@ -66,4 +66,25 @@ describe('menu do topo', () => {
     renderWithSettings(<Header />);
     expect(screen.getByRole('link', { name: 'Explorar' })).toBeInTheDocument();
   });
+
+  it('sobre o trailer o topo é transparente e escuro; ao rolar, volta a ser sólido', async () => {
+    renderWithSettings(<Header genres={genres} />);
+    const header = screen.getByRole('banner');
+    expect(header).toHaveAttribute('data-over-hero', 'true');
+    expect(header).toHaveAttribute('data-theme', 'escuro');
+    await act(async () => {
+      Object.defineProperty(window, 'scrollY', { value: 300, configurable: true });
+      window.dispatchEvent(new Event('scroll'));
+    });
+    expect(header).toHaveAttribute('data-over-hero', 'false');
+    expect(header).not.toHaveAttribute('data-theme');
+    Object.defineProperty(window, 'scrollY', { value: 0, configurable: true });
+  });
+
+  it('em páginas sem destaque o topo é sempre sólido', () => {
+    pathname = '/explorar';
+    renderWithSettings(<Header genres={genres} />);
+    expect(screen.getByRole('banner')).toHaveAttribute('data-over-hero', 'false');
+  });
 });
+
