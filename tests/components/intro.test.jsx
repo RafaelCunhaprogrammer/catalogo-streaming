@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import { renderWithSettings } from '../helpers/render-with-settings';
-import { IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS } from '@/components/IntroScene';
+import { IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC } from '@/components/IntroScene';
 
 let pathname = '/';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
@@ -15,15 +15,35 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe('IntroScene', () => {
-  it('mostra a cena do Ver-o-Peso ao abrir o site e some sozinha no fim', async () => {
-    vi.useFakeTimers();
+  it('toca o vídeo de abertura, mudo, e some quando ele termina', async () => {
     renderWithSettings(<IntroScene />);
     await flush();
     expect(intro()).toBeInTheDocument();
+    const video = screen.getByTestId('intro-video');
+    expect(video).toHaveAttribute('src', INTRO_VIDEO_SRC);
+    expect(video.muted).toBe(true);
+    expect(video).toHaveAttribute('autoplay');
+    await act(async () => { fireEvent.ended(video); });
+    expect(intro()).not.toBeInTheDocument();
+    expect(sessionStorage.getItem(INTRO_SESSION_KEY)).toBe('1');
+  });
+
+  it('se o vídeo travar, a abertura some sozinha depois de um tempo máximo', async () => {
+    vi.useFakeTimers();
+    renderWithSettings(<IntroScene />);
+    await flush();
+    await act(async () => { vi.advanceTimersByTime(INTRO_MAX_MS); });
+    expect(intro()).not.toBeInTheDocument();
+  });
+
+  it('se o vídeo não carregar, mostra a cena desenhada do Ver-o-Peso no lugar', async () => {
+    vi.useFakeTimers();
+    renderWithSettings(<IntroScene />);
+    await flush();
+    await act(async () => { fireEvent.error(screen.getByTestId('intro-video')); });
     expect(screen.getByRole('img', { name: /Mercado de Ferro do Ver-o-Peso/ })).toBeInTheDocument();
     await act(async () => { vi.advanceTimersByTime(INTRO_MS); });
     expect(intro()).not.toBeInTheDocument();
-    expect(sessionStorage.getItem(INTRO_SESSION_KEY)).toBe('1');
   });
 
   it('dá para pular com o botão, com um clique na cena ou com Esc', async () => {
@@ -56,9 +76,10 @@ describe('IntroScene', () => {
     window.history.pushState({}, '', '/');
   });
 
-  it('barco e garça atravessam a tela e o sol fica atrás do mercado', async () => {
+  it('cena de reserva: barco e garça atravessam a tela e o sol fica atrás do mercado', async () => {
     renderWithSettings(<IntroScene />);
     await flush();
+    await act(async () => { fireEvent.error(screen.getByTestId('intro-video')); });
     const svg = screen.getByRole('img', { name: /Mercado de Ferro do Ver-o-Peso/ });
     const order = [...svg.querySelectorAll('[data-part]')].map((el) => el.getAttribute('data-part'));
     expect(order.indexOf('sol')).toBeLessThan(order.indexOf('mercado'));
@@ -73,11 +94,12 @@ describe('IntroScene', () => {
     expect(intro()).not.toBeInTheDocument();
   });
 
-  it('no Modo sensorial calmo mostra a imagem final parada por pouco tempo', async () => {
+  it('no Modo sensorial calmo mostra o vídeo parado por pouco tempo, sem tocar', async () => {
     vi.useFakeTimers();
     renderWithSettings(<IntroScene />, { calm: true });
     await flush();
     expect(intro()).toBeInTheDocument();
+    expect(screen.getByTestId('intro-video')).not.toHaveAttribute('autoplay');
     await act(async () => { vi.advanceTimersByTime(INTRO_CALM_MS); });
     expect(intro()).not.toBeInTheDocument();
     expect(INTRO_CALM_MS).toBeLessThan(INTRO_MS);

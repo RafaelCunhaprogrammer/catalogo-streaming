@@ -14,13 +14,15 @@ async function skipEntry(page, prefs) {
 }
 
 test.describe('abertura', () => {
-  test('a abertura do Ver-o-Peso aparece, some sozinha e não volta na mesma visita', async ({ page }) => {
+  test('o vídeo de abertura aparece, dá para pular e não volta na mesma visita', async ({ page }) => {
     await blockExternal(page);
     await page.goto('/');
     const intro = page.getByRole('dialog', { name: "Abertura do Pai d'Égua" });
     await expect(intro).toBeVisible();
     await expect(page.getByRole('button', { name: 'Entrar' })).toHaveCount(0);
-    await expect(intro).toBeHidden({ timeout: 8000 });
+    await expect(page.locator('video[src="/abertura.mp4"]')).toBeVisible();
+    await page.getByRole('button', { name: 'Pular abertura' }).click();
+    await expect(intro).toBeHidden();
     await page.reload();
     await expect(page.getByRole('heading', { name: 'Como você quer se sentir hoje?' })).toBeVisible();
     await expect(intro).toHaveCount(0);
