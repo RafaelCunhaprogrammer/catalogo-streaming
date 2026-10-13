@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { usePathname } from 'next/navigation';
 import { useSettings } from '@/components/settings/SettingsProvider';
 import { APP_NAME } from '@/lib/brand';
+import { Volume2 } from 'lucide-react';
 
 export const INTRO_SESSION_KEY = 'paidegua:abertura';
 // Duração da cena completa e, no Modo sensorial calmo, da imagem final parada.
@@ -12,8 +13,7 @@ export const INTRO_CALM_MS = 1500;
 // Vídeo de abertura (public/abertura.mp4) e o tempo máximo de espera, caso ele trave.
 export const INTRO_VIDEO_SRC = '/abertura.mp4';
 export const INTRO_MAX_MS = 15000;
-// Transição para o Início: segura o último quadro (a logo) e depois ela se afasta, desfoca e some.
-export const INTRO_HOLD_MS = 500;
+// Transição para o Início: quando o vídeo termina, a logo se afasta, desfoca e some (e o som diminui junto).
 export const INTRO_FADE_MS = 900;
 
 const subscribeNever = () => () => {};
@@ -210,15 +210,17 @@ export function IntroScene() {
   const [dismissed, setDismissed] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [soundBlocked, setSoundBlocked] = useState(false);
   const timers = useRef([]);
+  const videoRef = useRef(null);
   const visible = loaded && pathname === '/' && !seen && !dismissed;
   const calm = prefs.calm;
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
-  // Sai com transição (ou na hora, no Modo calmo). holdFirst: segura o último quadro antes de sair.
+  // Sai com transição (ou na hora, no Modo calmo).
   // Só marca como vista no fim: marcar antes faria a abertura sumir na hora, sem a transição.
-  const close = useCallback((holdFirst = false) => {
+  const close = useCallback(() => {
     const finish = () => {
       markSeen();
       setDismissed(true);
@@ -227,13 +229,47 @@ export function IntroScene() {
       finish();
       return;
     }
-    const startFade = () => {
-      setLeaving(true);
-      timers.current.push(setTimeout(finish, INTRO_FADE_MS));
-    };
-    if (holdFirst) timers.current.push(setTimeout(startFade, INTRO_HOLD_MS));
-    else startFade();
+    setLeaving(true);
+    timers.current.push(setTimeout(finish, INTRO_FADE_MS));
   }, [calm]);
+
+  // Tenta tocar com som. O navegador pode bloquear som automático antes do primeiro clique:
+  // nesse caso toca mudo e mostra o botão "Ativar som". No Modo calmo, nada toca.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!visible || !video || calm || videoFailed) return;
+    video.muted = false;
+    video.volume = 1;
+    const attempt = video.play();
+    if (attempt && typeof attempt.catch === 'function') {
+      attempt.catch(() => {
+        video.muted = true;
+        setSoundBlocked(true);
+        const muted = video.play();
+        if (muted && typeof muted.catch === 'function') muted.catch(() => {});
+      });
+    }
+  }, [visible, calm, videoFailed]);
+
+  // Na transição, o som diminui junto com a imagem.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!leaving || !video || video.muted) return undefined;
+    const step = 50;
+    const decrement = video.volume / (INTRO_FADE_MS / step);
+    const timer = setInterval(() => {
+      video.volume = Math.max(0, video.volume - decrement);
+    }, step);
+    return () => clearInterval(timer);
+  }, [leaving]);
+
+  function enableSound(e) {
+    e.stopPropagation();
+    const video = videoRef.current;
+    if (!video) return;
+    video.muted = false;
+    setSoundBlocked(false);
+  }
 
   useEffect(() => {
     if (!visible) return undefined;
@@ -271,19 +307,28 @@ export function IntroScene() {
         <VerOPesoScene />
       ) : (
         <video
+          ref={videoRef}
           data-testid="intro-video"
           src={INTRO_VIDEO_SRC}
-          autoPlay={!prefs.calm}
-          muted
+          muted={calm}
           playsInline
           preload="auto"
-          onEnded={() => closeOnce(true)}
+          onEnded={() => closeOnce()}
           onError={() => setVideoFailed(true)}
           aria-label={`Vídeo de abertura do ${APP_NAME}`}
           className="h-full w-full object-contain landscape:object-cover"
         />
       )}
 
+      {soundBlocked && !videoFailed && (
+        <button
+          onClick={enableSound}
+          className="absolute bottom-6 left-6 inline-flex items-center gap-2 rounded-full border border-white/40 bg-black/40 px-5 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-white/20"
+        >
+          <Volume2 aria-hidden="true" className="h-4 w-4" />
+          Ativar som
+        </button>
+      )}
       <button
         onClick={(e) => {
           e.stopPropagation();

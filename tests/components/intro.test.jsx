@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import { renderWithSettings } from '../helpers/render-with-settings';
 import {
-  IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC, INTRO_HOLD_MS, INTRO_FADE_MS,
+  IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC, INTRO_FADE_MS,
 } from '@/components/IntroScene';
 
 let pathname = '/';
@@ -11,29 +11,42 @@ vi.mock('next/navigation', () => ({ usePathname: () => pathname }));
 const flush = () => act(async () => {});
 const intro = () => screen.queryByRole('dialog', { name: "Abertura do Pai d'Égua" });
 
+// O jsdom não toca vídeo: simulamos o play() do navegador.
+let playMock;
 beforeEach(() => {
   pathname = '/';
+  playMock = vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue(undefined);
 });
 afterEach(() => vi.useRealTimers());
 
 describe('IntroScene', () => {
-  it('toca o vídeo de abertura, mudo; no fim segura a logo e faz a transição para o Início', async () => {
+  it('toca o vídeo de abertura com som e, quando termina, segue direto para a transição', async () => {
     vi.useFakeTimers();
     renderWithSettings(<IntroScene />);
     await flush();
     const video = screen.getByTestId('intro-video');
     expect(video).toHaveAttribute('src', INTRO_VIDEO_SRC);
-    expect(video.muted).toBe(true);
-    expect(video).toHaveAttribute('autoplay');
+    expect(playMock).toHaveBeenCalled();
+    expect(video.muted).toBe(false);
+    expect(screen.queryByRole('button', { name: 'Ativar som' })).not.toBeInTheDocument();
     await act(async () => { fireEvent.ended(video); });
-    // segura o último quadro (a logo) um instante
-    expect(intro()).toHaveAttribute('data-leaving', 'false');
-    await act(async () => { vi.advanceTimersByTime(INTRO_HOLD_MS); });
-    // a logo se afasta e some, revelando o Início
     expect(intro()).toHaveAttribute('data-leaving', 'true');
     await act(async () => { vi.advanceTimersByTime(INTRO_FADE_MS); });
     expect(intro()).not.toBeInTheDocument();
     expect(sessionStorage.getItem(INTRO_SESSION_KEY)).toBe('1');
+  });
+
+  it('se o navegador bloquear o som, toca mudo e oferece o botão Ativar som', async () => {
+    playMock.mockRejectedValueOnce(new DOMException('bloqueado', 'NotAllowedError')).mockResolvedValue(undefined);
+    renderWithSettings(<IntroScene />);
+    await flush();
+    const video = screen.getByTestId('intro-video');
+    expect(video.muted).toBe(true);
+    expect(playMock).toHaveBeenCalledTimes(2);
+    fireEvent.click(screen.getByRole('button', { name: 'Ativar som' }));
+    expect(video.muted).toBe(false);
+    expect(intro()).toHaveAttribute('data-leaving', 'false');
+    expect(screen.queryByRole('button', { name: 'Ativar som' })).not.toBeInTheDocument();
   });
 
   it('se o vídeo travar, a abertura some sozinha depois de um tempo máximo', async () => {
@@ -111,7 +124,8 @@ describe('IntroScene', () => {
     renderWithSettings(<IntroScene />, { calm: true });
     await flush();
     expect(intro()).toBeInTheDocument();
-    expect(screen.getByTestId('intro-video')).not.toHaveAttribute('autoplay');
+    expect(playMock).not.toHaveBeenCalled();
+    expect(screen.getByTestId('intro-video').muted).toBe(true);
     await act(async () => { vi.advanceTimersByTime(INTRO_CALM_MS); });
     expect(intro()).not.toBeInTheDocument();
     expect(INTRO_CALM_MS).toBeLessThan(INTRO_MS);
