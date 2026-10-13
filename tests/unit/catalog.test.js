@@ -336,7 +336,7 @@ describe('acabamentos visuais', () => {
     const cards = await getMoodCards();
     const titles = cards.map((c) => c.filmTitle);
     expect(new Set(titles).size).toBe(8);
-    expect(cards[0]).toMatchObject({ filmTitle: 'Animação famosa', backdropPath: '/a.jpg' });
+    expect(cards[0]).toMatchObject({ filmId: 1, filmTitle: 'Animação famosa', backdropPath: '/a.jpg' });
     expect(cards[1]).toMatchObject({ filmTitle: 'Segundo', backdropPath: '/b.jpg' });
   });
 

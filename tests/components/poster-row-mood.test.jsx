@@ -55,15 +55,19 @@ describe('Row', () => {
 
 describe('MoodPicker com imagens', () => {
   it('cada humor vira um cartão com a imagem de fundo do filme', () => {
-    const cards = [{ slug: 'rir', label: 'Rir', icon: 'Laugh', backdropPath: '/rir.jpg', filmTitle: 'Filme Engraçado' }, { slug: 'medo', label: 'Sentir medo', icon: 'Ghost', backdropPath: null, filmTitle: null }];
-    const { container } = render(<MoodPicker cards={cards} />);
+    const cards = [{ slug: 'rir', label: 'Rir', icon: 'Laugh', backdropPath: '/rir.jpg', filmId: 42, filmTitle: 'Filme Engraçado' }, { slug: 'medo', label: 'Sentir medo', icon: 'Ghost', backdropPath: null, filmTitle: null }];
+    render(<MoodPicker cards={cards} />);
     expect(screen.getByRole('link', { name: 'Rir' })).toHaveAttribute('href', '/explorar?humor=rir');
-    expect(container.querySelector('a[href="/explorar?humor=rir"] img')).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w780/rir.jpg');
-    expect(container.querySelector('a[href="/explorar?humor=medo"] img')).toBeNull();
-    expect(screen.getAllByRole('link')).toHaveLength(2);
-    // ao passar o mouse ou focar, aparece o nome do filme da imagem
-    expect(screen.getByText('Na imagem: Filme Engraçado')).toHaveClass('group-hover:opacity-100', 'group-focus-visible:opacity-100');
-    expect(screen.queryByText(/Na imagem:/, { selector: 'a[href="/explorar?humor=medo"] *' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Rir' }).closest('li').querySelector('img')).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w780/rir.jpg');
+    expect(screen.getByRole('link', { name: 'Sentir medo' }).closest('li').querySelector('img')).toBeNull();
+    // ao passar o mouse ou focar, aparece só o nome do filme, que leva à página dele
+    const film = screen.getByRole('link', { name: 'Filme Engraçado' });
+    expect(film).toHaveAttribute('href', '/filme/42');
+    expect(film).toHaveClass('group-hover:opacity-100', 'focus-visible:opacity-100');
+    expect(screen.queryByText(/Na imagem/)).not.toBeInTheDocument();
+    // os dois links ficam lado a lado, nunca um dentro do outro
+    expect(film.closest('a[href="/explorar?humor=rir"]')).toBeNull();
+    expect(screen.getAllByRole('link')).toHaveLength(3);
   });
 });
 
