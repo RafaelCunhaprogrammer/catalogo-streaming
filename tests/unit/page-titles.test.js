@@ -10,8 +10,8 @@ import { generateMetadata as seriesMetadata } from '@/app/serie/[id]/page';
 const available = { results: { BR: { flatrate: [{ provider_id: 8, provider_name: 'Netflix', logo_path: null }] } } };
 
 describe('títulos das páginas', () => {
-  it('o layout define o modelo "Página · Pai D’Égua"', () => {
-    expect(layoutMetadata.title).toEqual({ default: "Pai D'Égua", template: "%s · Pai D'Égua" });
+  it('o layout define o modelo "Página · Pai d’Égua"', () => {
+    expect(layoutMetadata.title).toEqual({ default: "Pai d'Égua", template: "%s · Pai d'Égua" });
   });
 
   it('Explorar e Busca têm título próprio', async () => {

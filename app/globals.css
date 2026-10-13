@@ -113,3 +113,29 @@ body {
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
 }
+
+/* Abertura (IntroScene). No Modo calmo e com prefers-reduced-motion as regras acima zeram a
+   duração das animações, então a cena aparece direto no quadro final. */
+.intro-run .intro-ceu { animation: intro-aparece 1.6s ease-out both; }
+.intro-run .intro-sol { animation: intro-sol 2s .3s ease-out both; transform-box: fill-box; }
+.intro-run .intro-mercado-traco { stroke-dasharray: 1500; stroke-dashoffset: 1500; animation: intro-desenha 2.2s .6s ease-in-out forwards; }
+.intro-run .intro-mercado-silhueta { animation: intro-aparece 1s 2.2s ease-out both; }
+.intro-run .intro-garca { animation: intro-voo 4.2s .9s cubic-bezier(.35,.1,.4,1) both; }
+.intro-run .intro-asa { transform-box: fill-box; transform-origin: 0 100%; animation: intro-bate .5s ease-in-out infinite alternate; }
+.intro-run .intro-barco { animation: intro-navega 5s .2s linear both; }
+.intro-run .intro-balanco { animation: intro-balanca 1.4s ease-in-out infinite alternate; }
+.intro-run .intro-fumaca { opacity: 0; transform-box: fill-box; transform-origin: center; animation: intro-fumaca 1.2s ease-out infinite; }
+.intro-run .intro-fumaca-2 { animation-delay: .4s; }
+.intro-run .intro-fumaca-3 { animation-delay: .8s; }
+.intro-run .intro-reflexo { animation: intro-reflexo 2.4s ease-in-out infinite alternate; }
+.intro-run .intro-titulo { animation: intro-titulo 1.2s 3.6s ease-out both; }
+@keyframes intro-aparece { from { opacity: 0; } to { opacity: 1; } }
+@keyframes intro-sol { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes intro-desenha { to { stroke-dashoffset: 0; } }
+@keyframes intro-voo { from { transform: translate(-120px, 90px); } to { transform: translate(860px, -40px); } }
+@keyframes intro-bate { from { transform: scaleY(1); } to { transform: scaleY(-.55); } }
+@keyframes intro-navega { from { transform: translateX(820px); } to { transform: translateX(330px); } }
+@keyframes intro-balanca { from { transform: translateY(0) rotate(-1deg); } to { transform: translateY(3px) rotate(1deg); } }
+@keyframes intro-fumaca { 0% { opacity: .85; transform: translate(0, 0) scale(.6); } 100% { opacity: 0; transform: translate(26px, -20px) scale(1.8); } }
+@keyframes intro-reflexo { from { opacity: .25; } to { opacity: .8; } }
+@keyframes intro-titulo { from { opacity: 0; letter-spacing: 12px; filter: blur(6px); } to { opacity: 1; letter-spacing: 1px; filter: none; } }

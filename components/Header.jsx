@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { APP_NAME } from '@/lib/brand';
+import { BrandLogo } from '@/components/BrandLogo';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { SearchBox } from '@/components/SearchBox';
 import { Settings } from 'lucide-react';
@@ -20,8 +21,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-[var(--header-bg)] backdrop-blur-md">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-8">
-        <Link href="/" className="neon-gradient bg-clip-text text-xl font-black text-transparent">
-          {APP_NAME}
+        <Link href="/" aria-label={`${APP_NAME} — Início`} className="shrink-0">
+          <BrandLogo />
         </Link>
         <nav aria-label="Principal" className="flex gap-4 text-sm">
           {NAV.map((item) => (

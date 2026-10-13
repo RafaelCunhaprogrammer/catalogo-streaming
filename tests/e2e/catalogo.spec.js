@@ -8,17 +8,22 @@ async function blockExternal(page) {
 
 async function skipEntry(page, prefs) {
   await page.addInitScript((saved) => {
-    sessionStorage.setItem('catalogo:entrou', '1');
+    sessionStorage.setItem('paidegua:abertura', '1');
     if (saved && !localStorage.getItem('catalogo:prefs')) localStorage.setItem('catalogo:prefs', JSON.stringify(saved));
   }, prefs ?? null);
 }
 
 test.describe('abertura', () => {
-  test('o site abre direto no Início, sem tela de entrada', async ({ page }) => {
+  test('a abertura do Ver-o-Peso aparece, some sozinha e não volta na mesma visita', async ({ page }) => {
     await blockExternal(page);
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Como você quer se sentir hoje?' })).toBeVisible();
+    const intro = page.getByRole('dialog', { name: "Abertura do Pai d'Égua" });
+    await expect(intro).toBeVisible();
     await expect(page.getByRole('button', { name: 'Entrar' })).toHaveCount(0);
+    await expect(intro).toBeHidden({ timeout: 8000 });
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Como você quer se sentir hoje?' })).toBeVisible();
+    await expect(intro).toHaveCount(0);
   });
 });
 
