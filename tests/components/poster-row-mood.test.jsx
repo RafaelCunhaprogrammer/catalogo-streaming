@@ -55,12 +55,15 @@ describe('Row', () => {
 
 describe('MoodPicker com imagens', () => {
   it('cada humor vira um cartão com a imagem de fundo do filme', () => {
-    const cards = [{ slug: 'rir', label: 'Rir', icon: 'Laugh', backdropPath: '/rir.jpg' }, { slug: 'medo', label: 'Sentir medo', icon: 'Ghost', backdropPath: null }];
+    const cards = [{ slug: 'rir', label: 'Rir', icon: 'Laugh', backdropPath: '/rir.jpg', filmTitle: 'Filme Engraçado' }, { slug: 'medo', label: 'Sentir medo', icon: 'Ghost', backdropPath: null, filmTitle: null }];
     const { container } = render(<MoodPicker cards={cards} />);
     expect(screen.getByRole('link', { name: 'Rir' })).toHaveAttribute('href', '/explorar?humor=rir');
     expect(container.querySelector('a[href="/explorar?humor=rir"] img')).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w780/rir.jpg');
     expect(container.querySelector('a[href="/explorar?humor=medo"] img')).toBeNull();
     expect(screen.getAllByRole('link')).toHaveLength(2);
+    // ao passar o mouse ou focar, aparece o nome do filme da imagem
+    expect(screen.getByText('Na imagem: Filme Engraçado')).toHaveClass('group-hover:opacity-100', 'group-focus-visible:opacity-100');
+    expect(screen.queryByText(/Na imagem:/, { selector: 'a[href="/explorar?humor=medo"] *' })).not.toBeInTheDocument();
   });
 });
 

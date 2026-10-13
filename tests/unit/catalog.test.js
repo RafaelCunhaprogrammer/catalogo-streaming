@@ -317,6 +317,29 @@ describe('acabamentos visuais', () => {
     expect(rows.find((r) => r.key === 'genero-acao').logoPath).toBeUndefined();
   });
 
+  it('humores nunca repetem o mesmo filme, mesmo quando ele está em vários gêneros', async () => {
+    mockTmdb({
+      '/search/keyword': (url) => ({ results: [{ id: 1, name: url.searchParams.get('query') }] }),
+      '/discover/movie': () => ({
+        results: [
+          { id: 1, title: 'Animação famosa', backdrop_path: '/a.jpg' },
+          { id: 2, title: 'Segundo', backdrop_path: '/b.jpg' },
+          { id: 3, title: 'Terceiro', backdrop_path: '/c.jpg' },
+          { id: 4, title: 'Quarto', backdrop_path: '/d.jpg' },
+          { id: 5, title: 'Quinto', backdrop_path: '/e.jpg' },
+          { id: 6, title: 'Sexto', backdrop_path: '/f.jpg' },
+          { id: 7, title: 'Sétimo', backdrop_path: '/g.jpg' },
+          { id: 8, title: 'Oitavo', backdrop_path: '/h.jpg' },
+        ],
+      }),
+    });
+    const cards = await getMoodCards();
+    const titles = cards.map((c) => c.filmTitle);
+    expect(new Set(titles).size).toBe(8);
+    expect(cards[0]).toMatchObject({ filmTitle: 'Animação famosa', backdropPath: '/a.jpg' });
+    expect(cards[1]).toMatchObject({ filmTitle: 'Segundo', backdropPath: '/b.jpg' });
+  });
+
   it('cada humor ganha a imagem de fundo de um filme popular daquele humor', async () => {
     mockTmdb({
       '/search/keyword': (url) => ({ results: [{ id: 1, name: url.searchParams.get('query') }] }),
