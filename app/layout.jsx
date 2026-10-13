@@ -28,6 +28,10 @@ export default async function RootLayout({ children }) {
     <html lang="pt-BR" data-theme="escuro" data-text="normal" data-calm="false" data-contrast="false" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        {/* Abre a conexão com o player e com as imagens antes de precisar: trailer e cartazes começam mais rápido. */}
+        <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+        <link rel="preconnect" href="https://i.ytimg.com" />
+        <link rel="preconnect" href="https://image.tmdb.org" />
       </head>
       <body className="min-h-screen font-sans antialiased">
         <SettingsProvider>
