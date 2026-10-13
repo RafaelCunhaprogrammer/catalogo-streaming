@@ -8,13 +8,10 @@ import { BrandLogo } from '@/components/BrandLogo';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { SearchBox } from '@/components/SearchBox';
 import { Settings } from 'lucide-react';
+import { DesktopNav, MobileMenu } from '@/components/NavMenus';
 
-const NAV = [
-  { href: '/', label: 'Início' },
-  { href: '/explorar', label: 'Explorar' },
-];
 
-export function Header() {
+export function Header({ genres }) {
   const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
@@ -24,20 +21,10 @@ export function Header() {
         <Link href="/" aria-label={`${APP_NAME} — Início`} className="shrink-0">
           <BrandLogo />
         </Link>
-        <nav aria-label="Principal" className="flex gap-4 text-sm">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={pathname === item.href ? 'page' : undefined}
-              className="text-muted hover:text-fg aria-[current=page]:font-bold aria-[current=page]:text-fg"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <DesktopNav pathname={pathname} genres={genres} />
         <SearchBox />
         <div data-slot="header-actions" className="ml-auto flex items-center gap-2">
+          <MobileMenu pathname={pathname} genres={genres} />
           <button
             onClick={() => setSettingsOpen(true)}
             aria-label="Abrir configurações"
