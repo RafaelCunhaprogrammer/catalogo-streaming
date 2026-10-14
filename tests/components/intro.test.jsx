@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import { renderWithSettings } from '../helpers/render-with-settings';
 import {
-  IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC, INTRO_FADE_MS, INTRO_LEAD_MS,
+  IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC, INTRO_FADE_MS, INTRO_LEAD_MS, REPLAY_EVENT,
 } from '@/components/IntroScene';
 
 let pathname = '/';
@@ -100,6 +100,16 @@ describe('IntroScene', () => {
     await act(async () => { vi.advanceTimersByTime(INTRO_FADE_MS); });
     expect(intro()).not.toBeInTheDocument();
     unmount();
+  });
+
+  it('clicar na logo no Início (evento de rever) mostra a abertura de novo', async () => {
+    sessionStorage.setItem(INTRO_SESSION_KEY, '1');
+    renderWithSettings(<IntroScene />);
+    await flush();
+    expect(intro()).not.toBeInTheDocument();
+    await act(async () => { window.dispatchEvent(new Event(REPLAY_EVENT)); });
+    expect(intro()).toBeInTheDocument();
+    expect(screen.getByTestId('intro-video')).toBeInTheDocument();
   });
 
   it('não aparece de novo na mesma visita', async () => {

@@ -7,6 +7,8 @@ import { APP_NAME } from '@/lib/brand';
 import { Volume2 } from 'lucide-react';
 
 export const INTRO_SESSION_KEY = 'paidegua:abertura';
+// Evento disparado pelo clique na logo, no Início, para rever a abertura.
+export const REPLAY_EVENT = 'paidegua:rever-abertura';
 // Duração da cena completa e, no Modo sensorial calmo, da imagem final parada.
 export const INTRO_MS = 5200;
 export const INTRO_CALM_MS = 1500;
@@ -213,9 +215,25 @@ export function IntroScene() {
   const [videoFailed, setVideoFailed] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [soundBlocked, setSoundBlocked] = useState(false);
+  const [replay, setReplay] = useState(false);
   const timers = useRef([]);
   const videoRef = useRef(null);
-  const visible = loaded && pathname === '/' && !seen && !dismissed;
+  const visible = loaded && pathname === '/' && (replay || !seen) && !dismissed;
+
+  // Rever a abertura (clique na logo no Início): começa tudo de novo.
+  useEffect(() => {
+    const onReplay = () => {
+      timers.current.forEach(clearTimeout);
+      timers.current = [];
+      setVideoFailed(false);
+      setSoundBlocked(false);
+      setLeaving(false);
+      setDismissed(false);
+      setReplay(true);
+    };
+    window.addEventListener(REPLAY_EVENT, onReplay);
+    return () => window.removeEventListener(REPLAY_EVENT, onReplay);
+  }, []);
   const calm = prefs.calm;
 
   useEffect(() => () => timers.current.forEach(clearTimeout), []);

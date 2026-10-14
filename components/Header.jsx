@@ -50,7 +50,18 @@ export function Header({ genres }) {
       }`}
     >
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-8">
-        <Link href="/" aria-label={`${APP_NAME} — Início`} className="shrink-0">
+        <Link
+          href="/"
+          aria-label={`${APP_NAME} — Início`}
+          title={pathname === '/' ? 'Ver a abertura de novo' : undefined}
+          onClick={(e) => {
+            // No Início, a logo mostra a abertura de novo; nas outras páginas, só leva ao Início.
+            if (pathname !== '/') return;
+            e.preventDefault();
+            window.dispatchEvent(new Event('paidegua:rever-abertura'));
+          }}
+          className="shrink-0"
+        >
           <BrandLogo />
         </Link>
         <DesktopNav pathname={pathname} genres={genres} />
