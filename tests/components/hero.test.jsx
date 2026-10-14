@@ -168,6 +168,8 @@ describe('Hero', () => {
     await flush();
     await userEvent.click(screen.getByRole('button', { name: 'Ativar som do trailer' }));
     expect(screen.getByRole('button', { name: 'Desativar som do trailer' })).toHaveAttribute('aria-pressed', 'true');
+    // avisa o resto do site (protetor de tela) que alguém está ouvindo o trailer
+    expect(screen.getByRole('region', { name: /^Destaque:/ })).toHaveAttribute('data-hero-sound', 'on');
   });
 
   it('abre o trailer com som e fecha com Esc', async () => {

@@ -121,6 +121,7 @@ export function Hero({ items }) {
     <section
       aria-roledescription="destaque"
       aria-label={`Destaque: ${current.title}`}
+      data-hero-sound={soundOn ? 'on' : 'off'}
       onFocus={() => setFocused(true)}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false);

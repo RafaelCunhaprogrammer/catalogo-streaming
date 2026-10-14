@@ -7,6 +7,7 @@ import { getGenreLists } from '@/lib/tmdb/catalog';
 import { Footer } from '@/components/Footer';
 import { BrightnessOverlay } from '@/components/BrightnessOverlay';
 import { IntroScene } from '@/components/IntroScene';
+import { IdleScreensaver } from '@/components/IdleScreensaver';
 
 export const metadata = {
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
@@ -42,6 +43,7 @@ export default async function RootLayout({ children }) {
           <main id="conteudo">{children}</main>
           <Footer />
           <IntroScene />
+          <IdleScreensaver />
           <BrightnessOverlay />
         </SettingsProvider>
       </body>
