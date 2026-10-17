@@ -1,12 +1,14 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { MotionConfig } from 'motion/react';
 import {
-  defaultPrefs, loadPrefs, savePrefs, resolveTheme, rootAttributes, writeProvidersCookie,
+  defaultPrefs, loadPrefs, parsePrefs, savePrefs, resolveTheme, rootAttributes, writeProvidersCookie,
 } from '@/lib/preferences';
 
 const SettingsContext = createContext(null);
+// Com perfil, mudanças seguidas (ex.: arrastar o brilho) viram uma única gravação no servidor.
+export const PREFS_SAVE_DEBOUNCE_MS = 500;
 
 function safeLocalStorage() {
   try {
@@ -20,18 +22,19 @@ function systemPrefersDark() {
   return window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : true;
 }
 
-export function SettingsProvider({ children }) {
-  const [prefs, setPrefs] = useState(defaultPrefs);
+export function SettingsProvider({ children, initialPrefs, onSave }) {
+  // Com perfil, as preferências vêm do servidor; sem perfil (visitante), do navegador.
+  const [prefs, setPrefs] = useState(() => (initialPrefs ? parsePrefs(initialPrefs) : defaultPrefs()));
   const [systemDark, setSystemDark] = useState(true);
   const [loaded, setLoaded] = useState(false);
 
   // Lê o navegador só depois da hidratação, para o HTML do servidor e o do cliente baterem.
   /* eslint-disable react-hooks/set-state-in-effect -- carga única de armazenamento externo após hidratar */
   useEffect(() => {
-    setPrefs(loadPrefs(safeLocalStorage()));
+    if (!initialPrefs) setPrefs(loadPrefs(safeLocalStorage()));
     setSystemDark(systemPrefersDark());
     setLoaded(true);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- carga única
   /* eslint-enable react-hooks/set-state-in-effect */
 
   const resolvedTheme = resolveTheme(prefs, systemDark);
@@ -43,6 +46,18 @@ export function SettingsProvider({ children }) {
     savePrefs(safeLocalStorage(), prefs);
     writeProvidersCookie(prefs.myProviders);
   }, [prefs, resolvedTheme, loaded]);
+
+  // Com perfil: grava as mudanças no servidor (o localStorage acima vira só espelho, para o script do <head>).
+  const firstSave = useRef(true);
+  useEffect(() => {
+    if (!loaded || !onSave) return undefined;
+    if (firstSave.current) {
+      firstSave.current = false;
+      return undefined;
+    }
+    const timer = setTimeout(() => onSave(prefs), PREFS_SAVE_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [prefs, loaded, onSave]);
 
   const updatePrefs = useCallback((patch) => setPrefs((current) => ({ ...current, ...patch })), []);
   const value = useMemo(() => ({ prefs, resolvedTheme, updatePrefs, loaded }), [prefs, resolvedTheme, updatePrefs, loaded]);

@@ -4,6 +4,8 @@ import { APP_NAME } from '@/lib/brand';
 import { SettingsProvider } from '@/components/settings/SettingsProvider';
 import { Header } from '@/components/Header';
 import { getGenreLists } from '@/lib/tmdb/catalog';
+import { getViewerOrVisitor } from '@/lib/auth/viewer';
+import { savePrefsAction } from '@/lib/actions/conta';
 import { Footer } from '@/components/Footer';
 import { BrightnessOverlay } from '@/components/BrightnessOverlay';
 import { IntroScene } from '@/components/IntroScene';
@@ -24,7 +26,7 @@ async function loadGenres() {
 }
 
 export default async function RootLayout({ children }) {
-  const genres = await loadGenres();
+  const [genres, viewer] = await Promise.all([loadGenres(), getViewerOrVisitor()]);
   return (
     <html lang="pt-BR" data-theme="escuro" data-text="normal" data-calm="false" data-contrast="false" suppressHydrationWarning>
       <head>
@@ -35,7 +37,7 @@ export default async function RootLayout({ children }) {
         <link rel="preconnect" href="https://image.tmdb.org" />
       </head>
       <body className="min-h-screen font-sans antialiased">
-        <SettingsProvider>
+        <SettingsProvider initialPrefs={viewer.profile?.prefs} onSave={viewer.profile ? savePrefsAction : undefined}>
           <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:p-3">
             Pular para o conteúdo
           </a>
