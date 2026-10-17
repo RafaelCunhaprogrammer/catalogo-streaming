@@ -1,8 +1,12 @@
 // @vitest-environment node
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/buscar/route';
 import { mockTmdb } from '../helpers/mock-tmdb';
+
+vi.mock('@/lib/auth/viewer', () => ({
+  getViewer: async () => ({ user: { id: 'u1' }, profile: { id: 'p1' }, kids: false, maxRating: null, unlocked: new Set() }),
+}));
 
 const available = { results: { BR: { flatrate: [{ provider_id: 8 }] } } };
 

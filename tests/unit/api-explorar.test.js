@@ -1,8 +1,12 @@
 // @vitest-environment node
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/explorar/route';
 import { mockTmdb } from '../helpers/mock-tmdb';
+
+vi.mock('@/lib/auth/viewer', () => ({
+  getViewer: async () => ({ user: { id: 'u1' }, profile: { id: 'p1' }, kids: false, maxRating: null, unlocked: new Set() }),
+}));
 
 describe('GET /api/explorar', () => {
   it('devolve a página pedida usando os filtros e o cookie de Meus streamings', async () => {

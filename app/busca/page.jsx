@@ -1,3 +1,4 @@
+import { requireProfile } from '@/lib/auth/guards';
 import { searchAvailable } from '@/lib/tmdb/catalog';
 import Link from 'next/link';
 import { PosterCard } from '@/components/PosterCard';
@@ -18,6 +19,7 @@ export async function generateMetadata({ searchParams }) {
 }
 
 export default async function SearchPage({ searchParams }) {
+  await requireProfile('/busca');
   const params = await searchParams;
   const query = queryOf(params.q);
   const tipo = tipoOf(params.tipo);

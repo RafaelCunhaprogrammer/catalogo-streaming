@@ -1,3 +1,4 @@
+import { requireProfile } from '@/lib/auth/guards';
 import { TitlePage, titleMetadata } from '@/components/TitlePage';
 
 export async function generateMetadata({ params }) {
@@ -7,5 +8,6 @@ export async function generateMetadata({ params }) {
 
 export default async function SeriesPage({ params }) {
   const { id } = await params;
+  await requireProfile(`/serie/${id}`);
   return <TitlePage type="tv" id={id} />;
 }
