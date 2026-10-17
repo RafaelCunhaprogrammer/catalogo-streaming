@@ -9,7 +9,7 @@ export const metadata = { title: 'Minha conta' };
 
 export default async function AccountPage() {
   const viewer = await requireUser('/conta');
-  if (viewer.profile && !adultAreaAllowed(viewer)) {
+  if (!adultAreaAllowed(viewer)) {
     return <PinGate title="Área de adultos" description="Para abrir Minha conta, peça para um adulto digitar o PIN." purpose="adulto" />;
   }
   return <AccountSettings email={viewer.user.email} isDemo={viewer.isDemo} hasPin={await hasPin(getDb(), viewer.user.id)} />;

@@ -44,7 +44,7 @@ describe('buildViewer', () => {
     const v = buildViewer({
       ...base,
       profileCookie: signValue('p2', SECRET),
-      unlockedCookie: encodeUnlocked(['movie-1'], SECRET),
+      unlockedCookie: encodeUnlocked(['movie-1'], SECRET, 'u1:p2'),
     });
     expect(v).toMatchObject({ kids: true, maxRating: '10' });
     expect(v.unlocked.has('movie-1')).toBe(true);
@@ -62,7 +62,7 @@ describe('buildViewer', () => {
     expect(parentModeActive(cookie, SECRET, 1_000_000 + PARENT_MODE_MS - 1)).toBe(true);
     expect(parentModeActive(cookie, SECRET, 1_000_000 + PARENT_MODE_MS + 1)).toBe(false);
     expect(parentModeActive('123.falso', SECRET, 1_000_000)).toBe(false);
-    const v = buildViewer({ ...base, profileCookie: signValue('p2', SECRET), parentCookie: cookie, now: 1_000_000 + 1000 });
+    const v = buildViewer({ ...base, profileCookie: signValue('p2', SECRET), parentCookie: encodeParentMode(1_000_000, SECRET, 'u1'), now: 1_000_000 + 1000 });
     expect(v.parentMode).toBe(true);
   });
 

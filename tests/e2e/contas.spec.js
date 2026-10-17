@@ -87,3 +87,21 @@ test('acessibilidade das telas de conta', async ({ page }) => {
     expect(results.violations.map((v) => `${path} ${v.id}`)).toEqual([]);
   }
 });
+
+test('Kids: fechar o navegador não libera o perfil adulto', async ({ page, browser }) => {
+  await signInDemo(page, 'Pequeno');
+  // "Reabrir o navegador": só os cookies com validade sobrevivem (a sessão da conta e a trava do Kids).
+  const lasting = (await page.context().cookies()).filter((c) => c.expires > 0);
+  const reopened = await browser.newContext();
+  await reopened.addCookies(lasting);
+  const again = await reopened.newPage();
+  await prepare(again);
+  await again.goto('/perfis');
+  await again.getByRole('button', { name: 'Pai', exact: true }).click();
+  await expect(again.getByRole('dialog', { name: 'Área de adultos' })).toBeVisible();
+  await again.getByLabel('PIN dos pais').fill('1234');
+  await again.getByRole('button', { name: 'Confirmar' }).click();
+  await again.waitForURL((url) => url.pathname === '/');
+  await expect(again.getByRole('button', { name: 'Menu do perfil Pai' })).toBeVisible();
+  await reopened.close();
+});

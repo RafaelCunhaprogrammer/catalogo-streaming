@@ -9,7 +9,7 @@ export const metadata = { title: 'Gerenciar perfis' };
 
 export default async function ManageProfilesPage() {
   const viewer = await requireUser('/perfis/gerenciar');
-  if (viewer.profile && !adultAreaAllowed(viewer)) {
+  if (!adultAreaAllowed(viewer)) {
     return <PinGate title="Área de adultos" description="Para gerenciar os perfis, peça para um adulto digitar o PIN." purpose="adulto" />;
   }
   return <ProfileManager profiles={viewer.profiles} hasPin={await hasPin(getDb(), viewer.user.id)} />;

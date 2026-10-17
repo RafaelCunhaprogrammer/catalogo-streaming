@@ -15,6 +15,7 @@ vi.mock('@/lib/actions/conta', () => ({
   updateProfileAction: vi.fn(),
   deleteProfileAction: vi.fn(),
   setPinAction: vi.fn(),
+  verifyPinAction: vi.fn(),
 }));
 
 const p = (id, name, extra = {}) => ({ id, name, color: '#8b5cf6', kind: 'adulto', maxRating: null, prefs: defaultPrefs(), ...extra });
@@ -36,6 +37,13 @@ describe('Quem está assistindo?', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Calma' }));
     await userEvent.click(screen.getByRole('button', { name: 'Mudo' }));
     expect(playOpeningSound).not.toHaveBeenCalled();
+  });
+
+  it('depois do Kids (trava), escolher um adulto abre o pedido de PIN ali mesmo', async () => {
+    chooseProfileAction.mockResolvedValueOnce({ ok: false, error: 'pin' });
+    render(<ProfilePicker profiles={[p('p1', 'Ana')]} voltar="/" />);
+    await userEvent.click(screen.getByRole('button', { name: 'Ana' }));
+    expect(await screen.findByRole('dialog', { name: 'Área de adultos' })).toBeInTheDocument();
   });
 
   it('tem o atalho para gerenciar perfis', () => {
