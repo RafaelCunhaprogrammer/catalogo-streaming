@@ -2,6 +2,7 @@ import { requireProfile } from '@/lib/auth/guards';
 import { searchAvailable } from '@/lib/tmdb/catalog';
 import Link from 'next/link';
 import { PosterCard } from '@/components/PosterCard';
+import { annotateRatings } from '@/lib/tmdb/ratings';
 
 const MAX_PAGES = 3;
 
@@ -19,7 +20,7 @@ export async function generateMetadata({ searchParams }) {
 }
 
 export default async function SearchPage({ searchParams }) {
-  await requireProfile('/busca');
+  const viewer = await requireProfile('/busca');
   const params = await searchParams;
   const query = queryOf(params.q);
   const tipo = tipoOf(params.tipo);
@@ -28,12 +29,13 @@ export default async function SearchPage({ searchParams }) {
   const extraPages = Math.min(first.totalPages, MAX_PAGES) - 1;
   const rest = await Promise.all(Array.from({ length: Math.max(0, extraPages) }, (_, i) => searchAvailable(query, i + 2, tipo.type)));
   const seen = new Set();
-  const results = [first, ...rest].flatMap((page) => page.results).filter((t) => {
+  const unique = [first, ...rest].flatMap((page) => page.results).filter((t) => {
     const key = `${t.type}-${t.id}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+  const results = viewer.kids ? await annotateRatings(unique, viewer.maxRating, viewer.unlocked) : unique;
 
   return (
     <div className="px-4 py-8 sm:px-8">

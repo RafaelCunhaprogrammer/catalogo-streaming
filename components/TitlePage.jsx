@@ -5,6 +5,8 @@ import { formatRuntime, formatSeasons, certificationLabel, CERTIFICATION_STYLES 
 import { TrailerButton } from '@/components/TrailerButton';
 import { Row } from '@/components/Row';
 import { Star } from 'lucide-react';
+import { getTitleRating, ratingAllowed, annotateRatings } from '@/lib/tmdb/ratings';
+import { PinGate } from '@/components/kids/PinGate';
 
 function Certification({ value }) {
   if (!value) return <span className="text-sm text-white/70">Classificação não informada</span>;
@@ -96,8 +98,24 @@ export async function titleMetadata(type, id) {
   return { title: title ? title.title : 'Não encontrado' };
 }
 
-export async function TitlePage({ type, id }) {
+export async function TitlePage({ type, id, viewer }) {
   const title = await getTitleDetails(type, id);
   if (!title) notFound();
+  if (viewer?.kids) {
+    const key = `${type}-${id}`;
+    const rating = await getTitleRating(type, id).catch(() => null);
+    if (!ratingAllowed(rating, viewer.maxRating) && !viewer.unlocked.has(key)) {
+      // Bloqueado: nada de sinopse, trailer ou imagem; só o pedido de PIN.
+      return (
+        <PinGate
+          title="Este título precisa de um adulto"
+          description={`"${title.title}" está acima da faixa deste perfil. Peça para um adulto digitar o PIN.`}
+          purpose="titulo"
+          titleKey={key}
+        />
+      );
+    }
+    title.recommendations = await annotateRatings(title.recommendations, viewer.maxRating, viewer.unlocked);
+  }
   return <TitleView title={title} />;
 }

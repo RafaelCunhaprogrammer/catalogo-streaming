@@ -8,6 +8,6 @@ export async function generateMetadata({ params }) {
 
 export default async function MoviePage({ params }) {
   const { id } = await params;
-  await requireProfile(`/filme/${id}`);
-  return <TitlePage type="movie" id={id} />;
+  const viewer = await requireProfile(`/filme/${id}`);
+  return <TitlePage type="movie" id={id} viewer={viewer} />;
 }

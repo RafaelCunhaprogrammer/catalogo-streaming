@@ -41,7 +41,7 @@ describe('classificação dos títulos', () => {
       '/movie/5/release_dates': movieRating('18'),
     });
     const out = await annotateRatings([t('movie', 1), t('movie', 2), t('movie', 3), t('movie', 4), t('movie', 5)], '10', new Set(['movie-5']));
-    expect(out.map((x) => [x.id, x.rating, x.locked])).toEqual([
+    expect(out.map((x) => [x.id, x.certification, x.locked])).toEqual([
       [1, 'L', false], [2, '16', true], [3, null, true], [4, null, true], [5, '18', false],
     ]);
   });

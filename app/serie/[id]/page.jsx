@@ -8,6 +8,6 @@ export async function generateMetadata({ params }) {
 
 export default async function SeriesPage({ params }) {
   const { id } = await params;
-  await requireProfile(`/serie/${id}`);
-  return <TitlePage type="tv" id={id} />;
+  const viewer = await requireProfile(`/serie/${id}`);
+  return <TitlePage type="tv" id={id} viewer={viewer} />;
 }

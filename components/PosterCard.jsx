@@ -1,9 +1,11 @@
+import { LockedPosterCard } from '@/components/kids/LockedPosterCard';
 import Link from 'next/link';
 import { Star } from 'lucide-react';
 import { imageSet } from '@/lib/images';
 import { titleHref } from '@/lib/tmdb/normalize';
 
 export function PosterCard({ title, fluid = false, priority = false }) {
+  if (title.locked) return <LockedPosterCard title={title} fluid={fluid} />;
   const img = imageSet(title.posterPath, 'poster');
   const label = title.year ? `${title.title} (${title.year})` : title.title;
   return (

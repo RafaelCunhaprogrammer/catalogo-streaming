@@ -4,17 +4,19 @@ import { parseExploreParams, exploreResultsKey } from '@/lib/explore-params';
 import { discoverPage, getGenreLists } from '@/lib/tmdb/catalog';
 import { parseProvidersCookie, PROVIDERS_COOKIE } from '@/lib/preferences';
 import { getMood } from '@/lib/moods';
+import { annotateRatings } from '@/lib/tmdb/ratings';
 import { ExploreFilters } from '@/components/ExploreFilters';
 import { ExploreGrid } from '@/components/ExploreGrid';
 
 export const metadata = { title: 'Explorar' };
 
 export default async function ExplorePage({ searchParams }) {
-  await requireProfile('/explorar');
+  const viewer = await requireProfile('/explorar');
   const filters = { ...parseExploreParams(await searchParams), pagina: 1 };
   const cookieStore = await cookies();
   const myProviders = parseProvidersCookie(cookieStore.get(PROVIDERS_COOKIE)?.value);
   const [first, genres] = await Promise.all([discoverPage(filters, { myProviders }), getGenreLists()]);
+  if (viewer.kids) first.results = await annotateRatings(first.results, viewer.maxRating, viewer.unlocked);
   const mood = filters.humor ? getMood(filters.humor) : null;
 
   return (
