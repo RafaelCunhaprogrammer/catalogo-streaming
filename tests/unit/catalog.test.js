@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mockTmdb, calledPaths } from '../helpers/mock-tmdb';
 import {
   discoverMixed, getHomeData, searchAvailable, discoverPage, getTitleDetails, resolveKeywordIds, filterAvailable, getMoodCards,
+  getHomeRowDefs, loadHomeRow, getHomeHero,
 } from '@/lib/tmdb/catalog';
 import { parseExploreParams } from '@/lib/explore-params';
 import { PROVIDERS } from '@/lib/providers';
@@ -354,5 +355,61 @@ describe('acabamentos visuais', () => {
     expect(cards).toHaveLength(8);
     expect(cards[0]).toMatchObject({ slug: 'relaxar', label: 'Relaxar', icon: 'Coffee', backdropPath: '/m35|10751|16.jpg' });
     expect(cards.find((c) => c.slug === 'fe').backdropPath).toBe('/mkw.jpg');
+  });
+});
+
+describe('faixa de classificação (visitante e Kids)', () => {
+  const tvRating = (rating) => ({ results: [{ iso_3166_1: 'BR', rating }] });
+
+  it('fileiras: filmes filtrados pelo TMDB e séries conferidas uma a uma', async () => {
+    const fetchMock = mockTmdb({
+      '/discover/movie': { results: [movie(1, 5)] },
+      '/discover/tv': { results: [tv(2, 4), tv(3, 3)] },
+      '/tv/2/content_ratings': tvRating('12'),
+      '/tv/3/content_ratings': tvRating('16'),
+    });
+    const [def] = getHomeRowDefs([8], undefined, { maxRating: '14' });
+    const row = await loadHomeRow(def);
+    expect(row.items.map((t) => `${t.type}-${t.id}`)).toEqual(['movie-1', 'tv-2']);
+    const discoverMovie = fetchMock.mock.calls.map(([u]) => new URL(u)).find((u) => u.pathname.endsWith('/discover/movie'));
+    expect(discoverMovie.searchParams.get('certification_country')).toBe('BR');
+    expect(discoverMovie.searchParams.get('certification.lte')).toBe('14');
+  });
+
+  it('sem faixa (adulto), nada muda e nenhuma classificação é consultada', async () => {
+    const fetchMock = mockTmdb({ '/discover/movie': { results: [movie(1, 5)] }, '/discover/tv': { results: [tv(2, 4)] } });
+    const [def] = getHomeRowDefs([8]);
+    const row = await loadHomeRow(def);
+    expect(row.items).toHaveLength(2);
+    expect(calledPaths(fetchMock).some((p) => p.includes('content_ratings'))).toBe(false);
+  });
+
+  it('destaque só com títulos da faixa', async () => {
+    mockTmdb({
+      '/trending/all/week': { results: [
+        { id: 1, media_type: 'movie', title: 'Terror', backdrop_path: '/a.jpg' },
+        { id: 2, media_type: 'movie', title: 'Animação', backdrop_path: '/b.jpg' },
+      ] },
+      '/movie/1/watch/providers': available,
+      '/movie/2/watch/providers': available,
+      '/movie/1/release_dates': { results: [{ iso_3166_1: 'BR', release_dates: [{ certification: '18' }] }] },
+      '/movie/2/release_dates': { results: [{ iso_3166_1: 'BR', release_dates: [{ certification: 'L' }] }] },
+      '/movie/2/videos': { results: [] },
+      '/discover/movie': { results: [] },
+      '/discover/tv': { results: [] },
+    });
+    const hero = await getHomeHero([], undefined, { maxRating: '10' });
+    expect(hero.map((t) => t.title)).toEqual(['Animação']);
+  });
+
+  it('humores da vitrine usam a faixa no discover de filmes', async () => {
+    const fetchMock = mockTmdb({
+      '/search/keyword': (url) => ({ results: [{ id: 1, name: url.searchParams.get('query') }] }),
+      '/discover/movie': { results: [{ id: 1, title: 'X', backdrop_path: '/x.jpg' }] },
+    });
+    await getMoodCards({ maxRating: '14' });
+    const calls = fetchMock.mock.calls.map(([u]) => new URL(u)).filter((u) => u.pathname.endsWith('/discover/movie'));
+    expect(calls.length).toBe(8);
+    expect(calls.every((u) => u.searchParams.get('certification.lte') === '14')).toBe(true);
   });
 });

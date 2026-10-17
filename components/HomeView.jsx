@@ -7,14 +7,14 @@ import { MoodPicker } from '@/components/MoodPicker';
 import { Row } from '@/components/Row';
 import { PosterSkeletonRow } from '@/components/PosterSkeleton';
 
-async function HeroSection({ myProviders, type }) {
-  return <Hero items={await getHomeHero(myProviders, type)} />;
+async function HeroSection({ myProviders, type, maxRating }) {
+  return <Hero items={await getHomeHero(myProviders, type, { maxRating })} />;
 }
 
-async function MoodSection() {
+async function MoodSection({ maxRating }) {
   let cards;
   try {
-    cards = await getMoodCards();
+    cards = await getMoodCards({ maxRating });
   } catch {
     cards = undefined; // sem imagens, os cartões usam o degradê da marca
   }
@@ -42,10 +42,11 @@ function RowSkeleton({ title }) {
 
 // Montagem comum do Início, da página Filmes (type 'movie') e da página Séries (type 'tv').
 // Cada parte aparece assim que fica pronta: o clique responde na hora, sem esperar a página inteira.
-export async function HomeView({ heading, type, showMoods = true }) {
+export async function HomeView({ heading, type, showMoods = true, viewer }) {
+  const maxRating = viewer?.maxRating ?? null;
   const cookieStore = await cookies();
   const myProviders = parseProvidersCookie(cookieStore.get(PROVIDERS_COOKIE)?.value);
-  const defs = getHomeRowDefs(myProviders, type);
+  const defs = getHomeRowDefs(myProviders, type, { maxRating });
 
   return (
     <>
@@ -53,12 +54,12 @@ export async function HomeView({ heading, type, showMoods = true }) {
       {/* O destaque sobe por baixo do topo transparente (altura medida no Header). */}
       <div className="mt-[calc(var(--header-h,0px)*-1)]">
         <Suspense fallback={<HeroSkeleton />}>
-          <HeroSection myProviders={myProviders} type={type} />
+          <HeroSection myProviders={myProviders} type={type} maxRating={maxRating} />
         </Suspense>
       </div>
       {showMoods && (
         <Suspense fallback={<MoodPicker />}>
-          <MoodSection />
+          <MoodSection maxRating={maxRating} />
         </Suspense>
       )}
       {defs.map((def) => (
