@@ -12,5 +12,8 @@ export default defineConfig({
     restoreMocks: true,
     unstubGlobals: true,
     unstubEnvs: true,
+    // O PGlite (banco dos testes) leva alguns segundos para iniciar.
+    testTimeout: 30000,
+    hookTimeout: 60000,
   },
 });

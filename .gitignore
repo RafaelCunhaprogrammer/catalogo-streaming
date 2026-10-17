@@ -17,3 +17,6 @@ Thumbs.db
 
 # logs locais
 *.log
+
+# bancos locais (PGlite)
+.data/
