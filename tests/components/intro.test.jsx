@@ -139,6 +139,13 @@ describe('IntroScene', () => {
     expect(svg.querySelectorAll('[data-part="torre"]')).toHaveLength(4);
   });
 
+  it('também aparece em "Quem está assistindo?" (depois de entrar, a primeira tela é a dos perfis)', async () => {
+    pathname = '/perfis';
+    renderWithSettings(<IntroScene />);
+    await flush();
+    expect(intro()).toBeInTheDocument();
+  });
+
   it('não aparece em links diretos para páginas internas', async () => {
     pathname = '/filme/101';
     renderWithSettings(<IntroScene />);

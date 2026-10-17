@@ -41,6 +41,7 @@ function markSeen() {
 }
 
 // Quatro torres finas e pontudas do Mercado de Ferro: as externas mais altas.
+const INTRO_PATHS = ['/', '/perfis'];
 const TORRES = [
   { cx: 228, w: 30, corpo: 150, ponta: 52 },
   { cx: 272, w: 24, corpo: 172, ponta: 96 },
@@ -218,7 +219,7 @@ export function IntroScene() {
   const [replay, setReplay] = useState(false);
   const timers = useRef([]);
   const videoRef = useRef(null);
-  const visible = loaded && pathname === '/' && (replay || !seen) && !dismissed;
+  const visible = loaded && INTRO_PATHS.includes(pathname) && (replay || !seen) && !dismissed;
 
   // Rever a abertura (clique na logo no Início): começa tudo de novo.
   useEffect(() => {

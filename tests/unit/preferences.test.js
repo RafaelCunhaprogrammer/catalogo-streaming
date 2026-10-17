@@ -138,6 +138,13 @@ describe('cobertura da abertura (sem piscar o Início)', () => {
     window.history.pushState({}, '', '/');
   });
 
+  it('cobre também em /perfis', () => {
+    document.documentElement.removeAttribute('data-intro');
+    window.history.pushState({}, '', '/perfis');
+    bootstrapTheme();
+    expect(document.documentElement).toHaveAttribute('data-intro', 'pending');
+  });
+
   it('no Início, antes da abertura, cobre a tela', () => {
     window.history.pushState({}, '', '/');
     bootstrapTheme();
