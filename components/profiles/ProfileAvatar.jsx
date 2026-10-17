@@ -7,7 +7,7 @@ export function ProfileAvatar({ profile, size = 'lg' }) {
         {profile.name.trim().charAt(0).toUpperCase()}
       </span>
       {profile.kind === 'kids' && size === 'lg' && (
-        <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-white px-2 py-0.5 text-xs font-black text-[#1e1433]">Kids</span>
+        <span aria-hidden="true" className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-white px-2 py-0.5 text-xs font-black text-[#1e1433]">Kids</span>
       )}
     </span>
   );

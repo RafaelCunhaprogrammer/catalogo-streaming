@@ -16,6 +16,10 @@ const routes = [
   [/^\/3\/search\/keyword$/, (url) => ({ results: [{ id: 1, name: url.searchParams.get('query') }] })],
   [/^\/3\/(movie|tv)\/\d+\/videos$/, () => fixture('videos')],
   [/^\/3\/(movie|tv)\/(\d+)\/watch\/providers$/, (url, match) => (match[2] === '777' ? { results: {} } : fixture('providers'))],
+  [/^\/3\/movie\/(\d+)\/release_dates$/, (url, match) => ({
+    results: [{ iso_3166_1: 'BR', release_dates: [{ certification: { 101: '12', 102: 'L' }[match[1]] ?? '16' }] }],
+  })],
+  [/^\/3\/tv\/(\d+)\/content_ratings$/, () => ({ results: [{ iso_3166_1: 'BR', rating: '14' }] })],
   [/^\/3\/movie\/101$/, () => fixture('movie-101')],
   [/^\/3\/tv\/201$/, () => fixture('tv-201')],
 ];

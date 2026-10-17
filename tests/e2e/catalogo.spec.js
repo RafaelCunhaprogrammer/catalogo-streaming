@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { prepare, signInDemo } from './helpers';
 
 // Nada de rede externa: YouTube e imagens do TMDB ficam bloqueados nos testes.
 async function blockExternal(page) {
@@ -31,11 +32,11 @@ test.describe('abertura', () => {
 
 test.describe('catálogo', () => {
   test.beforeEach(async ({ page }) => {
-    await blockExternal(page);
+    await prepare(page);
+    await signInDemo(page);
   });
 
   test('Início mostra destaque, humores e fileiras', async ({ page }) => {
-    await skipEntry(page);
     await page.goto('/');
     await expect(page.getByRole('region', { name: 'Destaque: Aventura Neon: A Longa Jornada do Herói Esquecido' })).toBeVisible();
     await expect(page.getByRole('link', { name: /Relaxar/ })).toHaveAttribute('href', '/explorar?humor=relaxar');
@@ -44,7 +45,6 @@ test.describe('catálogo', () => {
   });
 
   test('setas do destaque voltam e avançam com cliques reais', async ({ page }) => {
-    await skipEntry(page);
     await page.goto('/');
     await page.setViewportSize({ width: 1280, height: 640 });
     const hero = page.getByRole('region', { name: /^Destaque:/ });
@@ -56,7 +56,6 @@ test.describe('catálogo', () => {
   });
 
   test('setas do destaque não ficam por cima do título e só aparecem ao passar o mouse', async ({ page }) => {
-    await skipEntry(page);
     await page.setViewportSize({ width: 1280, height: 640 });
     await page.goto('/');
     const back = page.getByRole('button', { name: 'Destaque anterior' });
@@ -72,7 +71,6 @@ test.describe('catálogo', () => {
   });
 
   test('busca mostra só títulos disponíveis e Enter abre os resultados', async ({ page }) => {
-    await skipEntry(page);
     await page.goto('/explorar');
     await page.getByRole('combobox', { name: 'Buscar filmes e séries' }).fill('Aventura');
     await expect(page.getByRole('search').getByRole('link', { name: 'Aventura Neon (2024)', exact: true })).toBeVisible();
@@ -83,7 +81,6 @@ test.describe('catálogo', () => {
   });
 
   test('resultados da busca têm Todos, Filmes e Séries, e "Ver todos" responde na hora', async ({ page }) => {
-    await skipEntry(page);
     await page.goto('/explorar');
     await page.getByRole('combobox', { name: 'Buscar filmes e séries' }).fill('Aventura');
     await page.getByRole('link', { name: 'Ver todos os resultados' }).click();
@@ -96,7 +93,6 @@ test.describe('catálogo', () => {
   });
 
   test('página do filme mostra detalhes, onde assistir e recomendações', async ({ page }) => {
-    await skipEntry(page);
     await page.goto('/filme/101');
     await expect(page.getByRole('heading', { level: 1, name: 'Aventura Neon' })).toBeVisible();
     await expect(page.getByText('2h 8min')).toBeVisible();
@@ -106,21 +102,18 @@ test.describe('catálogo', () => {
   });
 
   test('página da série mostra temporadas', async ({ page }) => {
-    await skipEntry(page);
     await page.goto('/serie/201');
     await expect(page.getByText('2 temporadas')).toBeVisible();
     await expect(page.getByLabel('Classificação indicativa: 14 anos')).toBeVisible();
   });
 
   test('título inexistente mostra Não encontrado', async ({ page }) => {
-    await skipEntry(page);
     const response = await page.goto('/filme/999');
     expect(response.status()).toBe(404);
     await expect(page.getByRole('heading', { name: 'Não encontrado' })).toBeVisible();
   });
 
   test('Explorar troca para séries pelo endereço', async ({ page }) => {
-    await skipEntry(page);
     await page.goto('/explorar');
     await page.getByRole('navigation', { name: 'Tipo' }).getByRole('link', { name: 'Séries' }).click();
     await expect(page).toHaveURL(/tipo=serie/);
@@ -128,7 +121,6 @@ test.describe('catálogo', () => {
   });
 
   test('o modo de cor escolhido continua depois de recarregar', async ({ page }) => {
-    await skipEntry(page);
     await page.goto('/explorar');
     await page.getByRole('button', { name: 'Abrir configurações' }).click();
     await page.getByRole('dialog', { name: 'Configurações' }).locator('label', { has: page.getByRole('radio', { name: 'Claro' }) }).click();
@@ -138,7 +130,6 @@ test.describe('catálogo', () => {
   });
 
   test('Meus streamings filtra as fileiras do Início', async ({ page }) => {
-    await skipEntry(page);
     await page.goto('/');
     await page.getByRole('button', { name: 'Abrir configurações' }).click();
     await page.getByRole('checkbox', { name: 'Netflix' }).check();
@@ -148,19 +139,50 @@ test.describe('catálogo', () => {
   });
 });
 
+async function expectNoViolations(page) {
+  const results = await new AxeBuilder({ page })
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+    .exclude('iframe')
+    .analyze();
+  expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
+}
+
+// Logado, o tema vem do perfil: escolhe pelo painel (o perfil "Mãe" fica só para estes testes).
+async function chooseTheme(page, theme) {
+  const label = { escuro: 'Escuro', claro: 'Claro' }[theme];
+  await page.getByRole('button', { name: 'Abrir configurações' }).click();
+  const radio = page.getByRole('radio', { name: label });
+  if (await radio.isChecked()) {
+    await page.getByRole('button', { name: 'Fechar configurações' }).click();
+    return;
+  }
+  // A escolha é gravada no perfil (com uma pequena espera): aguarda a gravação antes de navegar.
+  const saved = page.waitForResponse((r) => r.request().method() === 'POST' && Boolean(r.request().headers()['next-action']));
+  await page.getByRole('dialog', { name: 'Configurações' }).locator('label', { has: radio }).click();
+  await saved;
+  await page.getByRole('button', { name: 'Fechar configurações' }).click();
+}
+
 test.describe('acessibilidade (WCAG 2.1 AA)', () => {
+  // Os testes logados dividem o perfil "Mãe": um de cada vez, para o tema de um não atropelar o outro.
+  test.describe.configure({ mode: 'serial' });
   for (const theme of ['escuro', 'claro']) {
+    test(`/ do visitante no modo ${theme}`, async ({ page }) => {
+      await blockExternal(page);
+      await skipEntry(page, { version: 1, theme });
+      await page.goto('/');
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+      await expectNoViolations(page);
+    });
+
     for (const path of ['/', '/explorar', '/filme/101']) {
-      test(`${path} no modo ${theme}`, async ({ page }) => {
-        await blockExternal(page);
-        await skipEntry(page, { version: 1, theme });
+      test(`${path} logado no modo ${theme}`, async ({ page }) => {
+        await prepare(page);
+        await signInDemo(page, 'Mãe');
+        await chooseTheme(page, theme);
         await page.goto(path);
         await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
-        const results = await new AxeBuilder({ page })
-          .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-          .exclude('iframe')
-          .analyze();
-        expect(results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
+        await expectNoViolations(page);
       });
     }
   }

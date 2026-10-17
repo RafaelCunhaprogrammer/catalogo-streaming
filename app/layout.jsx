@@ -41,7 +41,8 @@ export default async function RootLayout({ children }) {
         <link rel="preconnect" href="https://image.tmdb.org" />
       </head>
       <body className="min-h-screen font-sans antialiased">
-        <SettingsProvider initialPrefs={viewer.profile?.prefs} onSave={viewer.profile ? savePrefsAction : undefined}>
+        {/* Trocar de perfil remonta o provedor: as preferências passam a ser as do perfil escolhido. */}
+        <SettingsProvider key={viewer.profile?.id ?? 'visitante'} initialPrefs={viewer.profile?.prefs} onSave={viewer.profile ? savePrefsAction : undefined}>
           <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:p-3">
             Pular para o conteúdo
           </a>

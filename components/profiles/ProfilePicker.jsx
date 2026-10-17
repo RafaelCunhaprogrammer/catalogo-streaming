@@ -26,12 +26,18 @@ export function ProfilePicker({ profiles, voltar = '/' }) {
       <ul className="mt-10 flex flex-wrap justify-center gap-6 sm:gap-10">
         {profiles.map((profile) => (
           <li key={profile.id}>
-            <button onClick={() => choose(profile)} className="group flex flex-col items-center gap-3 rounded-2xl p-2 focus-visible:outline-3">
+            {/* O nome acessível é só o nome; o selo Kids vai como descrição. */}
+            <button
+              onClick={() => choose(profile)}
+              aria-describedby={profile.kind === 'kids' ? `kids-${profile.id}` : undefined}
+              className="group flex flex-col items-center gap-3 rounded-2xl p-2 focus-visible:outline-3"
+            >
               <span className="transition group-hover:scale-105 group-hover:drop-shadow-[0_0_14px_rgba(236,72,153,.6)] calm:group-hover:scale-100">
                 <ProfileAvatar profile={profile} />
               </span>
               <span className="text-lg font-semibold text-muted group-hover:text-fg">{profile.name}</span>
             </button>
+            {profile.kind === 'kids' && <span id={`kids-${profile.id}`} className="sr-only">Perfil infantil</span>}
           </li>
         ))}
       </ul>
