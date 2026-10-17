@@ -27,6 +27,10 @@ async function loadGenres() {
 
 export default async function RootLayout({ children }) {
   const [genres, viewer] = await Promise.all([loadGenres(), getViewerOrVisitor()]);
+  const account = {
+    signedIn: Boolean(viewer.user),
+    profile: viewer.profile ? { name: viewer.profile.name, color: viewer.profile.color, kind: viewer.profile.kind } : null,
+  };
   return (
     <html lang="pt-BR" data-theme="escuro" data-text="normal" data-calm="false" data-contrast="false" suppressHydrationWarning>
       <head>
@@ -41,7 +45,7 @@ export default async function RootLayout({ children }) {
           <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:p-3">
             Pular para o conteúdo
           </a>
-          <Header genres={genres} />
+          <Header genres={genres} account={account} />
           <main id="conteudo">{children}</main>
           <Footer />
           <IntroScene />

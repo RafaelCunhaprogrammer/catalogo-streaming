@@ -9,6 +9,7 @@ import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { SearchBox } from '@/components/SearchBox';
 import { Settings } from 'lucide-react';
 import { DesktopNav, MobileMenu } from '@/components/NavMenus';
+import { UserMenu } from '@/components/UserMenu';
 
 
 // Páginas com destaque em vídeo: o topo fica transparente por cima do trailer.
@@ -21,7 +22,7 @@ function subscribeScroll(callback) {
 }
 const scrolledPastTop = () => window.scrollY > SCROLL_LIMIT;
 
-export function Header({ genres }) {
+export function Header({ genres, account = { signedIn: false, profile: null } }) {
   const pathname = usePathname();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const scrolled = useSyncExternalStore(subscribeScroll, scrolledPastTop, () => false);
@@ -65,7 +66,7 @@ export function Header({ genres }) {
           <BrandLogo />
         </Link>
         <DesktopNav pathname={pathname} genres={genres} />
-        <SearchBox genres={genres} />
+        <SearchBox genres={genres} signedIn={account.signedIn} />
         <div data-slot="header-actions" className="ml-auto flex items-center gap-2">
           <MobileMenu pathname={pathname} genres={genres} />
           <button
@@ -76,6 +77,15 @@ export function Header({ genres }) {
           >
             <Settings aria-hidden="true" className="h-6 w-6" strokeWidth={1.75} />
           </button>
+          {account.signedIn && account.profile ? (
+            <UserMenu profile={account.profile} kids={account.profile.kind === 'kids'} />
+          ) : (
+            !account.signedIn && (
+              <Link href="/entrar" className="neon-gradient rounded-full px-5 py-2 text-sm font-bold text-white shadow-glow">
+                Entrar
+              </Link>
+            )
+          )}
         </div>
         <SettingsPanel open={settingsOpen} onClose={closeSettings} />
       </div>

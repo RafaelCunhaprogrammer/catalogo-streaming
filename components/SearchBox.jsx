@@ -32,7 +32,7 @@ export function genreSuggestions(query, genres, tipo) {
   return [...filmes, ...series];
 }
 
-export function SearchBox({ genres }) {
+export function SearchBox({ genres, signedIn = true }) {
   const router = useRouter();
   const pathname = usePathname();
   const scope = scopeOf(pathname);
@@ -75,6 +75,18 @@ export function SearchBox({ genres }) {
   const genreLinks = genreSuggestions(trimmed, genres, scope.tipo);
   const hasAnything = suggestions.length > 0 || genreLinks.length > 0;
   const showList = open && trimmed.length >= MIN_CHARS && hasAnything;
+
+  if (!signedIn) {
+    return (
+      <Link
+        href="/entrar?voltar=%2Fbusca"
+        className="order-last flex w-full items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm text-muted hover:text-fg sm:order-none sm:w-72"
+      >
+        <Search aria-hidden="true" className="h-4 w-4" />
+        Entre para buscar
+      </Link>
+    );
+  }
 
   return (
     <form role="search" onSubmit={submit} className="relative order-last w-full sm:order-none sm:w-72">
