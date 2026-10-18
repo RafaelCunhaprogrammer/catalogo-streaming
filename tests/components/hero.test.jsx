@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { renderWithSettings } from '../helpers/render-with-settings';
 import { Hero, HERO_BACKDROP_MS, HERO_REVEAL_MS } from '@/components/Hero';
 import { SettingsProvider } from '@/components/settings/SettingsProvider';
+import { INTRO_DONE_EVENT, REPLAY_EVENT } from '@/lib/intro-events';
 
 const items = [
   { id: 1, type: 'movie', title: 'Primeiro', overview: 'Sinopse 1', backdropPath: '/b1.jpg', trailerKey: 'k1', trailerSubtitles: false },
@@ -161,6 +162,18 @@ describe('Hero', () => {
     const html = renderToString(<SettingsProvider><Hero items={items} /></SettingsProvider>);
     expect(html).toContain('Primeiro');
     expect(html).not.toContain('hero-video');
+  });
+
+  it('rever a abertura para o trailer (e o som dele); ao fim da abertura, o trailer volta mudo', async () => {
+    renderWithSettings(<Hero items={items} />);
+    await flush();
+    await userEvent.click(screen.getByRole('button', { name: 'Ativar som do trailer' }));
+    await act(async () => { window.dispatchEvent(new Event(REPLAY_EVENT)); });
+    expect(screen.queryByTestId('hero-video')).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /^Destaque:/ })).toHaveAttribute('data-hero-sound', 'off');
+    await act(async () => { window.dispatchEvent(new Event(INTRO_DONE_EVENT)); });
+    expect(screen.getByTestId('hero-video')).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /^Destaque:/ })).toHaveAttribute('data-hero-sound', 'off');
   });
 
   it('o botão de som liga e desliga o áudio do trailer', async () => {

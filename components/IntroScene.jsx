@@ -5,10 +5,11 @@ import { usePathname } from 'next/navigation';
 import { useSettings } from '@/components/settings/SettingsProvider';
 import { APP_NAME } from '@/lib/brand';
 import { Volume2 } from 'lucide-react';
+import { INTRO_DONE_EVENT, REPLAY_EVENT } from '@/lib/intro-events';
 
 export const INTRO_SESSION_KEY = 'paidegua:abertura';
-// Evento disparado pelo clique na logo, no Início, para rever a abertura.
-export const REPLAY_EVENT = 'paidegua:rever-abertura';
+// Eventos de rever a abertura (clique na logo, no Início) e de fim da abertura.
+export { INTRO_DONE_EVENT, REPLAY_EVENT };
 // Duração da cena completa e, no Modo sensorial calmo, da imagem final parada.
 export const INTRO_MS = 5200;
 export const INTRO_CALM_MS = 1500;
@@ -18,7 +19,7 @@ export const INTRO_MAX_MS = 15000;
 // Transição para o Início: começa no último segundo do vídeo (sem pausa no fim) e vai aos poucos:
 // a logo se afasta, desfoca e some, e o som diminui junto.
 export const INTRO_LEAD_MS = 1000;
-export const INTRO_FADE_MS = 2500;
+export const INTRO_FADE_MS = 4000;
 
 const subscribeNever = () => () => {};
 
@@ -251,6 +252,7 @@ export function IntroScene() {
     const finish = () => {
       markSeen();
       setDismissed(true);
+      window.dispatchEvent(new Event(INTRO_DONE_EVENT));
     };
     if (calm) {
       finish();

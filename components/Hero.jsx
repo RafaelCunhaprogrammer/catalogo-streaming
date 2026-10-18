@@ -10,6 +10,7 @@ import { shouldAutoplayTrailer, shouldRotateHero } from '@/lib/preferences';
 import { trailerEmbedUrl } from '@/lib/trailer';
 import { imageSet } from '@/lib/images';
 import { titleHref } from '@/lib/tmdb/normalize';
+import { INTRO_DONE_EVENT, REPLAY_EVENT } from '@/lib/intro-events';
 
 // Título sem trailer fica este tempo na tela antes do próximo.
 export const HERO_BACKDROP_MS = 10000;
@@ -49,12 +50,14 @@ export function Hero({ items }) {
   const [playing, setPlaying] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [trailerOpen, setTrailerOpen] = useState(false);
+  // Enquanto a abertura passa de novo, o trailer sai de cena (e o som dele não cobre a música da abertura).
+  const [introPlaying, setIntroPlaying] = useState(false);
   const iframeRef = useRef(null);
   const closeTrailer = useCallback(() => setTrailerOpen(false), []);
 
   const count = items.length;
   const current = items[index];
-  const autoplay = loaded && !paused && shouldAutoplayTrailer(prefs) && Boolean(current?.trailerKey);
+  const autoplay = loaded && !paused && !introPlaying && shouldAutoplayTrailer(prefs) && Boolean(current?.trailerKey);
   // WCAG 2.2.2: nada troca sozinho em pausa, no Modo calmo ou com o foco do teclado aqui dentro.
   const canAdvance = loaded && !paused && shouldRotateHero(prefs) && count > 1 && !focused && !trailerOpen;
 
@@ -65,6 +68,22 @@ export function Hero({ items }) {
     setRevealed(false);
     setSoundOn(false);
   }, [count]);
+
+  useEffect(() => {
+    const onReplay = () => {
+      setIntroPlaying(true);
+      setSoundOn(false);
+      setPlaying(false);
+      setRevealed(false);
+    };
+    const onDone = () => setIntroPlaying(false);
+    window.addEventListener(REPLAY_EVENT, onReplay);
+    window.addEventListener(INTRO_DONE_EVENT, onDone);
+    return () => {
+      window.removeEventListener(REPLAY_EVENT, onReplay);
+      window.removeEventListener(INTRO_DONE_EVENT, onDone);
+    };
+  }, []);
 
   // O player avisa por postMessage quando o vídeo termina.
   useEffect(() => {

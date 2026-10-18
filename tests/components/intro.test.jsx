@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, fireEvent, screen } from '@testing-library/react';
 import { renderWithSettings } from '../helpers/render-with-settings';
 import {
-  IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC, INTRO_FADE_MS, INTRO_LEAD_MS, REPLAY_EVENT,
+  IntroScene, INTRO_SESSION_KEY, INTRO_MS, INTRO_CALM_MS, INTRO_MAX_MS, INTRO_VIDEO_SRC, INTRO_FADE_MS, INTRO_LEAD_MS, REPLAY_EVENT, INTRO_DONE_EVENT,
 } from '@/components/IntroScene';
 
 let pathname = '/';
@@ -31,9 +31,14 @@ describe('IntroScene', () => {
     expect(screen.queryByRole('button', { name: 'Ativar som' })).not.toBeInTheDocument();
     await act(async () => { fireEvent.ended(video); });
     expect(intro()).toHaveAttribute('data-leaving', 'true');
+    const done = vi.fn();
+    window.addEventListener(INTRO_DONE_EVENT, done);
     await act(async () => { vi.advanceTimersByTime(INTRO_FADE_MS); });
+    window.removeEventListener(INTRO_DONE_EVENT, done);
     expect(intro()).not.toBeInTheDocument();
     expect(sessionStorage.getItem(INTRO_SESSION_KEY)).toBe('1');
+    // avisa o destaque que pode voltar a tocar o trailer
+    expect(done).toHaveBeenCalled();
   });
 
   it('a transição começa no último segundo do vídeo, sem pausa no fim, e libera a cobertura do Início', async () => {
@@ -50,7 +55,8 @@ describe('IntroScene', () => {
     await act(async () => { fireEvent.timeUpdate(video); });
     expect(intro()).toHaveAttribute('data-leaving', 'true');
     expect(document.documentElement).not.toHaveAttribute('data-intro');
-    expect(INTRO_FADE_MS).toBeGreaterThanOrEqual(2000);
+    // Transição longa e suave para o Início (pedido do Rafael: 2,5 s parecia rápido).
+    expect(INTRO_FADE_MS).toBeGreaterThanOrEqual(4000);
   });
 
   it('se o navegador bloquear o som, toca mudo e oferece o botão Ativar som', async () => {
