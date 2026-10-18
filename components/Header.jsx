@@ -10,6 +10,7 @@ import { SearchBox } from '@/components/SearchBox';
 import { Settings } from 'lucide-react';
 import { DesktopNav, MobileMenu } from '@/components/NavMenus';
 import { UserMenu } from '@/components/UserMenu';
+import { REPLAY_EVENT } from '@/lib/intro-events';
 
 
 // Páginas com destaque em vídeo: o topo fica transparente por cima do trailer.
@@ -59,7 +60,7 @@ export function Header({ genres, account = { signedIn: false, profile: null } })
             // No Início, a logo mostra a abertura de novo; nas outras páginas, só leva ao Início.
             if (pathname !== '/') return;
             e.preventDefault();
-            window.dispatchEvent(new Event('paidegua:rever-abertura'));
+            window.dispatchEvent(new Event(REPLAY_EVENT));
           }}
           className="shrink-0"
         >
