@@ -2,6 +2,8 @@
 const nextConfig = {
   // Modelo de cache tradicional: fetch com { next: { revalidate } }, como a especificação define.
   cacheComponents: false,
+  // Sem o indicador "Rendering" no canto da tela durante o desenvolvimento (erros continuam aparecendo).
+  devIndicators: false,
   // O PGlite carrega WebAssembly e não deve ser empacotado.
   serverExternalPackages: ['@electric-sql/pglite'],
   turbopack: {
