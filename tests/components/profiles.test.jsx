@@ -46,6 +46,14 @@ describe('Quem está assistindo?', () => {
     expect(await screen.findByRole('dialog', { name: 'Área de adultos' })).toBeInTheDocument();
   });
 
+  it('ao escolher, aparece a transição com a logo no lugar da tela preta', async () => {
+    chooseProfileAction.mockReturnValueOnce(new Promise(() => {}));
+    render(<ProfilePicker profiles={[p('p1', 'Ana')]} voltar="/" />);
+    await userEvent.click(screen.getByRole('button', { name: 'Ana' }));
+    const status = screen.getByRole('status', { name: 'Entrando como Ana' });
+    expect(within(status).getByRole('img', { name: "Pai d'Égua" })).toBeInTheDocument();
+  });
+
   it('tem o atalho para gerenciar perfis', () => {
     render(<ProfilePicker profiles={[p('p1', 'Ana')]} voltar="/" />);
     expect(screen.getByRole('link', { name: 'Gerenciar perfis' })).toHaveAttribute('href', '/perfis/gerenciar');

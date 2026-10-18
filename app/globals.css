@@ -156,3 +156,9 @@ html[data-intro="pending"]::after {
 @keyframes intro-reflexo { from { opacity: .15; } to { opacity: .45; } }
 @keyframes intro-plana { from { transform: translate(0, 0); } to { transform: translate(-30px, -6px); } }
 @keyframes intro-titulo { from { opacity: 0; letter-spacing: 12px; filter: blur(6px); } to { opacity: 1; letter-spacing: 1px; filter: none; } }
+
+/* Transição ao entrar num perfil: a logo "respira" (sem movimento no Modo calmo). */
+@keyframes perfil-entrada {
+  0%, 100% { opacity: .55; transform: scale(.96); }
+  50% { opacity: 1; transform: scale(1.04); }
+}

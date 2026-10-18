@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ProfileAvatar } from '@/components/profiles/ProfileAvatar';
 import { PinDialog } from '@/components/kids/PinDialog';
+import { ProfileTransition } from '@/components/profiles/ProfileTransition';
 import { chooseProfileAction } from '@/lib/actions/conta';
 import { playOpeningSound } from '@/lib/opening-sound';
 import { parsePrefs, resolveTheme, shouldPlayOpeningSound } from '@/lib/preferences';
@@ -13,13 +14,16 @@ const systemDark = () => (typeof window !== 'undefined' && window.matchMedia ? w
 export function ProfilePicker({ profiles, voltar = '/' }) {
   const [error, setError] = useState('');
   const [waitingPin, setWaitingPin] = useState(null); // perfil adulto que espera o PIN
+  const [entering, setEntering] = useState(null); // perfil que está abrindo (tela de transição)
 
   async function choose(profile) {
     // O clique é o momento em que o navegador deixa tocar som: aqui entra o som de abertura.
     const prefs = parsePrefs(profile.prefs);
     if (shouldPlayOpeningSound(prefs, resolveTheme(prefs, systemDark()))) playOpeningSound();
+    setEntering(profile);
     const result = await chooseProfileAction(profile.id, voltar);
     if (result && !result.ok) {
+      setEntering(null);
       if (result.error === 'pin') setWaitingPin(profile);
       else setError(result.error);
     }
@@ -46,6 +50,7 @@ export function ProfilePicker({ profiles, voltar = '/' }) {
           </li>
         ))}
       </ul>
+      {entering && <ProfileTransition profile={entering} />}
       {error && <p role="alert" className="mt-6 font-semibold text-accent-2">{error}</p>}
       <PinDialog
         open={Boolean(waitingPin)}
