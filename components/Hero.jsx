@@ -203,7 +203,7 @@ export function Hero({ items }) {
 
       <div className="relative z-10 px-4 pb-6 sm:absolute sm:bottom-0 sm:left-0 sm:max-w-3xl sm:p-8 sm:pb-16 sm:pl-24">
         <h2 className="text-2xl font-black drop-shadow-lg sm:text-5xl">{current.title}</h2>
-        {current.overview && <p className="mt-3 line-clamp-3 text-sm text-white/90 sm:text-base">{current.overview}</p>}
+        {current.overview && <p className="mt-3 line-clamp-3 text-justify text-sm text-white/90 hyphens-auto sm:text-base">{current.overview}</p>}
         <div className="mt-5 flex flex-wrap items-center gap-3">
           <Link href={titleHref(current)} className="neon-gradient rounded-full px-6 py-2.5 font-bold text-white shadow-glow">
             Ver detalhes

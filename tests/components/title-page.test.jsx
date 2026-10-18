@@ -24,10 +24,24 @@ describe('TitleView', () => {
   });
 
   it('mostra onde assistir com logo e link', () => {
-    render(<TitleView title={base} />);
+    const { container } = render(<TitleView title={base} />);
     const where = screen.getByRole('region', { name: 'Onde assistir' });
-    expect(within(where).getByRole('img', { name: 'Netflix' })).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w154/n.png');
+    expect(container.querySelector('img[src="https://image.tmdb.org/t/p/w154/n.png"]')).toBeInTheDocument();
     expect(within(where).getByRole('link', { name: 'Ver detalhes de disponibilidade' })).toHaveAttribute('href', 'https://tmdb/watch');
+  });
+
+  it('botão "Assistir na …" abre o título na plataforma (ou a página com os links diretos)', () => {
+    render(<TitleView title={{ ...base, providers: [...base.providers, { id: 337, name: 'Disney+', logoPath: null }] }} />);
+    const netflix = screen.getByRole('link', { name: /^Assistir na Netflix/ });
+    expect(netflix).toHaveAttribute('href', 'https://www.netflix.com/search?q=Aventura%20Neon');
+    expect(netflix).toHaveAttribute('target', '_blank');
+    // Disney+ não aceita busca pelo endereço: vai para a página de disponibilidade, que tem o link direto.
+    expect(screen.getByRole('link', { name: /^Assistir na Disney\+/ })).toHaveAttribute('href', 'https://tmdb/watch');
+  });
+
+  it('sinopse justificada, com hifenização para não abrir buracos entre as palavras', () => {
+    render(<TitleView title={base} />);
+    expect(screen.getByText('Uma aventura.')).toHaveClass('text-justify', 'hyphens-auto');
   });
 
   it('mostra elenco e recomendações', () => {

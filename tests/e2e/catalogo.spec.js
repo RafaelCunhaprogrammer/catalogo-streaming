@@ -97,7 +97,7 @@ test.describe('catálogo', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Aventura Neon' })).toBeVisible();
     await expect(page.getByText('2h 8min')).toBeVisible();
     await expect(page.getByLabel('Classificação indicativa: 12 anos')).toBeVisible();
-    await expect(page.getByRole('region', { name: 'Onde assistir' }).getByRole('img', { name: 'Netflix' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Onde assistir' }).getByRole('link', { name: /^Assistir na Netflix/ })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Você também pode gostar' })).toBeVisible();
   });
 

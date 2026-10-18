@@ -4,7 +4,8 @@ import { imageSet } from '@/lib/images';
 import { formatRuntime, formatSeasons, certificationLabel, CERTIFICATION_STYLES } from '@/lib/format';
 import { TrailerButton } from '@/components/TrailerButton';
 import { Row } from '@/components/Row';
-import { Star } from 'lucide-react';
+import { ExternalLink, Star } from 'lucide-react';
+import { watchUrl } from '@/lib/providers';
 import { getTitleRating, ratingAllowed, annotateRatings } from '@/lib/tmdb/ratings';
 import { PinGate } from '@/components/kids/PinGate';
 
@@ -45,7 +46,7 @@ export function TitleView({ title }) {
                 </span>
               ) : null}
             </div>
-            {title.overview && <p className="mt-5 text-base leading-relaxed text-white/90">{title.overview}</p>}
+            {title.overview && <p className="mt-5 text-justify text-base leading-relaxed text-white/90 hyphens-auto">{title.overview}</p>}
             {title.trailerKey && <TrailerButton trailerKey={title.trailerKey} subtitles={title.trailerSubtitles} title={title.title} className="mt-6" />}
           </div>
         </div>
@@ -54,12 +55,34 @@ export function TitleView({ title }) {
       <section aria-labelledby="onde-assistir" className="px-4 pt-10 sm:px-8">
         <h2 id="onde-assistir" className="text-lg font-bold sm:text-xl">Onde assistir</h2>
         <ul className="mt-4 flex flex-wrap gap-3">
-          {title.providers.map((p) => (
-            <li key={p.id} className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2">
-              {p.logoPath && <img {...imageSet(p.logoPath, 'logo')} sizes="32px" alt={p.name} className="h-8 w-8 rounded-lg" />}
-              <span aria-hidden={Boolean(p.logoPath)}>{p.name}</span>
-            </li>
-          ))}
+          {title.providers.map((p) => {
+            const href = watchUrl(p.id, title.title, title.watchLink);
+            const chip = (
+              <>
+                {p.logoPath && <img {...imageSet(p.logoPath, 'logo')} sizes="32px" alt="" className="h-8 w-8 rounded-lg" />}
+                <span>{href ? `Assistir na ${p.name}` : p.name}</span>
+              </>
+            );
+            return (
+              <li key={p.id}>
+                {href ? (
+                  // Abre a plataforma em outra aba: o site é um catálogo, quem exibe o filme é o streaming.
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 font-semibold hover:border-accent hover:text-accent"
+                  >
+                    {chip}
+                    <ExternalLink aria-hidden="true" className="h-4 w-4" />
+                    <span className="sr-only">(abre em outra aba)</span>
+                  </a>
+                ) : (
+                  <span className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2">{chip}</span>
+                )}
+              </li>
+            );
+          })}
         </ul>
         {title.watchLink && (
           <a href={title.watchLink} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-accent underline">
