@@ -358,22 +358,82 @@ describe('acabamentos visuais', () => {
   });
 });
 
+describe('perfil Kids: só títulos infantis', () => {
+  const kidsMovie = (id, popularity, genres) => ({ ...movie(id, popularity), genre_ids: genres });
+  const kidsTv = (id, popularity, genres) => ({ ...tv(id, popularity), genre_ids: genres });
+
+  it('fileiras de plataforma pedem ao TMDB só Animação, Família e Infantil', async () => {
+    const fetchMock = mockTmdb({ '/discover/movie': { results: [] }, '/discover/tv': { results: [] } });
+    const defs = getHomeRowDefs([8], undefined, { maxRating: '10', kids: true });
+    await loadHomeRow(defs.find((d) => d.key === 'plataforma-8'));
+    const urls = fetchMock.mock.calls.map(([u]) => new URL(u));
+    expect(urls.find((u) => u.pathname.endsWith('/discover/movie')).searchParams.get('with_genres')).toBe('16|10751');
+    expect(urls.find((u) => u.pathname.endsWith('/discover/tv')).searchParams.get('with_genres')).toBe('10762|16|10751');
+  });
+
+  it('sem Terror, Romance e Drama; nas outras fileiras de gênero, só o que é infantil', async () => {
+    const defs = getHomeRowDefs([8], undefined, { maxRating: '10', kids: true });
+    const keys = defs.map((d) => d.key);
+    expect(keys).not.toContain('genero-terror');
+    expect(keys).not.toContain('genero-romance');
+    expect(keys).not.toContain('genero-drama');
+    mockTmdb({
+      '/discover/movie': { results: [kidsMovie(1, 9, [35]), kidsMovie(2, 8, [35, 16])] },
+      '/discover/tv': { results: [kidsTv(3, 7, [35, 10767]), kidsTv(4, 6, [35, 10762])] },
+    });
+    const row = await loadHomeRow(defs.find((d) => d.key === 'genero-comedia'));
+    expect(row.items.map((t) => `${t.type}-${t.id}`)).toEqual(['movie-2', 'tv-4']);
+  });
+
+  it('destaque do Kids: luta livre com classificação 10 não entra (não é infantil)', async () => {
+    mockTmdb({
+      '/trending/all/week': { results: [
+        { id: 4656, media_type: 'tv', name: 'Raw', backdrop_path: '/raw.jpg', genre_ids: [10759, 10767] },
+        { id: 2, media_type: 'movie', title: 'Animação', backdrop_path: '/b.jpg', genre_ids: [16, 10751] },
+      ] },
+      '/tv/4656/watch/providers': available,
+      '/movie/2/watch/providers': available,
+      '/tv/4656/content_ratings': { results: [{ iso_3166_1: 'BR', rating: '10' }] },
+      '/movie/2/release_dates': { results: [{ iso_3166_1: 'BR', release_dates: [{ certification: 'L' }] }] },
+      '/movie/2/videos': { results: [] },
+      '/discover/movie': { results: [] },
+      '/discover/tv': { results: [] },
+    });
+    const hero = await getHomeHero([], undefined, { maxRating: '10', kids: true });
+    expect(hero.map((t) => t.title)).toEqual(['Animação']);
+  });
+
+  it('humores do Kids usam só filmes infantis', async () => {
+    mockTmdb({
+      '/search/keyword': (url) => ({ results: [{ id: 1, name: url.searchParams.get('query') }] }),
+      '/discover/movie': { results: [
+        { id: 1, title: 'Adulto', backdrop_path: '/a.jpg', genre_ids: [18] },
+        { id: 2, title: 'Desenho', backdrop_path: '/d.jpg', genre_ids: [16] },
+      ] },
+    });
+    const cards = await getMoodCards({ maxRating: '10', kids: true });
+    expect(cards.filter((c) => c.filmTitle).every((c) => c.filmTitle === 'Desenho')).toBe(true);
+  });
+});
+
 describe('faixa de classificação (visitante e Kids)', () => {
   const tvRating = (rating) => ({ results: [{ iso_3166_1: 'BR', rating }] });
 
-  it('fileiras: filmes filtrados pelo TMDB e séries conferidas uma a uma', async () => {
+  it('fileiras: filmes e séries filtrados pelo próprio TMDB, sem consultar título a título', async () => {
     const fetchMock = mockTmdb({
       '/discover/movie': { results: [movie(1, 5)] },
-      '/discover/tv': { results: [tv(2, 4), tv(3, 3)] },
-      '/tv/2/content_ratings': tvRating('12'),
-      '/tv/3/content_ratings': tvRating('16'),
+      '/discover/tv': { results: [tv(2, 4)] },
     });
     const [def] = getHomeRowDefs([8], undefined, { maxRating: '14' });
     const row = await loadHomeRow(def);
     expect(row.items.map((t) => `${t.type}-${t.id}`)).toEqual(['movie-1', 'tv-2']);
-    const discoverMovie = fetchMock.mock.calls.map(([u]) => new URL(u)).find((u) => u.pathname.endsWith('/discover/movie'));
-    expect(discoverMovie.searchParams.get('certification_country')).toBe('BR');
-    expect(discoverMovie.searchParams.get('certification.lte')).toBe('14');
+    const urls = fetchMock.mock.calls.map(([u]) => new URL(u));
+    for (const path of ['/discover/movie', '/discover/tv']) {
+      const call = urls.find((u) => u.pathname.endsWith(path));
+      expect(call.searchParams.get('certification_country')).toBe('BR');
+      expect(call.searchParams.get('certification.lte')).toBe('14');
+    }
+    expect(calledPaths(fetchMock).some((p) => p.includes('content_ratings') || p.includes('release_dates'))).toBe(false);
   });
 
   it('sem faixa (adulto), nada muda e nenhuma classificação é consultada', async () => {
