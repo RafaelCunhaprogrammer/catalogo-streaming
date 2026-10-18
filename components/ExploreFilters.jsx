@@ -2,6 +2,7 @@ import Form from 'next/form';
 import Link from 'next/link';
 import { PROVIDERS } from '@/lib/providers';
 import { toExploreQuery } from '@/lib/explore-params';
+import { SelectAll } from '@/components/SelectAll';
 
 const LANGUAGES = [
   ['pt', 'Português'], ['en', 'Inglês'], ['es', 'Espanhol'], ['fr', 'Francês'],
@@ -39,6 +40,7 @@ export function ExploreFilters({ filters, genres }) {
         <fieldset className="sm:col-span-2 lg:col-span-4">
           <legend className="text-sm font-semibold">Plataformas</legend>
           <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+            <SelectAll name="plataforma" label="Todas" />
             {PROVIDERS.map((p) => (
               <label key={p.id} className="flex items-center gap-2 text-sm">
                 <input type="checkbox" name="plataforma" value={p.id} defaultChecked={filters.plataformas.includes(p.id)} className="h-4 w-4 accent-[var(--accent)]" />
@@ -53,6 +55,7 @@ export function ExploreFilters({ filters, genres }) {
             Gêneros{filters.generos.length ? ` (${filters.generos.length})` : ''}
           </summary>
           <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2">
+            <SelectAll name="genero" label="Todos" ariaLabel="Todos os gêneros" />
             {genres.map((g) => (
               <label key={g.id} className="flex items-center gap-2 text-sm">
                 <input type="checkbox" name="genero" value={g.id} defaultChecked={filters.generos.includes(g.id)} className="h-4 w-4 accent-[var(--accent)]" />

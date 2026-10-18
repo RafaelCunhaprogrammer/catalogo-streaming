@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ExploreGrid } from '@/components/ExploreGrid';
 import { ExploreFilters } from '@/components/ExploreFilters';
@@ -67,6 +67,21 @@ describe('ExploreFilters', () => {
     render(<ExploreFilters filters={filters('humor=rir&genero=35&duracao=curto')} genres={genres} />);
     expect(screen.getByRole('link', { name: 'Filmes' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Séries' })).toHaveAttribute('href', '/explorar?tipo=serie&humor=rir');
+  });
+
+  it('"Todas" marca e desmarca todas as plataformas; "Todos" faz o mesmo com os gêneros', async () => {
+    const genres = [{ id: 28, name: 'Ação' }, { id: 35, name: 'Comédia' }];
+    render(<ExploreFilters filters={filters('humor=superacao')} genres={genres} />);
+    const platforms = screen.getByRole('group', { name: 'Plataformas' });
+    const all = within(platforms).getByRole('checkbox', { name: 'Todas' });
+    await userEvent.click(all);
+    const boxes = within(platforms).getAllByRole('checkbox').filter((b) => b !== all);
+    expect(boxes.every((b) => b.checked)).toBe(true);
+    await userEvent.click(all);
+    expect(boxes.every((b) => !b.checked)).toBe(true);
+    await userEvent.click(screen.getByRole('checkbox', { name: 'Todos os gêneros' }));
+    expect(screen.getByRole('checkbox', { name: 'Ação' })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: 'Comédia' })).toBeChecked();
   });
 
   it('esconde a duração para séries', () => {
