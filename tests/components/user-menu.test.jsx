@@ -9,8 +9,8 @@ const push = vi.fn();
 vi.mock('next/navigation', () => ({ usePathname: () => '/explorar', useRouter: () => ({ push, refresh: vi.fn() }) }));
 vi.mock('@/lib/actions/conta', () => ({ verifyPinAction: vi.fn(), signOutAction: vi.fn() }));
 
-const adult = { signedIn: true, profile: { name: 'Ana', color: '#8b5cf6', kind: 'adulto' } };
-const kids = { signedIn: true, profile: { name: 'Pequeno', color: '#ec4899', kind: 'kids' } };
+const adult = { signedIn: true, profile: { id: 'p1', name: 'Ana', color: '#8b5cf6', kind: 'adulto' } };
+const kids = { signedIn: true, profile: { id: 'p3', name: 'Pequeno', color: '#ec4899', kind: 'kids' } };
 
 beforeEach(() => vi.clearAllMocks());
 
@@ -22,9 +22,10 @@ describe('topo', () => {
     expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
   });
 
-  it('adulto abre o menu do perfil com os quatro itens', async () => {
+  it('adulto abre o menu do perfil com os itens, começando por Editar perfil', async () => {
     renderWithSettings(<Header account={adult} />);
     await userEvent.click(screen.getByRole('button', { name: 'Menu do perfil Ana' }));
+    expect(screen.getByRole('link', { name: 'Editar perfil' })).toHaveAttribute('href', '/perfis/gerenciar?editar=p1&voltar=%2Fexplorar');
     expect(screen.getByRole('link', { name: 'Trocar perfil' })).toHaveAttribute('href', '/perfis');
     expect(screen.getByRole('link', { name: 'Gerenciar perfis' })).toHaveAttribute('href', '/perfis/gerenciar');
     expect(screen.getByRole('link', { name: 'Minha conta' })).toHaveAttribute('href', '/conta');
@@ -42,5 +43,20 @@ describe('topo', () => {
     await userEvent.type(screen.getByLabelText('PIN dos pais'), '1234{Enter}');
     expect(verifyPinAction).toHaveBeenCalledWith({ pin: '1234', purpose: 'adulto', titleKey: undefined });
     expect(push).toHaveBeenCalledWith('/perfis');
+  });
+
+  it('a bolinha do perfil tem o lápis de editar (aparece ao passar o mouse ou focar)', () => {
+    renderWithSettings(<Header account={adult} />);
+    const button = screen.getByRole('button', { name: 'Menu do perfil Ana' });
+    expect(button.querySelector('[data-part="lapis"]')).not.toBeNull();
+  });
+
+  it('no Kids, Editar perfil também pede o PIN e depois abre a edição', async () => {
+    verifyPinAction.mockResolvedValue({ ok: true });
+    renderWithSettings(<Header account={kids} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Menu do perfil Pequeno' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Editar perfil' }));
+    await userEvent.type(screen.getByLabelText('PIN dos pais'), '1234{Enter}');
+    expect(push).toHaveBeenCalledWith('/perfis/gerenciar?editar=p3&voltar=%2Fexplorar');
   });
 });

@@ -2,12 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ProfileAvatar } from '@/components/profiles/ProfileAvatar';
 import { PinDialog } from '@/components/kids/PinDialog';
 import { signOutAction } from '@/lib/actions/conta';
 
-const ITEMS = [
+// "Editar perfil" abre direto a edição deste perfil e, ao salvar, volta para a página atual.
+const editHref = (profile, pathname) => `/perfis/gerenciar?editar=${encodeURIComponent(profile.id)}&voltar=${encodeURIComponent(pathname)}`;
+const OTHER_ITEMS = [
   { href: '/perfis', label: 'Trocar perfil' },
   { href: '/perfis/gerenciar', label: 'Gerenciar perfis' },
   { href: '/conta', label: 'Minha conta' },
@@ -17,6 +19,8 @@ const itemClass = 'block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-
 // Menu do avatar. No Kids, todos os itens pedem o PIN dos pais antes.
 export function UserMenu({ profile, kids }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const items = [{ href: editHref(profile, pathname), label: 'Editar perfil' }, ...OTHER_ITEMS];
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(null); // item que espera o PIN
   const wrapper = useRef(null);
@@ -43,13 +47,24 @@ export function UserMenu({ profile, kids }) {
 
   return (
     <div ref={wrapper} className="relative">
-      <button onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={`Menu do perfil ${profile.name}`} className="rounded-xl p-0.5 hover:ring-2 hover:ring-accent-2">
+      <button onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-label={`Menu do perfil ${profile.name}`} className="group relative rounded-xl p-0.5 hover:ring-2 hover:ring-accent-2">
         <ProfileAvatar profile={profile} size="sm" />
+        {/* Lápis: mostra, ao passar o mouse ou focar, que dá para editar o perfil por aqui. */}
+        <span
+          data-part="lapis"
+          aria-hidden="true"
+          className="absolute -bottom-1 -right-1 flex h-5 w-5 scale-75 items-center justify-center rounded-full border border-line bg-surface text-fg opacity-0 shadow transition group-hover:scale-100 group-hover:opacity-100 group-focus-visible:scale-100 group-focus-visible:opacity-100 calm:transition-none"
+        >
+          <svg viewBox="0 0 24 24" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+          </svg>
+        </span>
       </button>
       {open && (
         <div className="absolute right-0 top-full z-40 mt-2 w-56 rounded-2xl border border-line bg-surface p-2 shadow-glow">
           <p className="px-3 py-2 text-sm font-bold">{profile.name}</p>
-          {ITEMS.map((item) => (kids ? (
+          {items.map((item) => (kids ? (
             <button key={item.href} className={itemClass} onClick={() => setPending(item)}>{item.label}</button>
           ) : (
             <Link key={item.href} href={item.href} className={itemClass} onClick={() => setOpen(false)}>{item.label}</Link>

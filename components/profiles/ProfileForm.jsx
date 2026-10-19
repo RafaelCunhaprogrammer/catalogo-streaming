@@ -8,7 +8,7 @@ import { Field, buttonClass, inputClass } from '@/components/auth/AuthShell';
 const RATINGS = [['L', 'Livre'], ['10', '10 anos'], ['12', '12 anos'], ['14', '14 anos']];
 
 // Criar ou editar um perfil: nome, cor, tipo (adulto ou Kids) e, no Kids, a classificação máxima.
-export function ProfileForm({ profile, onDone, onNeedsPin }) {
+export function ProfileForm({ profile, onDone, onNeedsPin, autoFocus = false }) {
   const [state, action, pending] = useActionState(profile ? updateProfileAction : createProfileAction, null);
   const [kind, setKind] = useState(profile?.kind ?? 'adulto');
   useEffect(() => {
@@ -19,7 +19,7 @@ export function ProfileForm({ profile, onDone, onNeedsPin }) {
   return (
     <form action={action} aria-label={profile ? `Editar ${profile.name}` : 'Novo perfil'} className="space-y-4 rounded-xl border border-line p-4">
       {profile && <input type="hidden" name="id" value={profile.id} />}
-      <Field id={`nome-${profile?.id ?? 'novo'}`} name="name" label="Nome" maxLength={20} required defaultValue={profile?.name ?? ''} />
+      <Field id={`nome-${profile?.id ?? 'novo'}`} name="name" label="Nome" maxLength={20} required defaultValue={profile?.name ?? ''} autoFocus={autoFocus} />
       {errors.name && <p role="alert" className="text-sm text-accent-2">{errors.name}</p>}
       <fieldset>
         <legend className="text-sm font-semibold">Cor</legend>

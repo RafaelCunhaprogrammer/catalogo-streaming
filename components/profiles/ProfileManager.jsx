@@ -9,16 +9,23 @@ import { PinSetupForm } from '@/components/profiles/PinSetupForm';
 import { deleteProfileAction } from '@/lib/actions/conta';
 import { MAX_PROFILES } from '@/lib/profiles';
 
-export function ProfileManager({ profiles, hasPin }) {
+// editId/voltar: vindo do "Editar perfil" do menu, já abre aquele perfil e, ao salvar, volta para `voltar`.
+export function ProfileManager({ profiles, hasPin, editId, voltar }) {
   const router = useRouter();
-  const [editing, setEditing] = useState(null); // 'novo' | id do perfil
+  const direct = profiles.some((profile) => profile.id === editId) ? editId : null;
+  const [editing, setEditing] = useState(direct); // 'novo' | id do perfil
   const [confirming, setConfirming] = useState(null);
   const [needsPin, setNeedsPin] = useState(false);
   const [error, setError] = useState('');
   const done = useCallback(() => {
+    if (direct && editing === direct && voltar) {
+      router.push(voltar);
+      router.refresh();
+      return;
+    }
     setEditing(null);
     router.refresh();
-  }, [router]);
+  }, [router, direct, editing, voltar]);
   const askPin = useCallback(() => setNeedsPin(true), []);
   const onlyOne = profiles.length <= 1;
 
@@ -33,7 +40,7 @@ export function ProfileManager({ profiles, hasPin }) {
     <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-black">Gerenciar perfis</h1>
-        <Link href="/perfis" className="font-semibold text-accent hover:underline">Pronto</Link>
+        <Link href={direct && voltar ? voltar : '/perfis'} className="font-semibold text-accent hover:underline">Pronto</Link>
       </div>
       {error && <p role="alert" className="mt-4 font-semibold text-accent-2">{error}</p>}
       <ul className="mt-8 space-y-4">
@@ -62,7 +69,7 @@ export function ProfileManager({ profiles, hasPin }) {
                 <button onClick={() => setConfirming(null)} className="underline">Cancelar</button>
               </div>
             )}
-            {editing === profile.id && <div className="mt-4"><ProfileForm profile={profile} onDone={done} onNeedsPin={askPin} /></div>}
+            {editing === profile.id && <div className="mt-4"><ProfileForm profile={profile} onDone={done} onNeedsPin={askPin} autoFocus={profile.id === direct} /></div>}
           </li>
         ))}
       </ul>

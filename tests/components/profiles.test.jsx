@@ -3,11 +3,12 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProfilePicker } from '@/components/profiles/ProfilePicker';
 import { ProfileManager } from '@/components/profiles/ProfileManager';
-import { chooseProfileAction, createProfileAction, deleteProfileAction } from '@/lib/actions/conta';
+import { chooseProfileAction, createProfileAction, deleteProfileAction, updateProfileAction } from '@/lib/actions/conta';
 import { playOpeningSound } from '@/lib/opening-sound';
 import { defaultPrefs } from '@/lib/preferences';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+const push = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push, refresh: vi.fn() }) }));
 vi.mock('@/lib/opening-sound', () => ({ playOpeningSound: vi.fn() }));
 vi.mock('@/lib/actions/conta', () => ({
   chooseProfileAction: vi.fn(),
@@ -100,5 +101,28 @@ describe('Gerenciar perfis', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Excluir Bia' }));
     await userEvent.click(screen.getByRole('button', { name: 'Sim, excluir Bia' }));
     expect(deleteProfileAction).toHaveBeenCalledWith('p2');
+  });
+
+  it('vindo do "Editar perfil" do menu, já abre a edição daquele perfil com o nome em foco', () => {
+    render(<ProfileManager profiles={[p('p1', 'Ana'), p('p2', 'Bia')]} hasPin editId="p2" voltar="/filmes" />);
+    const form = screen.getByRole('form', { name: 'Editar Bia' });
+    expect(within(form).getByLabelText('Nome')).toHaveFocus();
+    expect(screen.queryByRole('form', { name: 'Editar Ana' })).not.toBeInTheDocument();
+  });
+
+  it('salvando a edição aberta pelo menu, volta para a página de onde veio', async () => {
+    updateProfileAction.mockResolvedValue({ ok: true });
+    render(<ProfileManager profiles={[p('p1', 'Ana')]} hasPin editId="p1" voltar="/filmes" />);
+    const name = screen.getByLabelText('Nome');
+    await userEvent.clear(name);
+    await userEvent.type(name, 'Rafael');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(updateProfileAction).toHaveBeenCalled();
+    expect(push).toHaveBeenCalledWith('/filmes');
+  });
+
+  it('um perfil de outra conta (ou inexistente) no endereço não abre nada', () => {
+    render(<ProfileManager profiles={[p('p1', 'Ana')]} hasPin editId="outro" voltar="/" />);
+    expect(screen.queryByRole('form')).not.toBeInTheDocument();
   });
 });

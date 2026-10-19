@@ -24,6 +24,8 @@ Toda ideia nova entra aqui. No fim de cada etapa, revisamos esta lista e decidim
 - Acesso ao catálogo só para assinantes ou pessoas em período de teste.
 
 ### Etapa D – Personalização
+- Fotos de perfil sugeridas em dois conjuntos de ilustrações próprias: infantil (bichos da Amazônia, frutas com carinha) e adulto (frutas regionais, símbolos de Belém).
+- Foto própria **só em perfis adultos** (imagem de criança é dado sensível pela LGPD) e **desligada na demonstração** (compartilhada com desconhecidos). Recorte quadrado e redução para ~256 px no navegador antes de enviar; guardar num serviço de arquivos (ex.: Vercel Blob) e apagar o arquivo antigo ao trocar a foto ou excluir o perfil/conta.
 - Avatares próprios ilustrados (mago, herói, astronauta, dinossauro…), sem personagens de marcas.
 - Capa do perfil com a imagem oficial (TMDB) do filme ou série favorito, com a cor de destaque adaptada a ela, e a opção "Usar página padrão".
 

@@ -29,7 +29,7 @@ export default async function RootLayout({ children }) {
   const [genres, viewer] = await Promise.all([loadGenres(), getViewerOrVisitor()]);
   const account = {
     signedIn: Boolean(viewer.user),
-    profile: viewer.profile ? { name: viewer.profile.name, color: viewer.profile.color, kind: viewer.profile.kind } : null,
+    profile: viewer.profile ? { id: viewer.profile.id, name: viewer.profile.name, color: viewer.profile.color, kind: viewer.profile.kind } : null,
   };
   return (
     <html lang="pt-BR" data-theme="escuro" data-text="normal" data-calm="false" data-contrast="false" suppressHydrationWarning>
