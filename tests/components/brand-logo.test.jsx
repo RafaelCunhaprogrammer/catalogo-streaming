@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { BrandLogo } from '@/components/BrandLogo';
+import { LOGO_SRC } from '@/lib/brand';
 import { renderWithSettings } from '../helpers/render-with-settings';
 import { Header } from '@/components/Header';
 
@@ -8,12 +11,13 @@ let pathname = '/';
 vi.mock('next/navigation', () => ({ usePathname: () => pathname, useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }));
 
 describe('BrandLogo', () => {
-  it('desenha o açaí preso à ráquila, com o nome acessível', () => {
+  it('mostra o símbolo do caroço de açaí, com o nome acessível', () => {
     render(<BrandLogo />);
     const logo = screen.getByRole('img', { name: "Pai d'Égua" });
-    expect(logo.querySelector('[data-part="raquila"]')).not.toBeNull();
-    expect(logo.querySelector('[data-part="fruto"]')).not.toBeNull();
-    expect(logo.querySelector('[data-part="play"]')).not.toBeNull();
+    const symbol = logo.querySelector('img');
+    expect(symbol).toHaveAttribute('src', LOGO_SRC);
+    expect(symbol).toHaveAttribute('alt', '');
+    expect(existsSync(join(process.cwd(), 'public', LOGO_SRC))).toBe(true);
   });
 
   it('o topo mostra a logo como link para o Início, sem o texto "Catálogo"', () => {

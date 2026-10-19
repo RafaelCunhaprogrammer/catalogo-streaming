@@ -34,4 +34,4 @@ Toda ideia nova entra aqui. No fim de cada etapa, revisamos esta lista e decidim
 - Uso comercial real exigiria licença comercial do TMDB e do JustWatch. Este projeto é de aprendizado e uso pessoal.
 
 ## Novas ideias
-_(vazio)_
+- Logo alternativa com o **paneiro** cheio de caroços de açaí (versão 2, testada em 18/10/2026). Ficou guardada em `docs/marca/logo-paneiro.png`, já recortada e sem o texto. Por enquanto ficou a versão 1 (o caroço): em tamanho pequeno, no topo, o paneiro vira uma mancha escura no modo Escuro. Pode voltar numa mudança futura da marca, por exemplo em telas grandes ou na abertura.

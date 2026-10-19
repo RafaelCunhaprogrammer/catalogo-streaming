@@ -1,6 +1,6 @@
 # Pai d'Égua: progresso do projeto
 
-Atualizado em 17/10/2026. Marque aqui o que for sendo concluído.
+Atualizado em 19/10/2026. Marque aqui o que for sendo concluído.
 
 ## Visão geral
 
@@ -26,7 +26,7 @@ A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A
 - [x] Código no GitHub (repositório público)
 
 **Identidade**
-- [x] Nome **Pai d'Égua** e logo do açaí preso à ráquila
+- [x] Nome **Pai d'Égua** e logo do caroço de açaí com o play (também no ícone da aba); a versão com o paneiro ficou guardada para depois
 - [x] Vídeo de abertura com som, transição gradual para o Início e "Pular abertura"
 - [x] Clicar na logo, no Início, mostra a abertura de novo
 - [x] Protetor de tela com a abertura muda após 3 minutos parado
@@ -77,7 +77,7 @@ A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A
 - [x] "Esqueci minha senha" com link por e-mail (sem a chave do Resend, o link aparece no terminal)
 - [x] Visitante vê só a vitrine do Início (até 14 anos); o resto pede para entrar
 - [x] "Experimentar sem cadastro": conta de demonstração (PIN 1234), recriada todo dia pelo horário de Belém
-- [x] Tela "Quem está assistindo?", com o som de abertura ao escolher o perfil (um só perfil entra direto)
+- [x] Tela "Quem está assistindo?", com o som de abertura (woosh de 6 s) ao escolher o perfil e a logo pulsando na transição (um só perfil entra direto)
 - [x] Até 5 perfis por conta; criar, editar e excluir
 - [x] Perfil Kids: títulos acima da faixa com cadeado, liberados um a um pelo PIN dos pais
 - [x] Sair do Kids, trocar de perfil ou abrir áreas de adulto pede o PIN, mesmo depois de fechar o navegador
@@ -87,6 +87,8 @@ A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A
 - [x] Testes: 331 de unidade e componentes, 28 de ponta a ponta com acessibilidade
 - [ ] Sua revisão no navegador (`npm run dev` e entrar pela demonstração)
 - [ ] Juntar o ramo ao `main` (depois da Etapa A)
+
+Feito depois da revisão (18/10): Kids só com títulos infantis, opção Todas/Todos nos filtros, botão Assistir na plataforma, sinopses justificadas, logo e som definitivos.
 
 Ajustes pequenos já conhecidos da B1:
 - [ ] No Kids, trocar senha/excluir conta sem PIN mostra a mensagem da demonstração em vez da do PIN
