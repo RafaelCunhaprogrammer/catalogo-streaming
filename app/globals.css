@@ -88,6 +88,28 @@ body {
   color: var(--text);
 }
 
+/* Mãozinha em tudo que é clicável (o Tailwind 4 deixou de pôr nos botões). Fica na camada
+   base para classes como cursor-not-allowed poderem trocar. */
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  [role='tab'],
+  [role='switch'],
+  [role='menuitem'],
+  select:not(:disabled),
+  summary,
+  label:has(input:not(:disabled)),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  input[type='range']:not(:disabled) {
+    cursor: pointer;
+  }
+  button:disabled,
+  select:disabled {
+    cursor: not-allowed;
+  }
+}
+
 :focus-visible {
   outline: 3px solid var(--accent-2);
   outline-offset: 2px;
