@@ -18,26 +18,20 @@ function safeLocalStorage() {
   }
 }
 
-function systemPrefersDark() {
-  return window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : true;
-}
-
 export function SettingsProvider({ children, initialPrefs, onSave }) {
   // Com perfil, as preferências vêm do servidor; sem perfil (visitante), do navegador.
   const [prefs, setPrefs] = useState(() => (initialPrefs ? parsePrefs(initialPrefs) : defaultPrefs()));
-  const [systemDark, setSystemDark] = useState(true);
   const [loaded, setLoaded] = useState(false);
 
   // Lê o navegador só depois da hidratação, para o HTML do servidor e o do cliente baterem.
   /* eslint-disable react-hooks/set-state-in-effect -- carga única de armazenamento externo após hidratar */
   useEffect(() => {
     if (!initialPrefs) setPrefs(loadPrefs(safeLocalStorage()));
-    setSystemDark(systemPrefersDark());
     setLoaded(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- carga única
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const resolvedTheme = resolveTheme(prefs, systemDark);
+  const resolvedTheme = resolveTheme(prefs);
 
   useEffect(() => {
     if (!loaded) return;

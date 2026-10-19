@@ -9,8 +9,6 @@ import { chooseProfileAction } from '@/lib/actions/conta';
 import { playOpeningSound } from '@/lib/opening-sound';
 import { parsePrefs, resolveTheme, shouldPlayOpeningSound } from '@/lib/preferences';
 
-const systemDark = () => (typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)').matches : true);
-
 export function ProfilePicker({ profiles, voltar = '/' }) {
   const [error, setError] = useState('');
   const [waitingPin, setWaitingPin] = useState(null); // perfil adulto que espera o PIN
@@ -19,7 +17,7 @@ export function ProfilePicker({ profiles, voltar = '/' }) {
   async function choose(profile) {
     // O clique é o momento em que o navegador deixa tocar som: aqui entra o som de abertura.
     const prefs = parsePrefs(profile.prefs);
-    if (shouldPlayOpeningSound(prefs, resolveTheme(prefs, systemDark()))) playOpeningSound();
+    if (shouldPlayOpeningSound(prefs, resolveTheme(prefs))) playOpeningSound();
     setEntering(profile);
     const result = await chooseProfileAction(profile.id, voltar);
     if (result && !result.ok) {

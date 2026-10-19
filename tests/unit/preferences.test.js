@@ -56,10 +56,10 @@ describe('armazenamento', () => {
 describe('comportamento por modo', () => {
   const base = defaultPrefs();
 
-  it('resolve o tema do sistema', () => {
-    expect(resolveTheme(base, true)).toBe('escuro');
-    expect(resolveTheme(base, false)).toBe('claro');
-    expect(resolveTheme({ ...base, theme: 'noturno' }, false)).toBe('noturno');
+  it('sem tema escolhido começa no Escuro, mesmo com o sistema no claro', () => {
+    expect(resolveTheme(base)).toBe('escuro');
+    expect(resolveTheme({ ...base, theme: 'claro' })).toBe('claro');
+    expect(resolveTheme({ ...base, theme: 'noturno' })).toBe('noturno');
   });
 
   it('gera os atributos do <html>', () => {
@@ -113,8 +113,8 @@ describe('bootstrapTheme', () => {
     expect(root.getAttribute('data-contrast')).toBe('true');
   });
 
-  it('sem preferências segue o sistema', () => {
-    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: true });
+  it('sem preferências começa no Escuro, mesmo com o sistema no claro', () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false });
     bootstrapTheme();
     expect(document.documentElement.getAttribute('data-theme')).toBe('escuro');
   });
