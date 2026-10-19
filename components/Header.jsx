@@ -43,11 +43,12 @@ export function Header({ genres, account = { signedIn: false, profile: null } })
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
   return (
     // Sobre o trailer usa as cores do modo escuro (data-theme), para ficar legível também no modo Claro.
+    // O text-fg recalcula a cor do texto aqui dentro; herdada da página, ficaria escura nos menus.
     <header
       ref={headerRef}
       data-over-hero={String(overHero)}
       data-theme={overHero ? 'escuro' : undefined}
-      className={`sticky top-0 z-30 border-b transition-colors duration-300 ${
+      className={`sticky top-0 z-30 border-b text-fg transition-colors duration-300 ${
         overHero ? 'border-transparent bg-gradient-to-b from-black/75 via-black/35 to-transparent' : 'border-line bg-[var(--header-bg)] backdrop-blur-md'
       }`}
     >

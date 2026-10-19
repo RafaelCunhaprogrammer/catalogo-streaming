@@ -72,6 +72,9 @@ describe('menu do topo', () => {
     const header = screen.getByRole('banner');
     expect(header).toHaveAttribute('data-over-hero', 'true');
     expect(header).toHaveAttribute('data-theme', 'escuro');
+    // A cor do texto precisa ser recalculada dentro do topo: herdada da página, no modo Claro
+    // ficaria escura sobre os menus de fundo escuro (o menu do perfil, por exemplo).
+    expect(header).toHaveClass('text-fg');
     await act(async () => {
       Object.defineProperty(window, 'scrollY', { value: 300, configurable: true });
       window.dispatchEvent(new Event('scroll'));
