@@ -6,11 +6,12 @@ vi.mock('@/lib/tmdb/client', () => ({
 }));
 vi.mock('@/lib/tmdb/catalog', () => ({
   CACHE: { rows: 1 },
-  getTitleDetails: vi.fn(async (type, id) => {
-    if (type === 'tv') return null;
+  getTitleDetails: vi.fn(async () => { throw new Error('a demonstração usa só os dados leves'); }),
+  getTitleBasics: vi.fn(async (type, id) => {
+    if (type === 'tv') return id === 7 ? { id: 7, providers: [] } : null; // fora das assinaturas não serve
     if (id === 1) { await new Promise((r) => setTimeout(r, 30)); return null; }
-    if (id === 2) { await new Promise((r) => setTimeout(r, 30)); return { id: 2 }; }
-    return { id: 3 };
+    if (id === 2) { await new Promise((r) => setTimeout(r, 30)); return { id: 2, providers: [{ id: 8 }] }; }
+    return { id: 3, providers: [{ id: 8 }] };
   }),
 }));
 
@@ -19,7 +20,7 @@ import { loadDemoExamples } from '@/lib/lists/demo-examples';
 describe('loadDemoExamples', () => {
   it('pega o primeiro disponível na ordem da tendência, mesmo que um anterior responda depois', async () => {
     const { movie, tv } = await loadDemoExamples();
-    expect(movie).toEqual({ id: 2 });
+    expect(movie).toEqual({ id: 2, providers: [{ id: 8 }] });
     expect(tv).toBeNull();
   });
 });

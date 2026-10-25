@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { mockTmdb, calledPaths } from '../helpers/mock-tmdb';
 import {
-  discoverMixed, getHomeData, searchAvailable, discoverPage, getTitleDetails, resolveKeywordIds, filterAvailable, getMoodCards,
+  discoverMixed, getHomeData, searchAvailable, discoverPage, getTitleDetails, getTitleBasics, resolveKeywordIds, filterAvailable, getMoodCards,
   getHomeRowDefs, loadHomeRow, getHomeHero,
 } from '@/lib/tmdb/catalog';
 import { parseExploreParams } from '@/lib/explore-params';
@@ -174,6 +174,43 @@ describe('getTitleDetails', () => {
     await expect(getTitleDetails('movie', 'abc')).resolves.toBeNull();
     await expect(getTitleDetails('movie', '5')).resolves.toBeNull();
     expect(calledPaths(fetchMock)).not.toContain('/movie/abc');
+  });
+});
+
+describe('getTitleBasics', () => {
+  const raw = {
+    id: 301, name: 'Série Leve', first_air_date: '2022-01-01', genres: [{ id: 18, name: 'Drama' }],
+    seasons: [{ season_number: 0, episode_count: 2 }, { season_number: 1, episode_count: 8 }],
+    content_ratings: { results: [{ iso_3166_1: 'BR', rating: '14' }] },
+    'watch/providers': { results: { BR: { link: 'https://tmdb/w', flatrate: [{ provider_id: 8, provider_name: 'Netflix', logo_path: '/n.png' }] } } },
+    recommendations: { results: Array.from({ length: 20 }, (_, i) => ({ id: 400 + i, name: `Rec ${i}` })) },
+  };
+
+  it('usa a mesma chamada da página do título e não confere a disponibilidade das recomendações', async () => {
+    const fetchMock = mockTmdb({ '/tv/301': raw });
+    const t = await getTitleBasics('tv', 301);
+    expect(t).toMatchObject({
+      id: 301, type: 'tv', title: 'Série Leve', certification: '14', seasonList: [{ number: 1, episodes: 8 }],
+      providers: [{ id: 8, name: 'Netflix', logoPath: '/n.png' }], watchLink: 'https://tmdb/w', recommendations: [],
+    });
+    expect(calledPaths(fetchMock)).toEqual(['/tv/301']);
+    const url = new URL(fetchMock.mock.calls[0][0]);
+    expect(url.searchParams.get('append_to_response')).toBe('credits,videos,watch/providers,content_ratings,recommendations');
+    expect(url.searchParams.get('include_video_language')).toBe('pt,en');
+  });
+
+  it('título fora das assinaturas ainda volta, com a lista de plataformas vazia', async () => {
+    mockTmdb({ '/tv/301': { ...raw, 'watch/providers': { results: {} } } });
+    const t = await getTitleBasics('tv', 301);
+    expect(t.providers).toEqual([]);
+    expect(t.watchLink).toBeNull();
+  });
+
+  it('null só para ID inexistente ou inválido', async () => {
+    const fetchMock = mockTmdb({});
+    await expect(getTitleBasics('movie', '999')).resolves.toBeNull();
+    await expect(getTitleBasics('movie', 'abc')).resolves.toBeNull();
+    expect(calledPaths(fetchMock)).toEqual(['/movie/999']);
   });
 });
 
