@@ -52,19 +52,21 @@ function Open({ item }) {
 
   return (
     <li className={wrap}>
-      <Link href={titleHref(item)} className={`relative block aspect-video bg-surface-2 ${focus}`} aria-label={`Abrir ${item.title}`}>
-        {img ? (
-          <img src={img.src} srcSet={img.srcSet} sizes="320px" alt="" className="h-full w-full object-cover" />
-        ) : (
-          <span aria-hidden="true" className="neon-gradient flex h-full items-center justify-center p-4 text-center text-lg font-bold text-white">{item.title}</span>
-        )}
+      <div className="relative">
+        <Link href={titleHref(item)} className={`block aspect-video bg-surface-2 ${focus}`} aria-label={`Abrir ${item.title}`}>
+          {img ? (
+            <img src={img.src} srcSet={img.srcSet} sizes="320px" alt="" className="h-full w-full object-cover" />
+          ) : (
+            <span aria-hidden="true" className="neon-gradient flex h-full items-center justify-center p-4 text-center text-lg font-bold text-white">{item.title}</span>
+          )}
+        </Link>
         {item.newEpisodes ? (
-          <span className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-1 text-xs font-bold text-white">
+          <span className="pointer-events-none absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-1 text-xs font-bold text-white">
             <Sparkles aria-hidden="true" className="h-3.5 w-3.5" />
             Novos episódios
           </span>
         ) : null}
-      </Link>
+      </div>
       <div className="p-3">
         <p className="line-clamp-1 text-sm font-bold">{item.title}</p>
         {isTv ? <p className="mt-0.5 text-sm text-muted">{`Parei no T${season} E${episode}`}</p> : null}

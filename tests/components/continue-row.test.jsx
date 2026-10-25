@@ -2,16 +2,15 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ContinueCard } from '@/components/lists/ContinueCard';
-import { toContinueItem } from '@/components/lists/ContinueRow';
+import { ContinueRow, toContinueItem } from '@/components/lists/ContinueRow';
 import { ListsProvider } from '@/components/lists/ListsProvider';
 import { nextEpisodeAction } from '@/lib/actions/listas';
+import { continueWatching } from '@/lib/lists/store';
+import { getTitleDetails } from '@/lib/tmdb/catalog';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }) }));
 vi.mock('@/lib/actions/listas', () => ({ markTitleAction: vi.fn(), nextEpisodeAction: vi.fn() }));
 vi.mock('@/lib/actions/conta', () => ({ verifyPinAction: vi.fn() }));
-vi.mock('@/lib/tmdb/catalog', () => ({ getTitleDetails: vi.fn() }));
-vi.mock('@/lib/db', () => ({ getDb: vi.fn() }));
-vi.mock('@/lib/lists/store', () => ({ continueWatching: vi.fn() }));
 vi.mock('@/lib/tmdb/catalog', () => ({ getTitleDetails: vi.fn() }));
 vi.mock('@/lib/db', () => ({ getDb: vi.fn() }));
 vi.mock('@/lib/lists/store', () => ({ continueWatching: vi.fn() }));
@@ -51,9 +50,11 @@ describe('ContinueCard', () => {
     expect(screen.queryByRole('button', { name: '+1 episódio' })).not.toBeInTheDocument();
   });
 
-  it('mostra Novos episódios', () => {
+  it('mostra Novos episódios fora do link, para leitores de tela', () => {
     setup(item({ newEpisodes: true }));
-    expect(screen.getByText('Novos episódios')).toBeInTheDocument();
+    const badge = screen.getByText('Novos episódios');
+    expect(badge.closest('a')).toBeNull();
+    expect(badge.closest('[aria-hidden="true"]')).toBeNull();
   });
 
   it('+1 episódio atualiza a posição', async () => {
@@ -111,5 +112,38 @@ describe('toContinueItem', () => {
     const kids = { kids: true, maxRating: '10', unlocked: new Set() };
     expect(toContinueItem(row(), details, kids).locked).toBe(true);
     expect(toContinueItem(row(), details, { ...kids, unlocked: new Set(['tv-201']) }).locked).toBe(false);
+  });
+});
+
+describe('ContinueRow', () => {
+  const viewer = { profile: { id: 'p1' }, kids: false, maxRating: null, unlocked: new Set() };
+  const mkRow = (n, certification = 'L') => ({
+    mediaType: 'tv', tmdbId: n, season: 1, episode: 1,
+    snapshot: { title: `S${n}`, backdropPath: '/b.jpg', certification, seasons: [{ number: 1, episodes: 9 }] },
+  });
+
+  it('falha no banco: não renderiza nada nem lança erro', async () => {
+    continueWatching.mockRejectedValue(new Error('db'));
+    await expect(ContinueRow({ viewer })).resolves.toBeNull();
+  });
+
+  it('mostra até 20 cartões e consulta o TMDB para todos', async () => {
+    continueWatching.mockResolvedValue(Array.from({ length: 20 }, (_, i) => mkRow(i + 1)));
+    getTitleDetails.mockResolvedValue(null);
+    const el = await ContinueRow({ viewer });
+    expect(continueWatching).toHaveBeenCalledWith(undefined, 'p1', 20);
+    expect(el.props.children[1].props.children).toHaveLength(20);
+    expect(getTitleDetails).toHaveBeenCalledTimes(20);
+  });
+
+  it('título bloqueado não consulta o TMDB nem vaza dados', async () => {
+    const kids = { ...viewer, kids: true, maxRating: '10' };
+    continueWatching.mockResolvedValue([mkRow(9, '16')]);
+    getTitleDetails.mockClear();
+    const el = await ContinueRow({ viewer: kids });
+    expect(getTitleDetails).not.toHaveBeenCalled();
+    expect(el.props.children[1].props.children[0].props.item).toEqual({
+      id: 9, type: 'tv', title: 'S9', backdropPath: null, season: null, episode: null, lastSeason: null, provider: null, newEpisodes: false, locked: true,
+    });
   });
 });
