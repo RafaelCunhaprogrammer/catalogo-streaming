@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock } from 'lucide-react';
+import { FavoriteButton } from '@/components/lists/FavoriteButton';
 import { PinDialog } from '@/components/kids/PinDialog';
 import { titleHref } from '@/lib/tmdb/normalize';
 import { imageSet } from '@/lib/images';
@@ -14,12 +15,12 @@ export function LockedPosterCard({ title, fluid = false }) {
   const img = imageSet(title.posterPath, 'poster');
   const label = title.year ? `${title.title} (${title.year})` : title.title;
   return (
-    <>
+    <div className={`group/card relative ${fluid ? 'w-full' : 'w-36 shrink-0 sm:w-44'}`}>
       <button
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`${label} — bloqueado para este perfil`}
-        className={`group block text-left ${fluid ? 'w-full' : 'w-36 shrink-0 sm:w-44'}`}
+        className="group block w-full text-left"
       >
         <span className="relative block aspect-[2/3] overflow-hidden rounded-lg bg-surface-2">
           {img ? (
@@ -33,6 +34,7 @@ export function LockedPosterCard({ title, fluid = false }) {
         </span>
         <span aria-hidden="true" className="mt-2 line-clamp-1 block text-sm text-muted">{title.title}</span>
       </button>
+      <FavoriteButton title={title} variant="card" />
       <PinDialog
         open={open}
         title="Este título precisa de um adulto"
@@ -44,6 +46,6 @@ export function LockedPosterCard({ title, fluid = false }) {
           router.push(titleHref(title));
         }}
       />
-    </>
+    </div>
   );
 }

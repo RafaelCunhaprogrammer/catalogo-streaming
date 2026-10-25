@@ -1,5 +1,6 @@
 import { LockedPosterCard } from '@/components/kids/LockedPosterCard';
 import Link from 'next/link';
+import { FavoriteButton } from '@/components/lists/FavoriteButton';
 import { Star } from 'lucide-react';
 import { imageSet } from '@/lib/images';
 import { titleHref } from '@/lib/tmdb/normalize';
@@ -9,7 +10,8 @@ export function PosterCard({ title, fluid = false, priority = false }) {
   const img = imageSet(title.posterPath, 'poster');
   const label = title.year ? `${title.title} (${title.year})` : title.title;
   return (
-    <Link href={titleHref(title)} className={`group block focus-visible:outline-none ${fluid ? 'w-full' : 'w-36 shrink-0 sm:w-44'}`}>
+    <div className={`group/card relative ${fluid ? 'w-full' : 'w-36 shrink-0 sm:w-44'}`}>
+    <Link href={titleHref(title)} className="group block w-full focus-visible:outline-none">
       <div className="relative aspect-[2/3] overflow-hidden rounded-lg bg-surface-2 transition duration-300 group-hover:scale-105 group-hover:shadow-glow group-focus-visible:scale-105 group-focus-visible:shadow-glow group-focus-visible:ring-2 group-focus-visible:ring-accent-2 calm:group-hover:scale-100 calm:group-focus-visible:scale-100">
         {img ? (
           <img
@@ -34,5 +36,7 @@ export function PosterCard({ title, fluid = false, priority = false }) {
       </div>
       <p aria-hidden="true" className="mt-2 line-clamp-1 text-sm text-fg">{title.title}</p>
     </Link>
+    <FavoriteButton title={title} variant="card" />
+    </div>
   );
 }
