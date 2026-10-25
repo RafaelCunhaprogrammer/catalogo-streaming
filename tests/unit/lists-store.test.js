@@ -104,6 +104,16 @@ describe('consultas', () => {
     expect(await listMarks(db, p1.id)).toHaveLength(3);
   });
 
+  it('continueWatching traz primeiro a série cujo episódio acabou de mudar', async () => {
+    await saveMark(db, p1.id, 'tv', 1, { status: 'assistindo' }, snap({ title: 'Velha' }));
+    await wait();
+    await saveMark(db, p1.id, 'tv', 2, { status: 'assistindo' }, snap({ title: 'Nova' }));
+    await wait();
+    await saveMark(db, p1.id, 'tv', 1, { episode: 2 });
+    const rows = await continueWatching(db, p1.id);
+    expect(rows.map((r) => r.tmdbId)).toEqual([1, 2]);
+  });
+
   it('recentSeeds devolve no máximo 5, do mais recente', async () => {
     for (let i = 1; i <= 7; i++) {
       await saveMark(db, p1.id, 'movie', i, { favorite: true }, snap());

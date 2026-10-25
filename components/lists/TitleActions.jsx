@@ -5,10 +5,10 @@ import { Check, Eye } from 'lucide-react';
 import { FavoriteButton } from '@/components/lists/FavoriteButton';
 import { useLists } from '@/components/lists/ListsProvider';
 import { useMarkAction } from '@/components/lists/useMarkAction';
+import { FinishAsk, btn, useAdvanceEpisode } from '@/components/lists/AdvanceEpisode';
 import { nextStatus } from '@/lib/lists/rules';
-import { nextEpisodeAction, seasonEpisodesAction } from '@/lib/actions/listas';
+import { seasonEpisodesAction } from '@/lib/actions/listas';
 
-const btn = 'inline-flex items-center justify-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-2';
 const select = 'rounded-lg border border-line bg-surface px-3 py-2 text-sm text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-2';
 
 function StatusButton({ title, mark, status, label, Icon, run }) {
@@ -30,10 +30,8 @@ function StatusButton({ title, mark, status, label, Icon, run }) {
 }
 
 function WhereYouStopped({ title, mark, seasons, run, exclusive, pending }) {
-  const { announce } = useLists();
   const [loaded, setLoaded] = useState(null); // { season, episodes }
-  const [finishAsk, setFinishAsk] = useState(false);
-    const season = mark.season ?? seasons[0].number;
+  const season = mark.season ?? seasons[0].number;
   const episode = mark.episode ?? 1;
 
   useEffect(() => {
@@ -50,13 +48,7 @@ function WhereYouStopped({ title, mark, seasons, run, exclusive, pending }) {
     ? fromServer
     : Array.from({ length: Math.max(count, episode) }, (_, i) => ({ number: i + 1, name: '' }));
 
-  async function advance() {
-    setFinishAsk(false);
-    const r = await exclusive(() => nextEpisodeAction(title.id));
-    if (!r?.ok) return;
-    announce(`${title.title}: temporada ${r.mark.season}, episódio ${r.mark.episode}`);
-    if (r.finished) setFinishAsk(true);
-  }
+  const { advance, finishAsk, dismissAsk } = useAdvanceEpisode(title, exclusive);
 
   return (
     <div role="group" aria-label="Onde você parou" className="mt-4 rounded-xl border border-line bg-surface p-4">
@@ -78,21 +70,7 @@ function WhereYouStopped({ title, mark, seasons, run, exclusive, pending }) {
           +1 episódio
         </button>
       </div>
-      {finishAsk ? (
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <p className="text-sm font-semibold">Marcar como Já assisti?</p>
-          <button
-            type="button"
-            className={`${btn} border-accent bg-accent/15`}
-            onClick={() => { setFinishAsk(false); run({ status: 'assistido' }, { message: `${title.title} marcado como Já assisti` }); }}
-          >
-            Sim
-          </button>
-          <button type="button" className={`${btn} border-line bg-surface hover:bg-surface-2`} onClick={() => setFinishAsk(false)}>
-            Agora não
-          </button>
-        </div>
-      ) : null}
+      {finishAsk ? <FinishAsk title={title} run={run} onDone={dismissAsk} /> : null}
     </div>
   );
 }

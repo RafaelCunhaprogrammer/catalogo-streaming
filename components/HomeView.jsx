@@ -5,6 +5,7 @@ import { parseProvidersCookie, PROVIDERS_COOKIE } from '@/lib/preferences';
 import { Hero } from '@/components/Hero';
 import { MoodPicker } from '@/components/MoodPicker';
 import { Row } from '@/components/Row';
+import { ContinueRow } from '@/components/lists/ContinueRow';
 import { PosterSkeletonRow } from '@/components/PosterSkeleton';
 
 async function HeroSection({ myProviders, type, maxRating, kids }) {
@@ -58,6 +59,11 @@ export async function HomeView({ heading, type, showMoods = true, viewer }) {
           <HeroSection myProviders={myProviders} type={type} maxRating={maxRating} kids={kids} />
         </Suspense>
       </div>
+      {type === undefined && viewer?.profile ? (
+        <Suspense fallback={<RowSkeleton title="Continuar assistindo" />}>
+          <ContinueRow viewer={viewer} />
+        </Suspense>
+      ) : null}
       {showMoods && (
         <Suspense fallback={<MoodPicker />}>
           <MoodSection maxRating={maxRating} kids={kids} />
