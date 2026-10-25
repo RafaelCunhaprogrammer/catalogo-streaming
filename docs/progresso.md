@@ -1,13 +1,13 @@
 # Pai d'Égua: progresso do projeto
 
-Atualizado em 19/10/2026. Marque aqui o que for sendo concluído.
+Atualizado em 25/10/2026. Marque aqui o que for sendo concluído.
 
 ## Visão geral
 
 | Etapa | O que é | Situação |
 |---|---|---|
 | **A – Catálogo** | O site em si: vitrine, busca, páginas de filmes e séries, visual e acessibilidade | **Quase pronta** (falta fechar e publicar) |
-| **B – Contas e Perfis** | Login, perfis, Kids com controle dos pais, favoritos, "Continuar assistindo" | **B1 pronta** no ramo `etapa-b-contas` (falta revisar e juntar); B2 não iniciada |
+| **B – Contas e Perfis** | Login, perfis, Kids com controle dos pais, favoritos, "Continuar assistindo" | **B1 e B2 prontas** no ramo `etapa-b-contas` (falta revisar e juntar) |
 | **C – Assinatura** | Planos, teste grátis e pagamento simulado | Não iniciada |
 | **D – Personalização** | Avatares regionais e capa do perfil | Não iniciada |
 
@@ -98,10 +98,18 @@ Ajustes pequenos já conhecidos da B1:
 - [ ] Nome do cadastro (até 40 letras) só é conferido no navegador
 - [ ] Ao pedir para entrar a partir da busca, a palavra buscada se perde
 
-### B2 – Listas e Indicações (próxima)
-- [ ] FAVORITOS
-- [ ] Preferências do perfil (gêneros favoritos) e indicações personalizadas
-- [ ] "Estou assistindo", "Já assisti" e a fileira "Continuar assistindo"
+### B2 – Listas e Indicações (pronta, no ramo `etapa-b-contas`)
+- [x] Favoritar com o ♥ no cartaz e na página do título
+- [x] Situação do título: *Assistindo* ou *Já assisti*
+- [x] Séries em *Assistindo*: temporada e episódio, com "+1 episódio" e a pergunta "Marcar como Já assisti?" no fim
+- [x] Página **Minha lista** (item no menu) com abas Favoritos, Assistindo e Já assisti, filtros, "Remover desta lista" e "Desfazer"
+- [x] Fileiras no Início: **Continuar assistindo** (com "Parei no T1 E2") e **Indicados para você**
+- [x] Gêneros favoritos do perfil: passo ao criar o perfil, edição em Gerenciar perfis e convite no Início
+- [x] Kids: marcações respeitam a faixa e o PIN dos pais
+- [x] Demonstração recriada todo dia, já com listas de exemplo no perfil Pai
+- [x] Testes: 472 de unidade e componentes, 29 de ponta a ponta (percurso das listas com acessibilidade)
+- [ ] Sua revisão no navegador
+- [ ] Dois testes de ponta a ponta antigos falham desde que o site passou a começar no modo Escuro (contraste em `/entrar` e "modo de cor continua depois de recarregar"); não vêm da B2, mas precisam de ajuste
 
 ## Etapa C – Assinatura (pagamento simulado)
 - [ ] Planos mensal, trimestral, semestral e anual (anual em destaque)

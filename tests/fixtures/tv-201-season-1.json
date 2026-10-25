@@ -1,0 +1,37 @@
+{
+  "season_number": 1,
+  "episodes": [
+    {
+      "episode_number": 1,
+      "name": "Começo"
+    },
+    {
+      "episode_number": 2,
+      "name": "Segredo"
+    },
+    {
+      "episode_number": 3,
+      "name": "Fuga"
+    },
+    {
+      "episode_number": 4,
+      "name": "Encontro"
+    },
+    {
+      "episode_number": 5,
+      "name": "Volta"
+    },
+    {
+      "episode_number": 6,
+      "name": "Queda"
+    },
+    {
+      "episode_number": 7,
+      "name": "Luz"
+    },
+    {
+      "episode_number": 8,
+      "name": "Fim"
+    }
+  ]
+}

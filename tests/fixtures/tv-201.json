@@ -1,6 +1,11 @@
 {
   "id": 201, "name": "Série Brilhante", "first_air_date": "2021-03-03", "overview": "Uma série.",
   "poster_path": "/p201.jpg", "backdrop_path": "/b201.jpg", "vote_average": 8.1, "popularity": 85, "number_of_seasons": 2,
+  "seasons": [
+    { "season_number": 0, "name": "Especiais", "episode_count": 2 },
+    { "season_number": 1, "name": "Temporada 1", "episode_count": 8 },
+    { "season_number": 2, "name": "Temporada 2", "episode_count": 6 }
+  ],
   "genres": [{ "id": 18, "name": "Drama" }],
   "credits": { "cast": [] },
   "videos": { "results": [] },
