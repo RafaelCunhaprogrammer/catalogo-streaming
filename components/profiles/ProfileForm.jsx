@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from 'react';
 import { createProfileAction, updateProfileAction } from '@/lib/actions/conta';
 import { PROFILE_COLORS } from '@/lib/profiles';
+import { GenrePicker } from '@/components/lists/GenrePicker';
 import { Field, buttonClass, inputClass } from '@/components/auth/AuthShell';
 
 const RATINGS = [['L', 'Livre'], ['10', '10 anos'], ['12', '12 anos'], ['14', '14 anos']];
@@ -11,8 +12,10 @@ const RATINGS = [['L', 'Livre'], ['10', '10 anos'], ['12', '12 anos'], ['14', '1
 export function ProfileForm({ profile, onDone, onNeedsPin, autoFocus = false }) {
   const [state, action, pending] = useActionState(profile ? updateProfileAction : createProfileAction, null);
   const [kind, setKind] = useState(profile?.kind ?? 'adulto');
+  // Gêneros só são perguntados na edição; na criação vem o passo "Do que você gosta?" depois.
+  const [genres, setGenres] = useState(profile?.favoriteGenres ?? []);
   useEffect(() => {
-    if (state?.ok) onDone?.();
+    if (state?.ok) onDone?.(state);
     if (state?.needsPin) onNeedsPin?.();
   }, [state, onDone, onNeedsPin]);
   const errors = state?.errors ?? {};
@@ -50,6 +53,12 @@ export function ProfileForm({ profile, onDone, onNeedsPin, autoFocus = false }) 
             {RATINGS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
+      )}
+      {profile && (
+        <fieldset>
+          <legend className="text-sm font-semibold">Gêneros favoritos</legend>
+          <div className="mt-2"><GenrePicker kids={kind === 'kids'} value={genres} onChange={setGenres} name="genres" /></div>
+        </fieldset>
       )}
       {errors.form && <p role="alert" className="text-sm font-semibold text-accent-2">{errors.form}</p>}
       <button type="submit" disabled={pending} className={buttonClass}>Salvar</button>

@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { ProfileAvatar } from '@/components/profiles/ProfileAvatar';
 import { ProfileForm } from '@/components/profiles/ProfileForm';
 import { PinSetupForm } from '@/components/profiles/PinSetupForm';
-import { deleteProfileAction } from '@/lib/actions/conta';
+import { GenrePicker } from '@/components/lists/GenrePicker';
+import { deleteProfileAction, dismissProfileGenresAction, saveProfileGenresAction } from '@/lib/actions/conta';
 import { MAX_PROFILES } from '@/lib/profiles';
 
 // editId/voltar: vindo do "Editar perfil" do menu, já abre aquele perfil e, ao salvar, volta para `voltar`.
@@ -17,7 +18,17 @@ export function ProfileManager({ profiles, hasPin, editId, voltar }) {
   const [confirming, setConfirming] = useState(null);
   const [needsPin, setNeedsPin] = useState(false);
   const [error, setError] = useState('');
-  const done = useCallback(() => {
+  const [created, setCreated] = useState(null); // { id, kids }: perfil recém-criado, esperando a escolha de gêneros
+  const [picked, setPicked] = useState([]);
+  const done = useCallback((state) => {
+    if (state?.profileId) {
+      // Criou um perfil: fecha o formulário e pergunta do que a pessoa gosta (sobre o perfil novo, não o ativo).
+      setCreated({ id: state.profileId, kids: Boolean(state.kids) });
+      setPicked([]);
+      setEditing(null);
+      router.refresh();
+      return;
+    }
     if (direct && editing === direct && voltar) {
       router.push(voltar);
       router.refresh();
@@ -28,6 +39,13 @@ export function ProfileManager({ profiles, hasPin, editId, voltar }) {
   }, [router, direct, editing, voltar]);
   const askPin = useCallback(() => setNeedsPin(true), []);
   const onlyOne = profiles.length <= 1;
+
+  async function finishGenres(action) {
+    const result = await action();
+    if (result?.ok === false) setError(result.error);
+    setCreated(null);
+    router.refresh();
+  }
 
   async function remove(profile) {
     const result = await deleteProfileAction(profile.id);
@@ -74,7 +92,16 @@ export function ProfileManager({ profiles, hasPin, editId, voltar }) {
         ))}
       </ul>
       {onlyOne && <p className="mt-3 text-sm text-muted">A conta precisa de pelo menos um perfil.</p>}
-      {profiles.length >= MAX_PROFILES ? (
+      {created ? (
+        <section aria-labelledby="gen-novo" className="mt-6 rounded-2xl border border-line bg-surface p-5">
+          <h2 id="gen-novo" className="text-lg font-bold">Do que você gosta?</h2>
+          <div className="mt-4"><GenrePicker kids={created.kids} value={picked} onChange={setPicked} /></div>
+          <div className="mt-4 flex items-center gap-4">
+            <button type="button" onClick={() => finishGenres(() => saveProfileGenresAction(created.id, picked))} className="neon-gradient rounded-full px-6 py-2 font-bold text-white shadow-glow">Concluir</button>
+            <button type="button" onClick={() => finishGenres(() => dismissProfileGenresAction(created.id))} className="underline">Pular</button>
+          </div>
+        </section>
+      ) : profiles.length >= MAX_PROFILES ? (
         <p className="mt-6 text-sm text-muted">Limite de 5 perfis.</p>
       ) : editing === 'novo' ? (
         <div className="mt-6"><ProfileForm onDone={done} onNeedsPin={askPin} /></div>

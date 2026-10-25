@@ -7,6 +7,7 @@ import { Hero } from '@/components/Hero';
 import { MoodPicker } from '@/components/MoodPicker';
 import { Row } from '@/components/Row';
 import { ContinueRow } from '@/components/lists/ContinueRow';
+import { GenresInvite } from '@/components/lists/GenresInvite';
 import { PosterSkeletonRow } from '@/components/PosterSkeleton';
 
 async function HeroSection({ myProviders, type, maxRating, kids }) {
@@ -80,6 +81,7 @@ export async function HomeView({ heading, type, showMoods = true, viewer }) {
           <Suspense fallback={<RowSkeleton title="Indicados para você" />}>
             <RecommendationsSection viewer={viewer} myProviders={myProviders} />
           </Suspense>
+          {viewer.profile.genresPromptDone === false && <GenresInvite kids={kids} />}
         </>
       ) : null}
       {showMoods && (

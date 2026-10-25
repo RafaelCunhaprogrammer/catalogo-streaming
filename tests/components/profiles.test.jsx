@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProfilePicker } from '@/components/profiles/ProfilePicker';
 import { ProfileManager } from '@/components/profiles/ProfileManager';
-import { chooseProfileAction, createProfileAction, deleteProfileAction, updateProfileAction } from '@/lib/actions/conta';
+import { chooseProfileAction, createProfileAction, deleteProfileAction, updateProfileAction, saveProfileGenresAction, dismissProfileGenresAction } from '@/lib/actions/conta';
 import { playOpeningSound } from '@/lib/opening-sound';
 import { defaultPrefs } from '@/lib/preferences';
 
@@ -15,6 +15,8 @@ vi.mock('@/lib/actions/conta', () => ({
   createProfileAction: vi.fn(),
   updateProfileAction: vi.fn(),
   deleteProfileAction: vi.fn(),
+  saveProfileGenresAction: vi.fn(),
+  dismissProfileGenresAction: vi.fn(),
   setPinAction: vi.fn(),
   verifyPinAction: vi.fn(),
 }));
@@ -124,5 +126,41 @@ describe('Gerenciar perfis', () => {
   it('um perfil de outra conta (ou inexistente) no endereço não abre nada', () => {
     render(<ProfileManager profiles={[p('p1', 'Ana')]} hasPin editId="outro" voltar="/" />);
     expect(screen.queryByRole('form')).not.toBeInTheDocument();
+  });
+
+  it('depois de criar um perfil, pergunta do que a pessoa gosta; Concluir salva os gêneros do novo perfil', async () => {
+    createProfileAction.mockResolvedValue({ ok: true, profileId: 'novo1' });
+    saveProfileGenresAction.mockResolvedValue({ ok: true, genres: ['acao'] });
+    render(<ProfileManager profiles={[p('p1', 'Ana')]} hasPin isDemo={false} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Adicionar perfil' }));
+    await userEvent.type(screen.getByLabelText('Nome'), 'Bia');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    expect(await screen.findByRole('heading', { name: 'Do que você gosta?' })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Ação' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Concluir' }));
+    expect(saveProfileGenresAction).toHaveBeenCalledWith('novo1', ['acao']);
+    expect(screen.queryByRole('heading', { name: 'Do que você gosta?' })).not.toBeInTheDocument();
+  });
+
+  it('Pular dispensa o convite do novo perfil', async () => {
+    createProfileAction.mockResolvedValue({ ok: true, profileId: 'novo1' });
+    dismissProfileGenresAction.mockResolvedValue({ ok: true });
+    render(<ProfileManager profiles={[p('p1', 'Ana')]} hasPin isDemo={false} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Adicionar perfil' }));
+    await userEvent.type(screen.getByLabelText('Nome'), 'Bia');
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'Pular' }));
+    expect(dismissProfileGenresAction).toHaveBeenCalledWith('novo1');
+    expect(screen.queryByRole('heading', { name: 'Do que você gosta?' })).not.toBeInTheDocument();
+  });
+
+  it('editar mostra os gêneros atuais marcados e envia genres no formulário', async () => {
+    updateProfileAction.mockResolvedValue({ ok: true });
+    render(<ProfileManager profiles={[p('p1', 'Ana', { favoriteGenres: ['drama'] })]} hasPin editId="p1" voltar="/" />);
+    expect(screen.getByRole('button', { name: 'Drama' })).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.click(screen.getByRole('button', { name: 'Ação' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    const formData = updateProfileAction.mock.calls[0][1];
+    expect(formData.getAll('genres')).toEqual(['acao', 'drama']);
   });
 });
