@@ -107,9 +107,8 @@ Ajustes pequenos já conhecidos da B1:
 - [x] Gêneros favoritos do perfil: passo ao criar o perfil, edição em Gerenciar perfis e convite no Início
 - [x] Kids: marcações respeitam a faixa e o PIN dos pais
 - [x] Demonstração recriada todo dia, já com listas de exemplo no perfil Pai
-- [x] Testes: 472 de unidade e componentes, 29 de ponta a ponta (percurso das listas com acessibilidade)
+- [x] Testes: 474 de unidade e componentes, 29 de ponta a ponta (percurso das listas com acessibilidade)
 - [ ] Sua revisão no navegador
-- [ ] Dois testes de ponta a ponta antigos falham desde que o site passou a começar no modo Escuro (contraste em `/entrar` e "modo de cor continua depois de recarregar"); não vêm da B2, mas precisam de ajuste
 
 ## Etapa C – Assinatura (pagamento simulado)
 - [ ] Planos mensal, trimestral, semestral e anual (anual em destaque)
