@@ -154,6 +154,12 @@ describe('getTitleDetails', () => {
     expect(t.recommendations.map((r) => r.title)).toEqual(['Rec ok']);
   });
 
+  it('lista as temporadas sem a de especiais (0)', async () => {
+    mockTmdb({ '/tv/301': { ...details, id: 301, name: 'Série', seasons: [{ season_number: 0, episode_count: 3 }, { season_number: 1, episode_count: 10 }, { season_number: 2, episode_count: 0 }] } });
+    const t = await getTitleDetails('tv', 301);
+    expect(t.seasonList).toEqual([{ number: 1, episodes: 10 }]);
+  });
+
   it('pede os dados extras numa só chamada', async () => {
     const fetchMock = mockTmdb({ '/tv/201': { ...details, id: 201, name: 'Série' } });
     await getTitleDetails('tv', 201);
