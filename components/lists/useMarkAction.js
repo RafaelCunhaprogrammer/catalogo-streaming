@@ -73,6 +73,35 @@ export function useMarkAction(title) {
     send(item);
   }, [send, getQueue, setLocalMark, title.type, title.id]);
 
+  // Roda uma ação do servidor que muda a marcação (ex.: +1 episódio) dentro da mesma fila do título:
+  // pedidos feitos durante ela esperam e são enviados depois. Devolve null se já há envio em andamento.
+  const exclusive = useCallback(async (fn) => {
+    const q = getQueue(title.type, title.id);
+    if (q.busy) return null;
+    q.latest = current.current;
+    q.confirmed = current.current;
+    q.queued = null;
+    setBusy(title.type, title.id, true);
+    let result;
+    try {
+      result = await fn();
+    } catch {
+      result = { ok: false, error: 'erro' };
+    }
+    if (result.ok && result.mark) {
+      q.confirmed = result.mark;
+      q.latest = q.queued ? { ...result.mark, ...q.queued.change } : result.mark;
+      setLocalMark(title.type, title.id, q.latest);
+    } else {
+      q.latest = q.queued ? { ...q.confirmed, ...q.queued.change } : q.confirmed;
+      setLocalMark(title.type, title.id, q.latest);
+      notify(SAVE_ERROR);
+    }
+    if (q.queued) await send(q.queued);
+    else setBusy(title.type, title.id, false);
+    return result;
+  }, [getQueue, setBusy, setLocalMark, notify, send, title.type, title.id]);
+
   const onPinSuccess = useCallback(() => {
     setPinChange(null);
     if (pinChange) run(pinChange.change, { message: pinChange.message });
@@ -89,5 +118,5 @@ export function useMarkAction(title) {
     onSuccess: onPinSuccess,
   });
 
-  return { mark, pending, run, pinDialog };
+  return { mark, pending, run, exclusive, pinDialog };
 }

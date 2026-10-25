@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Check, Eye } from 'lucide-react';
 import { FavoriteButton } from '@/components/lists/FavoriteButton';
 import { useLists } from '@/components/lists/ListsProvider';
-import { SAVE_ERROR, useMarkAction } from '@/components/lists/useMarkAction';
+import { useMarkAction } from '@/components/lists/useMarkAction';
 import { nextStatus } from '@/lib/lists/rules';
 import { nextEpisodeAction, seasonEpisodesAction } from '@/lib/actions/listas';
 
@@ -29,12 +29,11 @@ function StatusButton({ title, mark, status, label, Icon, run }) {
   );
 }
 
-function WhereYouStopped({ title, mark, seasons, run, pending }) {
-  const { setLocalMark, announce, notify } = useLists();
+function WhereYouStopped({ title, mark, seasons, run, exclusive, pending }) {
+  const { announce } = useLists();
   const [loaded, setLoaded] = useState(null); // { season, episodes }
   const [finishAsk, setFinishAsk] = useState(false);
-  const [advancing, setAdvancing] = useState(false);
-  const season = mark.season ?? seasons[0].number;
+    const season = mark.season ?? seasons[0].number;
   const episode = mark.episode ?? 1;
 
   useEffect(() => {
@@ -52,20 +51,9 @@ function WhereYouStopped({ title, mark, seasons, run, pending }) {
     : Array.from({ length: Math.max(count, episode) }, (_, i) => ({ number: i + 1, name: '' }));
 
   async function advance() {
-    setAdvancing(true);
     setFinishAsk(false);
-    let r;
-    try {
-      r = await nextEpisodeAction(title.id);
-    } catch {
-      r = { ok: false };
-    }
-    setAdvancing(false);
-    if (!r.ok) {
-      notify(SAVE_ERROR);
-      return;
-    }
-    setLocalMark(title.type, title.id, r.mark);
+    const r = await exclusive(() => nextEpisodeAction(title.id));
+    if (!r?.ok) return;
     announce(`${title.title}: temporada ${r.mark.season}, episódio ${r.mark.episode}`);
     if (r.finished) setFinishAsk(true);
   }
@@ -76,17 +64,17 @@ function WhereYouStopped({ title, mark, seasons, run, pending }) {
       <div className="mt-3 flex flex-wrap items-end gap-3">
         <label className="flex flex-col gap-1 text-sm">
           Temporada
-          <select className={select} value={String(season)} disabled={pending} onChange={(e) => run({ season: Number(e.target.value) })}>
+          <select className={select} value={String(season)} aria-busy={pending} onChange={(e) => run({ season: Number(e.target.value) })}>
             {seasons.map((s) => <option key={s.number} value={s.number}>{s.number}</option>)}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Episódio
-          <select className={select} value={String(episode)} disabled={pending} onChange={(e) => run({ episode: Number(e.target.value) })}>
+          <select className={select} value={String(episode)} aria-busy={pending} onChange={(e) => run({ episode: Number(e.target.value) })}>
             {options.map((o) => <option key={o.number} value={o.number}>{o.name ? `${o.number} – ${o.name}` : String(o.number)}</option>)}
           </select>
         </label>
-        <button type="button" disabled={advancing || pending} onClick={advance} className={`${btn} border-line bg-surface hover:bg-surface-2 disabled:opacity-60`}>
+        <button type="button" disabled={pending} onClick={advance} className={`${btn} border-line bg-surface hover:bg-surface-2 disabled:opacity-60`}>
           +1 episódio
         </button>
       </div>
@@ -110,7 +98,7 @@ function WhereYouStopped({ title, mark, seasons, run, pending }) {
 }
 
 function Actions({ title, seasons }) {
-  const { mark, pending, run, pinDialog } = useMarkAction(title);
+  const { mark, pending, run, exclusive, pinDialog } = useMarkAction(title);
   const showPosition = title.type === 'tv' && mark.status === 'assistindo' && seasons.length > 0;
   return (
     <div className="mt-5">
@@ -119,7 +107,7 @@ function Actions({ title, seasons }) {
         <StatusButton title={title} mark={mark} status="assistindo" label="Assistindo" Icon={Eye} run={run} />
         <StatusButton title={title} mark={mark} status="assistido" label="Já assisti" Icon={Check} run={run} />
       </div>
-      {showPosition ? <WhereYouStopped title={title} mark={mark} seasons={seasons} run={run} pending={pending} /> : null}
+      {showPosition ? <WhereYouStopped title={title} mark={mark} seasons={seasons} run={run} exclusive={exclusive} pending={pending} /> : null}
       {pinDialog}
     </div>
   );

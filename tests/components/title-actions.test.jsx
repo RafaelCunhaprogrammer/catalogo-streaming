@@ -79,4 +79,27 @@ describe('TitleActions', () => {
     expect(screen.queryByText('Onde você parou')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Assistindo Serie X' })).toBeInTheDocument();
   });
+
+  it('+1 episódio e Já assisti em seguida: o envio espera a ação terminar e o resultado final é assistido', async () => {
+    let finish;
+    nextEpisodeAction.mockReturnValue(new Promise((res) => { finish = res; }));
+    markTitleAction.mockImplementation(async (t, i, c) => ({ ok: true, mark: mk(c) }));
+    setup(show, { seasons }, { 'tv-2': mk({ status: 'assistindo', season: 1, episode: 2 }) });
+    await userEvent.click(screen.getByRole('button', { name: '+1 episódio' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Já assisti Serie X' }));
+    expect(markTitleAction).not.toHaveBeenCalled();
+    finish({ ok: true, mark: mk({ status: 'assistindo', season: 1, episode: 3 }), finished: false });
+    await waitFor(() => expect(markTitleAction).toHaveBeenCalledWith('tv', 2, { status: 'assistido' }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Já assisti Serie X' })).toHaveAttribute('aria-pressed', 'true'));
+    expect(screen.getByRole('button', { name: 'Assistindo Serie X' })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('o seletor continua habilitado e com foco após a mudança, mesmo com envio em andamento', async () => {
+    markTitleAction.mockReturnValue(new Promise(() => {}));
+    setup(show, { seasons }, { 'tv-2': mk({ status: 'assistindo', season: 1, episode: 1 }) });
+    const sel = screen.getByLabelText('Temporada');
+    await userEvent.selectOptions(sel, '2');
+    expect(sel).toBeEnabled();
+    expect(sel).toHaveFocus();
+  });
 });
