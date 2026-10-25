@@ -37,10 +37,10 @@ describe('SettingsProvider', () => {
     expect(document.documentElement).toHaveAttribute('data-theme', 'noturno');
   });
 
-  it('funciona com o armazenamento bloqueado', async () => {
+  it('funciona com o armazenamento bloqueado (sem preferências, começa no Escuro)', async () => {
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => { throw new Error('bloqueado'); });
     renderWithSettings(<Probe />);
-    expect(await screen.findByText('tema:claro:true')).toBeInTheDocument();
+    expect(await screen.findByText('tema:escuro:true')).toBeInTheDocument();
   });
 });
 
