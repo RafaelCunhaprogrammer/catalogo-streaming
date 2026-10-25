@@ -48,6 +48,8 @@ function Open({ item }) {
   const isTv = item.type === 'tv';
   const season = Math.min(mark.season ?? item.season ?? 1, item.lastSeason ?? Infinity);
   const episode = mark.episode ?? item.episode ?? 1;
+  // O aviso vale para o último episódio da cópia (a posição de quando a página carregou): saiu dele, some.
+  const newEpisodes = item.newEpisodes && season === item.season && episode === item.episode;
   const link = `inline-flex items-center gap-2 rounded-full border border-accent bg-accent/15 px-4 py-2 text-sm font-semibold ${focus}`;
 
   return (
@@ -60,7 +62,7 @@ function Open({ item }) {
             <span aria-hidden="true" className="neon-gradient flex h-full items-center justify-center p-4 text-center text-lg font-bold text-white">{item.title}</span>
           )}
         </Link>
-        {item.newEpisodes ? (
+        {newEpisodes ? (
           <span className="pointer-events-none absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-black/75 px-2.5 py-1 text-xs font-bold text-white">
             <Sparkles aria-hidden="true" className="h-3.5 w-3.5" />
             Novos episódios

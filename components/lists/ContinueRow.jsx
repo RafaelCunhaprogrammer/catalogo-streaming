@@ -1,6 +1,6 @@
 import { getDb } from '@/lib/db';
 import { continueWatching } from '@/lib/lists/store';
-import { getTitleDetails } from '@/lib/tmdb/catalog';
+import { getTitleBasics } from '@/lib/tmdb/catalog';
 import { settledWithLimit } from '@/lib/tmdb/limit';
 import { ratingAllowed } from '@/lib/tmdb/ratings';
 import { titleKey } from '@/lib/lists/rules';
@@ -19,8 +19,9 @@ export function toContinueItem(row, details, viewer) {
   const { mediaType: type, tmdbId: id, snapshot } = row;
   const copy = snapshot.seasons ?? [];
   const lastCopy = copy.at(-1);
-  const lastSeason = lastCopy ? lastCopy.number : null;
   const fresh = details?.seasonList ?? [];
+  // Com temporada nova no TMDB, o "+1 episódio" pode levar além da cópia: o limite é a maior das duas.
+  const lastSeason = lastCopy ? Math.max(lastCopy.number, fresh.at(-1)?.number ?? 0) : null;
 
   const season = type === 'tv' && lastCopy ? Math.min(row.season ?? copy[0].number, lastSeason) : row.season;
   const newEpisodes = type === 'tv' && Boolean(lastCopy)
@@ -43,7 +44,7 @@ export async function ContinueRow({ viewer }) {
   let items;
   try {
     const rows = await continueWatching(getDb(), viewer.profile.id, MAX_CARDS);
-    const results = await settledWithLimit(rows, MAX_CONCURRENT, (r) => (isLocked(r, viewer) ? null : getTitleDetails(r.mediaType, r.tmdbId)));
+    const results = await settledWithLimit(rows, MAX_CONCURRENT, (r) => (isLocked(r, viewer) ? null : getTitleBasics(r.mediaType, r.tmdbId)));
     items = rows.map((r, i) => toContinueItem(r, results[i].status === 'fulfilled' ? results[i].value : null, viewer));
   } catch {
     return null; // sem a fileira, o resto do Início segue normal

@@ -6,12 +6,12 @@ import { ContinueRow, toContinueItem } from '@/components/lists/ContinueRow';
 import { ListsProvider } from '@/components/lists/ListsProvider';
 import { nextEpisodeAction } from '@/lib/actions/listas';
 import { continueWatching } from '@/lib/lists/store';
-import { getTitleDetails } from '@/lib/tmdb/catalog';
+import { getTitleBasics } from '@/lib/tmdb/catalog';
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }) }));
 vi.mock('@/lib/actions/listas', () => ({ markTitleAction: vi.fn(), nextEpisodeAction: vi.fn() }));
 vi.mock('@/lib/actions/conta', () => ({ verifyPinAction: vi.fn() }));
-vi.mock('@/lib/tmdb/catalog', () => ({ getTitleDetails: vi.fn() }));
+vi.mock('@/lib/tmdb/catalog', () => ({ getTitleBasics: vi.fn() }));
 vi.mock('@/lib/db', () => ({ getDb: vi.fn() }));
 vi.mock('@/lib/lists/store', () => ({ continueWatching: vi.fn() }));
 
@@ -57,6 +57,16 @@ describe('ContinueCard', () => {
     expect(badge.closest('[aria-hidden="true"]')).toBeNull();
   });
 
+  it('Novos episódios some quando +1 leva para a temporada nova', async () => {
+    nextEpisodeAction.mockResolvedValue({ ok: true, mark: { favorite: false, status: 'assistindo', season: 3, episode: 1 }, finished: false });
+    setup(item({ season: 2, episode: 8, lastSeason: 3, newEpisodes: true }));
+    expect(screen.getByText('Novos episódios')).toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: '+1 episódio' }));
+    expect(await screen.findByText('Parei no T3 E1')).toBeInTheDocument();
+    expect(screen.queryByText('Novos episódios')).not.toBeInTheDocument();
+    expect(screen.queryByText('Marcar como Já assisti?')).not.toBeInTheDocument();
+  });
+
   it('+1 episódio atualiza a posição', async () => {
     nextEpisodeAction.mockResolvedValue({ ok: true, mark: { favorite: false, status: 'assistindo', season: 2, episode: 6 }, finished: false });
     setup(item());
@@ -90,6 +100,11 @@ describe('toContinueItem', () => {
     const r = toContinueItem(row(), details, viewer);
     expect(r.newEpisodes).toBe(true);
     expect(r.provider).toEqual({ name: 'Netflix', href: 'https://www.netflix.com/search?q=Arcane' });
+  });
+
+  it('com temporada nova no TMDB, a posição pode ir além da última temporada da cópia', () => {
+    expect(toContinueItem(row(), details, viewer).lastSeason).toBe(3);
+    expect(toContinueItem(row({}, { season: 3, episode: 1 }), details, viewer)).toMatchObject({ season: 3, newEpisodes: false });
   });
 
   it('fora do último episódio, não há novos episódios', () => {
@@ -129,19 +144,19 @@ describe('ContinueRow', () => {
 
   it('mostra até 20 cartões e consulta o TMDB para todos', async () => {
     continueWatching.mockResolvedValue(Array.from({ length: 20 }, (_, i) => mkRow(i + 1)));
-    getTitleDetails.mockResolvedValue(null);
+    getTitleBasics.mockResolvedValue(null);
     const el = await ContinueRow({ viewer });
     expect(continueWatching).toHaveBeenCalledWith(undefined, 'p1', 20);
     expect(el.props.children[1].props.children).toHaveLength(20);
-    expect(getTitleDetails).toHaveBeenCalledTimes(20);
+    expect(getTitleBasics).toHaveBeenCalledTimes(20);
   });
 
   it('título bloqueado não consulta o TMDB nem vaza dados', async () => {
     const kids = { ...viewer, kids: true, maxRating: '10' };
     continueWatching.mockResolvedValue([mkRow(9, '16')]);
-    getTitleDetails.mockClear();
+    getTitleBasics.mockClear();
     const el = await ContinueRow({ viewer: kids });
-    expect(getTitleDetails).not.toHaveBeenCalled();
+    expect(getTitleBasics).not.toHaveBeenCalled();
     expect(el.props.children[1].props.children[0].props.item).toEqual({
       id: 9, type: 'tv', title: 'S9', backdropPath: null, season: null, episode: null, lastSeason: null, provider: null, newEpisodes: false, locked: true,
     });

@@ -11,8 +11,10 @@ let db;
 vi.mock('@/lib/auth/viewer', () => ({ getViewer: () => viewer() }));
 vi.mock('@/lib/db', () => ({ getDb: () => db }));
 vi.mock('next/cache', () => ({ revalidatePath: (...a) => revalidate(...a) }));
+const fullDetails = vi.fn();
 vi.mock('@/lib/tmdb/catalog', () => ({
-  getTitleDetails: (...a) => details(...a),
+  getTitleBasics: (...a) => details(...a),
+  getTitleDetails: (...a) => fullDetails(...a),
   CACHE: { details: 86400 },
 }));
 vi.mock('@/lib/tmdb/client', () => ({ tmdbFetch: (...a) => tmdb(...a) }));
@@ -32,7 +34,7 @@ const adultViewer = (p) => ({ user: { id: 'u1' }, profile: p, needsProfile: fals
 
 beforeEach(async () => {
   db = await createTestDb();
-  [viewer, details, revalidate, tmdb].forEach((m) => m.mockReset());
+  [viewer, details, fullDetails, revalidate, tmdb].forEach((m) => m.mockReset());
 });
 
 describe('ações das listas', () => {
@@ -107,6 +109,52 @@ describe('ações das listas', () => {
     expect(res).toMatchObject({ ok: true, finished: false, mark: { season: 1, episode: 2 } });
     res = await actions.nextEpisodeAction(7);
     expect(res).toMatchObject({ ok: true, finished: true, mark: { season: 1, episode: 2, status: 'assistindo' } });
+  });
+
+  it('usa os dados leves do título (sem a conferência das recomendações) e cria a linha mesmo sem plataforma', async () => {
+    const p = await seed();
+    viewer.mockResolvedValue(adultViewer(p));
+    details.mockResolvedValue({ ...movie, providers: [] });
+    const res = await actions.markTitleAction('movie', 101, { favorite: true });
+    expect(res.ok).toBe(true);
+    expect(details).toHaveBeenCalledWith('movie', 101);
+    expect(fullDetails).not.toHaveBeenCalled();
+    expect((await getMark(db, p.id, 'movie', 101)).snapshot.title).toBe('Filme');
+  });
+
+  it('+1 no último episódio da cópia: confere o TMDB e segue para a temporada nova', async () => {
+    const p = await seed();
+    viewer.mockResolvedValue(adultViewer(p));
+    details.mockResolvedValue(serie);
+    await actions.markTitleAction('tv', 7, { status: 'assistindo', season: 1, episode: 2 });
+    details.mockReset();
+    details.mockResolvedValue({ ...serie, seasonList: [{ number: 1, episodes: 2 }, { number: 2, episodes: 5 }] });
+    const res = await actions.nextEpisodeAction(7);
+    expect(res).toMatchObject({ ok: true, finished: false, mark: { season: 2, episode: 1, status: 'assistindo' } });
+    expect(details).toHaveBeenCalledTimes(1);
+    expect((await getMark(db, p.id, 'tv', 7)).snapshot.seasons).toEqual([{ number: 1, episodes: 2 }, { number: 2, episodes: 5 }]);
+    expect(fullDetails).not.toHaveBeenCalled();
+  });
+
+  it('+1 no último episódio, sem temporada nova (ou TMDB fora do ar): finished', async () => {
+    const p = await seed();
+    viewer.mockResolvedValue(adultViewer(p));
+    details.mockResolvedValue(serie);
+    await actions.markTitleAction('tv', 7, { status: 'assistindo', season: 1, episode: 2 });
+    details.mockReset();
+    details.mockRejectedValue(new Error('rede'));
+    expect(await actions.nextEpisodeAction(7)).toMatchObject({ ok: true, finished: true, mark: { season: 1, episode: 2 } });
+    expect(details).toHaveBeenCalledTimes(1);
+  });
+
+  it('+1 no meio da temporada não chama o TMDB', async () => {
+    const p = await seed();
+    viewer.mockResolvedValue(adultViewer(p));
+    details.mockResolvedValue(serie);
+    await actions.markTitleAction('tv', 7, { status: 'assistindo' });
+    details.mockReset();
+    expect(await actions.nextEpisodeAction(7)).toMatchObject({ ok: true, finished: false, mark: { season: 1, episode: 2 } });
+    expect(details).not.toHaveBeenCalled();
   });
 
   it('+1 episódio fora de "assistindo" é inválido', async () => {
