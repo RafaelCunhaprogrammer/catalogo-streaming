@@ -24,13 +24,13 @@ export function ResetPasswordForm({ token, error: initialError }) {
   }
 
   if (done) {
-    return <p role="status" className="font-semibold">Senha alterada. <Link href="/entrar" className="text-accent underline">Entrar</Link></p>;
+    return <p role="status" className="font-semibold">Senha alterada. <Link href="/entrar" className="text-accent-text underline">Entrar</Link></p>;
   }
   if (error === 'Este link expirou.') {
     return (
       <div role="alert" className="space-y-3">
         <p className="font-semibold">Este link expirou.</p>
-        <Link href="/esqueci-senha" className="text-accent underline">Pedir outro link</Link>
+        <Link href="/esqueci-senha" className="text-accent-text underline">Pedir outro link</Link>
       </div>
     );
   }

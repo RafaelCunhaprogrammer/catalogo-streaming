@@ -33,7 +33,7 @@ export function Row({ title, href, items, logoPath }) {
           {title}
         </h2>
         {href && (
-          <Link href={href} aria-label={`Ver tudo: ${title}`} className="text-sm font-semibold text-accent hover:underline">
+          <Link href={href} aria-label={`Ver tudo: ${title}`} className="text-sm font-semibold text-accent-text hover:underline">
             Ver tudo
           </Link>
         )}

@@ -37,8 +37,8 @@ export function SignInForm({ voltar = '/' }) {
         <button type="submit" disabled={busy} className={buttonClass}>Entrar</button>
       </form>
       <div className="mt-4 flex justify-between text-sm">
-        <Link href="/esqueci-senha" className="text-accent hover:underline">Esqueci minha senha</Link>
-        <Link href="/criar-conta" className="text-accent hover:underline">Criar conta</Link>
+        <Link href="/esqueci-senha" className="text-accent-text hover:underline">Esqueci minha senha</Link>
+        <Link href="/criar-conta" className="text-accent-text hover:underline">Criar conta</Link>
       </div>
       <form action={signInDemoAction} className="mt-8 border-t border-line pt-6 text-center">
         <button type="submit" className="w-full rounded-full border border-line px-6 py-3 font-bold hover:bg-surface-2">

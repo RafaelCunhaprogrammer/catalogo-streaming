@@ -145,7 +145,7 @@ export function SearchBox({ genres, signedIn = true }) {
             <Link
               href={`/busca?${queryString}`}
               onClick={() => setOpen(false)}
-              className="block border-t border-line p-3 text-center text-sm font-semibold text-accent hover:bg-surface-2"
+              className="block border-t border-line p-3 text-center text-sm font-semibold text-accent-text hover:bg-surface-2"
             >
               Ver todos os resultados
             </Link>

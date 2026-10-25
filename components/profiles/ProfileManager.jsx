@@ -58,7 +58,7 @@ export function ProfileManager({ profiles, hasPin, editId, voltar }) {
     <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-black">Gerenciar perfis</h1>
-        <Link href={direct && voltar ? voltar : '/perfis'} className="font-semibold text-accent hover:underline">Pronto</Link>
+        <Link href={direct && voltar ? voltar : '/perfis'} className="font-semibold text-accent-text hover:underline">Pronto</Link>
       </div>
       {error && <p role="alert" className="mt-4 font-semibold text-accent-2">{error}</p>}
       <ul className="mt-8 space-y-4">

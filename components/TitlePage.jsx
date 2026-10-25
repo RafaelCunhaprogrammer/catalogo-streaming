@@ -75,7 +75,7 @@ export function TitleView({ title }) {
                     href={href}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 font-semibold hover:border-accent hover:text-accent"
+                    className="flex items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 font-semibold hover:border-accent hover:text-accent-text"
                   >
                     {chip}
                     <ExternalLink aria-hidden="true" className="h-4 w-4" />
@@ -90,7 +90,7 @@ export function TitleView({ title }) {
         </ul>
         <TitleActions title={{ id: title.id, type: title.type, title: title.title }} seasons={title.seasonList ?? []} />
         {title.watchLink && (
-          <a href={title.watchLink} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-accent underline">
+          <a href={title.watchLink} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-accent-text underline">
             Ver detalhes de disponibilidade
           </a>
         )}

@@ -48,7 +48,7 @@ export function SignUpForm() {
         {error && <p role="alert" className="text-sm font-semibold text-accent-2">{error}{error.startsWith('Já existe') && <> <Link href="/esqueci-senha" className="underline">Esqueci minha senha</Link></>}</p>}
         <button type="submit" disabled={busy} className={buttonClass}>Criar conta</button>
       </form>
-      <p className="mt-4 text-center text-sm">Já tem conta? <Link href="/entrar" className="text-accent hover:underline">Entrar</Link></p>
+      <p className="mt-4 text-center text-sm">Já tem conta? <Link href="/entrar" className="text-accent-text underline">Entrar</Link></p>
     </>
   );
 }

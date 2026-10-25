@@ -10,6 +10,7 @@
   --text: #f4f1fb;
   --muted: #b9b0cf;
   --accent: #8b5cf6;
+  --accent-text: #a78bfa; /* acento para texto sobre fundos escuros: 6,6:1 em --surface */
   --accent-2: #ec4899;
   --border: rgb(255 255 255 / 0.12);
   --glow: 0 0 18px rgb(236 72 153 / 0.55);
@@ -23,6 +24,7 @@
   --text: #1e1433;
   --muted: #5b5170;
   --accent: #7c3aed;
+  --accent-text: #7c3aed;
   --accent-2: #db2777;
   --border: rgb(30 20 51 / 0.12);
   --glow: 0 4px 14px rgb(124 58 237 / 0.25);
@@ -36,6 +38,7 @@
   --text: #a59fb3;
   --muted: #8a8399;
   --accent: #8b7bc0;
+  --accent-text: #8b7bc0;
   --accent-2: #a0708f;
   --border: rgb(255 255 255 / 0.08);
   --glow: none;
@@ -53,6 +56,7 @@
   --text: #000000;
   --muted: #1a1a1a;
   --accent: #5b21b6;
+  --accent-text: #5b21b6;
   --accent-2: #9d174d;
   --border: #000000;
 }
@@ -64,6 +68,7 @@
   --text: #ffffff;
   --muted: #f0f0f0;
   --accent: #c4b5fd;
+  --accent-text: #c4b5fd;
   --accent-2: #f9a8d4;
   --border: #ffffff;
 }
@@ -78,6 +83,7 @@ html[data-text="muito-grande"] { font-size: 150%; }
   --color-fg: var(--text);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
   --color-accent-2: var(--accent-2);
   --color-line: var(--border);
   --shadow-glow: var(--glow);
