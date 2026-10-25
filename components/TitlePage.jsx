@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getTitleDetails } from '@/lib/tmdb/catalog';
+import { getTitleBasics, getTitleDetails } from '@/lib/tmdb/catalog';
 import { imageSet } from '@/lib/images';
 import { formatRuntime, formatSeasons, certificationLabel, CERTIFICATION_STYLES } from '@/lib/format';
 import { TrailerButton } from '@/components/TrailerButton';
@@ -11,7 +11,8 @@ import { PinGate } from '@/components/kids/PinGate';
 import { TitleActions } from '@/components/lists/TitleActions';
 import { getDb } from '@/lib/db';
 import { buildSnapshot } from '@/lib/lists/snapshot';
-import { refreshSnapshot } from '@/lib/lists/store';
+import { getMark, refreshSnapshot } from '@/lib/lists/store';
+import { parseTarget } from '@/lib/lists/rules';
 
 function Certification({ value }) {
   if (!value) return <span className="text-sm text-white/70">Classificação não informada</span>;
@@ -58,6 +59,9 @@ export function TitleView({ title }) {
 
       <section aria-labelledby="onde-assistir" className="px-4 pt-10 sm:px-8">
         <h2 id="onde-assistir" className="text-lg font-bold sm:text-xl">Onde assistir</h2>
+        {title.providers.length === 0 ? (
+          <p className="mt-4 text-muted">Este título não está mais em nenhum streaming no Brasil.</p>
+        ) : null}
         <ul className="mt-4 flex flex-wrap gap-3">
           {title.providers.map((p) => {
             const href = watchUrl(p.id, title.title, title.watchLink);
@@ -122,12 +126,21 @@ export function TitleView({ title }) {
 
 // getTitleDetails usa o cache do fetch, então a página e o título da aba fazem uma só chamada ao TMDB.
 export async function titleMetadata(type, id) {
-  const title = await getTitleDetails(type, id);
+  const title = (await getTitleDetails(type, id)) ?? (await getTitleBasics(type, id));
   return { title: title ? title.title : 'Não encontrado' };
 }
 
+// Título que saiu dos streamings do Brasil continua aberto para quem o tem nas listas (para ver e desmarcar).
+async function markedButUnavailable(type, id, viewer) {
+  const target = parseTarget(type, id);
+  if (!viewer?.profile || !target) return null;
+  const mark = await getMark(getDb(), viewer.profile.id, target.type, target.id).catch(() => null);
+  if (!mark) return null;
+  return getTitleBasics(type, id);
+}
+
 export async function TitlePage({ type, id, viewer }) {
-  const title = await getTitleDetails(type, id);
+  const title = (await getTitleDetails(type, id)) ?? (await markedButUnavailable(type, id, viewer));
   if (!title) notFound();
   if (viewer?.kids) {
     const key = `${type}-${id}`;
