@@ -131,6 +131,20 @@ describe('ações das listas', () => {
     expect(await actions.seasonEpisodesAction(7, 2)).toEqual({ ok: false, error: 'erro' });
   });
 
+  it('Kids: episódios de série acima da faixa pedem PIN e não chamam o TMDB', async () => {
+    const p = await seed('kids');
+    const kids = { ...adultViewer(p), kids: true, maxRating: '10' };
+    viewer.mockResolvedValue(kids);
+    details.mockResolvedValue({ ...serie, certification: '14' });
+    tmdb.mockResolvedValue({ episodes: [{ episode_number: 1, name: 'Piloto' }] });
+    expect(await actions.seasonEpisodesAction(7, 1)).toEqual({ ok: false, error: 'pin' });
+    expect(tmdb).not.toHaveBeenCalled();
+    details.mockResolvedValue(null);
+    expect(await actions.seasonEpisodesAction(7, 1)).toEqual({ ok: false, error: 'pin' });
+    viewer.mockResolvedValue({ ...kids, unlocked: new Set(['tv-7']) });
+    expect((await actions.seasonEpisodesAction(7, 1)).ok).toBe(true);
+  });
+
   it('no Kids, gêneros fora da lista liberada são descartados', async () => {
     const p = await seed('kids');
     viewer.mockResolvedValue({ ...adultViewer(p), kids: true, maxRating: '10' });
