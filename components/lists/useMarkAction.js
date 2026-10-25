@@ -9,34 +9,26 @@ import { useLists } from '@/components/lists/ListsProvider';
 export const SAVE_ERROR = 'Não foi possível salvar. Tente de novo.';
 export const LIMIT_ERROR = 'Sua lista chegou ao limite de 500 títulos. Remova alguns para adicionar novos.';
 
-// Marca o título com atualização otimista. Enquanto um envio está em andamento, só o último pedido espera na fila.
+// Marca o título com atualização otimista. A fila de envio é do título (no provedor): todos os cartazes
+// do mesmo título compartilham uma só fila, e enquanto um envio está em andamento só o último pedido espera.
 export function useMarkAction(title) {
   const router = useRouter();
-  const { getMark, setLocalMark, announce, notify } = useLists();
+  const { getMark, setLocalMark, announce, notify, getQueue, setBusy, isPending } = useLists();
   const mark = getMark(title.type, title.id);
-  const [pending, setPending] = useState(false);
+  const pending = isPending(title.type, title.id);
   const [pinChange, setPinChange] = useState(null);
 
-  const busy = useRef(false);
-  const latest = useRef(mark); // o que a tela mostra agora (otimista)
-  const confirmed = useRef(mark); // o último estado aceito pelo servidor
   const current = useRef(mark); // a marcação que a tela tem quando nada está em andamento
   useEffect(() => {
     current.current = mark;
   }, [mark]);
-  const queued = useRef(null);
 
-  const revert = useCallback(() => {
-    latest.current = confirmed.current;
-    setLocalMark(title.type, title.id, confirmed.current);
-  }, [setLocalMark, title.type, title.id]);
-
-  const send = useCallback(async (change, message) => {
-    busy.current = true;
-    setPending(true);
-    let next = { change, message };
+  const send = useCallback(async (first) => {
+    const q = getQueue(title.type, title.id);
+    setBusy(title.type, title.id, true);
+    let next = first;
     while (next) {
-      queued.current = null;
+      q.queued = null;
       let result;
       try {
         result = await markTitleAction(title.type, title.id, next.change);
@@ -44,40 +36,42 @@ export function useMarkAction(title) {
         result = { ok: false, error: 'erro' };
       }
       if (result.ok) {
-        confirmed.current = result.mark;
+        q.confirmed = result.mark;
         if (next.message) announce(next.message);
-        if (queued.current) {
-          next = queued.current;
+        if (q.queued) {
+          next = q.queued;
           continue;
         }
-        latest.current = result.mark;
+        q.latest = result.mark;
         setLocalMark(title.type, title.id, result.mark);
         break;
       }
-      queued.current = null;
-      revert();
-      if (result.error === 'pin') setPinChange({ change: next.change, message: next.message });
+      q.queued = null;
+      q.latest = q.confirmed;
+      setLocalMark(title.type, title.id, q.confirmed);
+      if (result.error === 'pin') next.onPin?.(next);
       else if (result.error === 'perfil') router.push('/perfis');
       else notify(result.error === 'limite' ? LIMIT_ERROR : SAVE_ERROR);
       break;
     }
-    busy.current = false;
-    setPending(false);
-  }, [title.type, title.id, announce, notify, revert, setLocalMark, router]);
+    setBusy(title.type, title.id, false);
+  }, [title.type, title.id, announce, notify, setBusy, getQueue, setLocalMark, router]);
 
   const run = useCallback((change, { message } = {}) => {
-    if (!busy.current) {
-      latest.current = current.current;
-      confirmed.current = current.current;
+    const q = getQueue(title.type, title.id);
+    if (!q.busy) {
+      q.latest = current.current;
+      q.confirmed = current.current;
     }
-    latest.current = { ...latest.current, ...change };
-    setLocalMark(title.type, title.id, latest.current);
-    if (busy.current) {
-      queued.current = { change: { ...queued.current?.change, ...change }, message };
+    q.latest = { ...q.latest, ...change };
+    setLocalMark(title.type, title.id, q.latest);
+    const item = { change, message, onPin: setPinChange };
+    if (q.busy) {
+      q.queued = { ...item, change: { ...q.queued?.change, ...change } };
       return;
     }
-    send(change, message);
-  }, [send, setLocalMark, title.type, title.id]);
+    send(item);
+  }, [send, getQueue, setLocalMark, title.type, title.id]);
 
   const onPinSuccess = useCallback(() => {
     setPinChange(null);

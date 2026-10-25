@@ -97,4 +97,47 @@ describe('favoritar pelo cartaz', () => {
     expect(verifyPinAction).toHaveBeenCalledWith({ pin: '1234', purpose: 'titulo', titleKey: 'movie-438631' });
     expect(await screen.findByRole('button', { name: 'Remover Duna dos favoritos' })).toBeInTheDocument();
   });
+
+  it('dois cartazes do mesmo título dividem uma só fila: nunca há envios simultâneos', async () => {
+    let active = 0;
+    let overlapped = false;
+    const releases = [];
+    markTitleAction.mockImplementation(() => new Promise((resolve) => {
+      active += 1;
+      if (active > 1) overlapped = true;
+      const index = releases.length;
+      releases.push(() => { active -= 1; resolve({ ok: true, mark: { ...saved, favorite: index === 0 } }); });
+    }));
+    render(
+      <ListsProvider initialMarks={{}}>
+        <PosterCard title={duna} />
+        <PosterCard title={duna} />
+      </ListsProvider>,
+    );
+    await userEvent.click(screen.getAllByRole('button', { name: 'Favoritar Duna' })[0]);
+    await userEvent.click(screen.getAllByRole('button', { name: /Duna/ })[1]);
+    expect(markTitleAction).toHaveBeenCalledTimes(1);
+    releases[0]();
+    await waitFor(() => expect(markTitleAction).toHaveBeenCalledTimes(2));
+    expect(markTitleAction.mock.calls[1][2]).toEqual({ favorite: false });
+    releases[1]();
+    await waitFor(() => screen.getAllByRole('button', { name: 'Favoritar Duna' }).forEach((b) => expect(b).toHaveAttribute('aria-pressed', 'false')));
+    expect(screen.getAllByRole('button', { name: 'Favoritar Duna' })).toHaveLength(2);
+    expect(overlapped).toBe(false);
+  });
+
+  it('adota as marcações novas do servidor para títulos parados', () => {
+    const { rerender } = render(
+      <ListsProvider initialMarks={{}}>
+        <PosterCard title={duna} />
+      </ListsProvider>,
+    );
+    expect(screen.getByRole('button', { name: 'Favoritar Duna' })).toHaveAttribute('aria-pressed', 'false');
+    rerender(
+      <ListsProvider initialMarks={{ 'movie-438631': saved }}>
+        <PosterCard title={duna} />
+      </ListsProvider>,
+    );
+    expect(screen.getByRole('button', { name: 'Remover Duna dos favoritos' })).toHaveAttribute('aria-pressed', 'true');
+  });
 });
