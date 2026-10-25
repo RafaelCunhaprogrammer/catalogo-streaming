@@ -7,8 +7,7 @@ import { getGenreLists } from '@/lib/tmdb/catalog';
 import { getViewerOrVisitor } from '@/lib/auth/viewer';
 import { savePrefsAction } from '@/lib/actions/conta';
 import { ListsProvider } from '@/components/lists/ListsProvider';
-import { getDb } from '@/lib/db';
-import { listMarks, markIndex } from '@/lib/lists/store';
+import { loadInitialMarks } from '@/lib/lists/initial-marks';
 import { Footer } from '@/components/Footer';
 import { BrightnessOverlay } from '@/components/BrightnessOverlay';
 import { IntroScene } from '@/components/IntroScene';
@@ -34,7 +33,7 @@ export default async function RootLayout({ children }) {
     signedIn: Boolean(viewer.user),
     profile: viewer.profile ? { id: viewer.profile.id, name: viewer.profile.name, color: viewer.profile.color, kind: viewer.profile.kind } : null,
   };
-  const marks = viewer.profile ? markIndex(await listMarks(getDb(), viewer.profile.id)) : null;
+  const marks = viewer.profile ? await loadInitialMarks(viewer.profile.id) : null;
   const shell = (
     <>
       <Header genres={genres} account={account} />

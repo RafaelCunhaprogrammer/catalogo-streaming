@@ -3,7 +3,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createTestDb } from '../helpers/test-db';
 import { user, profileTitles } from '@/lib/db/schema';
 import { createProfile, saveFavoriteGenres, dismissGenresPrompt, getOwnedProfile, PROFILE_COLORS } from '@/lib/profiles';
-import { getMark, saveMark, refreshSnapshot, listMarks, continueWatching, recentSeeds, markIndex } from '@/lib/lists/store';
+import { getMark, saveMark, refreshSnapshot, listMarks, continueWatching, recentSeeds, markIndex, listMarkIndex } from '@/lib/lists/store';
 import { buildSnapshot } from '@/lib/lists/snapshot';
 import { MAX_MARKS } from '@/lib/lists/rules';
 
@@ -130,6 +130,16 @@ describe('consultas', () => {
     await saveMark(db, p1.id, 'tv', 5, { favorite: true, status: 'assistindo' }, snap());
     const idx = markIndex(await listMarks(db, p1.id));
     expect(idx['tv-5']).toEqual({ favorite: true, status: 'assistindo', season: 1, episode: 1 });
+  });
+});
+
+describe('listMarkIndex', () => {
+  it('traz só as colunas do índice, do perfil pedido', async () => {
+    await saveMark(db, p1.id, 'tv', 5, { favorite: true, status: 'assistindo' }, snap());
+    await saveMark(db, p2.id, 'movie', 9, { favorite: true }, snap());
+    const rows = await listMarkIndex(db, p1.id);
+    expect(rows).toEqual([{ mediaType: 'tv', tmdbId: 5, favorite: true, status: 'assistindo', season: 1, episode: 1 }]);
+    expect(markIndex(rows)).toEqual({ 'tv-5': { favorite: true, status: 'assistindo', season: 1, episode: 1 } });
   });
 });
 
