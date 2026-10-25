@@ -75,6 +75,17 @@ describe('conta de demonstração', () => {
       for (const p of profiles) expect(await listMarks(db, p.id)).toHaveLength(0);
     });
 
+    it('examples que nunca resolve: o reset termina sem marcações e grava o dia', async () => {
+      const { auth, db } = await createTestAuth();
+      const now = new Date('2026-10-17T15:00:00Z');
+      const userId = await ensureDemoAccount(db, auth, PASSWORD, now, { examples: () => new Promise(() => {}), examplesTimeoutMs: 20 });
+      const profiles = await listProfiles(db, userId);
+      expect(profiles).toHaveLength(3);
+      for (const p of profiles) expect(await listMarks(db, p.id)).toHaveLength(0);
+      expect(await verifyPin(db, userId, DEMO_PIN)).toEqual({ ok: true });
+      expect(await resetDemoIfNeeded(db, userId, new Date('2026-10-17T16:00:00Z'))).toBe(false);
+    });
+
     it('o reset do dia seguinte apaga marcações feitas por visitantes', async () => {
       const { auth, db } = await createTestAuth();
       const userId = await ensureDemoAccount(db, auth, PASSWORD, new Date('2026-10-17T15:00:00Z'), { examples });
