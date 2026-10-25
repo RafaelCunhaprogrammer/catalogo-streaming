@@ -231,7 +231,7 @@ O estado das marcações chega aos cartazes por um provedor no cliente (`ListsPr
 | Perfil excluído em outro aparelho | Volta a "Quem está assistindo?" (regra da B1) |
 | Série sem temporadas no TMDB | "Onde você parou" escondido; *Assistindo* funciona |
 | Temporada guardada que não existe mais | Ajusta para a última temporada existente |
-| Título que saiu do streaming | Continua nas listas; ▶ vira "Ver onde assistir" |
+| Título que saiu do streaming | Continua nas listas; ▶ vira "Ver onde assistir". A página dele abre para o perfil que o marcou, com "Este título não está mais em nenhum streaming no Brasil."; para os demais, continua "não encontrado" (regra da B1) |
 | Duas abas | Vale a última gravação; Minha lista recarrega ao voltar para a aba |
 | Kids e título com cadeado | Pede o PIN antes de marcar; nas listas, continua com cadeado |
 
