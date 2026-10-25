@@ -60,6 +60,23 @@ test('listas: favoritar, acompanhar a série, ver no Início e na Minha lista, e
   await page.getByRole('button', { name: 'Desfazer' }).click();
   await expect(page.getByRole('tab', { name: 'Favoritos (1)' })).toBeVisible();
 
+  // Já assisti: remover e desfazer devolve o filme, e a volta fica gravada (recarregar mantém).
+  await page.goto('/filme/101');
+  const watched = page.getByRole('button', { name: 'Já assisti Aventura Neon', exact: true });
+  await expect(watched).toHaveAttribute('aria-pressed', 'false');
+  await watched.click();
+  await expect(watched).toHaveAttribute('aria-pressed', 'true');
+  await page.goto('/minha-lista?aba=ja-assisti');
+  await expect(page.getByRole('tab', { name: 'Já assisti (1)' })).toHaveAttribute('aria-selected', 'true');
+  await page.getByRole('button', { name: 'Remover Aventura Neon desta lista' }).click();
+  await expect(page.getByRole('tab', { name: 'Já assisti (0)' })).toBeVisible();
+  await page.getByRole('button', { name: 'Desfazer' }).click();
+  await expect(page.getByRole('button', { name: 'Remover Aventura Neon desta lista' })).toBeVisible();
+  await expect(page.locator('[data-actors]')).toHaveAttribute('data-actors', '0'); // envios terminados
+  await expect(page.getByText('Não foi possível salvar. Tente de novo.')).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByRole('tab', { name: 'Já assisti (1)' })).toBeVisible();
+
   // Kids: troca de perfil com PIN, abre um título liberado e favorita.
   await page.getByRole('button', { name: 'Menu do perfil Pai' }).click();
   await page.getByRole('link', { name: 'Trocar perfil' }).click();

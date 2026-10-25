@@ -5,6 +5,7 @@ import { MyListView } from '@/components/lists/MyListView';
 import { UndoToast } from '@/components/lists/UndoToast';
 import { ListsProvider } from '@/components/lists/ListsProvider';
 import { markTitleAction } from '@/lib/actions/listas';
+import { applyChange } from '@/lib/lists/rules';
 
 const replace = vi.fn();
 const refresh = vi.fn();
@@ -50,14 +51,32 @@ describe('Minha lista', () => {
     const panel = screen.getByRole('tabpanel');
     const names = () => within(panel).getAllByRole('link').map((a) => a.textContent.trim()).filter(Boolean);
     expect(names()[0]).toContain('Arcane');
-    await userEvent.click(screen.getByRole('button', { name: 'A–Z' }));
-    expect(names()[0]).toContain('Arcane');
     await userEvent.click(screen.getByRole('button', { name: 'Filmes' }));
     expect(within(panel).queryByRole('link', { name: /Arcane/ })).not.toBeInTheDocument();
     expect(within(panel).getByRole('link', { name: /Duna/ })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Séries' }));
     expect(within(panel).getByRole('link', { name: /Arcane/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Séries' })).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('A–Z ordena pelo nome, não pela data', async () => {
+    const list = [
+      { ...base, id: 11, type: 'movie', title: 'Zorro', favorite: true, status: 'nenhum', favoriteAt: '2026-03-01T00:00:00Z' },
+      { ...base, id: 12, type: 'movie', title: 'Matrix', favorite: true, status: 'nenhum', favoriteAt: '2026-02-01T00:00:00Z' },
+      { ...base, id: 13, type: 'movie', title: 'Ágata', favorite: true, status: 'nenhum', favoriteAt: '2026-01-01T00:00:00Z' },
+    ];
+    render(
+      <ListsProvider initialMarks={Object.fromEntries(list.map((i) => [`movie-${i.id}`, { favorite: true, status: 'nenhum', season: null, episode: null }]))}>
+        <MyListView items={list} />
+      </ListsProvider>,
+    );
+    const panel = screen.getByRole('tabpanel');
+    const names = () => within(panel).getAllByRole('button', { name: /^Remover .* desta lista$/ }).map((b) => b.getAttribute('aria-label').replace(/^Remover | desta lista$/g, ''));
+    expect(names()).toEqual(['Zorro', 'Matrix', 'Ágata']);
+    await userEvent.click(screen.getByRole('button', { name: 'A–Z' }));
+    expect(names()).toEqual(['Ágata', 'Matrix', 'Zorro']);
+    await userEvent.click(screen.getByRole('button', { name: 'Mais recentes' }));
+    expect(names()).toEqual(['Zorro', 'Matrix', 'Ágata']);
   });
 
   it('aba vazia explica e leva a Explorar', () => {
@@ -82,18 +101,61 @@ describe('Minha lista', () => {
     expect(screen.queryByRole('button', { name: 'Desfazer' })).not.toBeInTheDocument();
   });
 
-  it('desfazer em Assistindo restaura situação e posição', async () => {
-    markTitleAction.mockResolvedValue({ ok: true, mark: { favorite: false, status: 'nenhum', season: null, episode: null } });
-    render(
-      <ListsProvider initialMarks={{ 'movie-4': { favorite: false, status: 'assistindo', season: 2, episode: 3 } }}>
-        <MyListView items={[all[2]]} initialTab="assistindo" />
-      </ListsProvider>,
-    );
-    await userEvent.click(screen.getByRole('button', { name: 'Remover Bravo desta lista' }));
-    expect(markTitleAction).toHaveBeenCalledWith('movie', 4, { status: 'nenhum' });
+  // Servidor de mentira com as mesmas regras do de verdade: recusa temporada/episódio nulos e aplica a mudança.
+  function fakeServer(start, seasons = []) {
+    const state = { ...start };
+    markTitleAction.mockImplementation(async (type, id, change) => {
+      const bad = (k) => k in change && !(Number.isSafeInteger(change[k]) && change[k] >= 1);
+      if (bad('season') || bad('episode')) return { ok: false, error: 'invalido' };
+      Object.assign(state, applyChange(state, change, { type, seasons }));
+      return { ok: true, mark: { ...state } };
+    });
+  }
+  const renderOne = (item, mark, tab) => render(
+    <ListsProvider initialMarks={{ [`${item.type}-${item.id}`]: mark }}>
+      <MyListView items={[item]} initialTab={tab} />
+    </ListsProvider>,
+  );
+  async function removeAndUndo(name, tabLabel) {
+    await userEvent.click(screen.getByRole('button', { name: `Remover ${name} desta lista` }));
     await waitFor(() => expect(markTitleAction).toHaveBeenCalledTimes(1));
+    expect(screen.getByRole('tab', { name: `${tabLabel} (0)` })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Desfazer' }));
-    await waitFor(() => expect(markTitleAction).toHaveBeenLastCalledWith('movie', 4, { status: 'assistindo', season: 2, episode: 3 }));
+    await waitFor(() => expect(markTitleAction).toHaveBeenCalledTimes(2));
+    expect(await screen.findByRole('button', { name: `Remover ${name} desta lista` })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: `${tabLabel} (1)` })).toBeInTheDocument();
+    expect(screen.queryByText('Não foi possível salvar. Tente de novo.')).not.toBeInTheDocument();
+  }
+
+  it('desfazer em Assistindo de um filme restaura a situação', async () => {
+    const bravo = { ...base, id: 4, type: 'movie', title: 'Bravo', favorite: false, status: 'assistindo', statusAt: '2026-01-01T00:00:00Z' };
+    const mark = { favorite: false, status: 'assistindo', season: null, episode: null };
+    fakeServer(mark);
+    renderOne(bravo, mark, 'assistindo');
+    await removeAndUndo('Bravo', 'Assistindo');
+    expect(markTitleAction).toHaveBeenNthCalledWith(1, 'movie', 4, { status: 'nenhum' });
+    expect(markTitleAction).toHaveBeenLastCalledWith('movie', 4, { status: 'assistindo' });
+  });
+
+  it('desfazer em Assistindo de uma série restaura situação, temporada e episódio', async () => {
+    const arcane = { ...base, id: 2, type: 'tv', title: 'Arcane', favorite: false, status: 'assistindo', statusAt: '2026-02-01T00:00:00Z' };
+    const mark = { favorite: false, status: 'assistindo', season: 2, episode: 3 };
+    fakeServer(mark, [{ number: 1, episodes: 9 }, { number: 2, episodes: 9 }]);
+    renderOne(arcane, mark, 'assistindo');
+    await removeAndUndo('Arcane', 'Assistindo');
+    expect(markTitleAction).toHaveBeenLastCalledWith('tv', 2, { status: 'assistindo', season: 2, episode: 3 });
+  });
+
+  it.each([
+    ['filme', { id: 5, type: 'movie', title: 'Coda' }],
+    ['série', { id: 6, type: 'tv', title: 'Dark' }],
+  ])('desfazer em Já assisti (%s) devolve o título à aba', async (_, extra) => {
+    const item = { ...base, ...extra, favorite: false, status: 'assistido', statusAt: '2026-01-05T00:00:00Z' };
+    const mark = { favorite: false, status: 'assistido', season: null, episode: null };
+    fakeServer(mark, [{ number: 1, episodes: 8 }]);
+    renderOne(item, mark, 'ja-assisti');
+    await removeAndUndo(item.title, 'Já assisti');
+    expect(markTitleAction).toHaveBeenLastCalledWith(item.type, item.id, { status: 'assistido' });
   });
 
   it('depois que o envio termina, o executor escondido sai da tela', async () => {

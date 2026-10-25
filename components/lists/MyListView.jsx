@@ -115,9 +115,14 @@ export function MyListView({ items, initialTab = 'favoritos' }) {
 
   const onRemove = ({ item, mark }) => {
     const title = { type: item.type, id: item.id, title: item.title };
+    // Temporada e episódio só vão quando existem (filme e Já assisti não têm posição; o servidor recusa nulos).
     const restore = tab.id === 'favoritos'
       ? { favorite: true }
-      : { status: mark.status, season: mark.season, episode: mark.episode };
+      : {
+        status: mark.status,
+        ...(mark.season != null ? { season: mark.season } : {}),
+        ...(mark.episode != null ? { episode: mark.episode } : {}),
+      };
     if (!enabled) setRemoved((prev) => new Set(prev).add(titleKey(item.type, item.id)));
     act(title, tab.remove, `${item.title} removido da lista`);
     setUndo({ title, restore, key: titleKey(item.type, item.id), n: nextKey.current++ });
