@@ -79,7 +79,7 @@ describe('getRecommendations', () => {
     const out = await getRecommendations({ profile: { id: 'p1', favoriteGenres: ['acao'] }, myProviders: [8, 337], viewer: {}, now });
     const call = tmdbFetch.mock.calls.find((c) => c[0] === '/discover/movie');
     expect(call[1]).toMatchObject({
-      sort_by: 'vote_average.desc', 'vote_average.gte': 7, 'vote_count.gte': 200, with_genres: 28, with_watch_providers: '8|337',
+      sort_by: 'vote_average.desc', 'vote_average.gte': 7, 'vote_count.gte': 200, with_genres: '28', with_watch_providers: '8|337',
     });
     expect(tmdbFetch.mock.calls.some((c) => c[0] === '/discover/tv')).toBe(true);
     expect(out.length).toBeGreaterThan(0);
@@ -105,6 +105,18 @@ describe('getRecommendations', () => {
     const out = await getRecommendations({ profile, myProviders: [], viewer: { kids: true, maxRating: '10' }, now });
     expect(filterByRating).toHaveBeenCalledWith(expect.any(Array), '10');
     expect(out.map((t) => t.id)).toEqual([1]);
+  });
+
+  it('Kids restringe o discover aos gêneros infantis; adulto não', async () => {
+    tmdbFetch.mockResolvedValue({ results: [] });
+    const p = { id: 'p1', favoriteGenres: ['aventura'] };
+    await getRecommendations({ profile: p, myProviders: [], viewer: { kids: true, maxRating: '10' }, now });
+    const kidsGenres = tmdbFetch.mock.calls.filter((c) => c[0] === '/discover/movie').map((c) => c[1].with_genres);
+    expect(kidsGenres).toEqual(['12,16', '12,10751']);
+    tmdbFetch.mockClear();
+    await getRecommendations({ profile: p, myProviders: [], viewer: {}, now });
+    const adult = tmdbFetch.mock.calls.filter((c) => c[0] === '/discover/movie').map((c) => c[1].with_genres);
+    expect(adult).toEqual(['12']);
   });
 
   it('devolve no máximo 20', async () => {
