@@ -8,6 +8,10 @@ import { ExternalLink, Star } from 'lucide-react';
 import { watchUrl } from '@/lib/providers';
 import { getTitleRating, ratingAllowed, annotateRatings } from '@/lib/tmdb/ratings';
 import { PinGate } from '@/components/kids/PinGate';
+import { TitleActions } from '@/components/lists/TitleActions';
+import { getDb } from '@/lib/db';
+import { buildSnapshot } from '@/lib/lists/snapshot';
+import { refreshSnapshot } from '@/lib/lists/store';
 
 function Certification({ value }) {
   if (!value) return <span className="text-sm text-white/70">Classificação não informada</span>;
@@ -84,6 +88,7 @@ export function TitleView({ title }) {
             );
           })}
         </ul>
+        <TitleActions title={{ id: title.id, type: title.type, title: title.title }} seasons={title.seasonList ?? []} />
         {title.watchLink && (
           <a href={title.watchLink} target="_blank" rel="noreferrer" className="mt-3 inline-block text-sm text-accent underline">
             Ver detalhes de disponibilidade
@@ -139,6 +144,10 @@ export async function TitlePage({ type, id, viewer }) {
       );
     }
     title.recommendations = await annotateRatings(title.recommendations, viewer.maxRating, viewer.unlocked);
+  }
+  // Mantém a cópia guardada em dia (só atualiza se o título já estiver marcado), sem segurar a página.
+  if (viewer?.profile) {
+    refreshSnapshot(getDb(), viewer.profile.id, type, id, buildSnapshot(title)).catch(() => {});
   }
   return <TitleView title={title} />;
 }
