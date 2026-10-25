@@ -107,7 +107,7 @@ Ajustes pequenos já conhecidos da B1:
 - [x] Gêneros favoritos do perfil: passo ao criar o perfil, edição em Gerenciar perfis e convite no Início
 - [x] Kids: marcações respeitam a faixa e o PIN dos pais
 - [x] Demonstração recriada todo dia, já com listas de exemplo no perfil Pai
-- [x] Testes: 474 de unidade e componentes, 29 de ponta a ponta (percurso das listas com acessibilidade)
+- [x] Testes: 495 de unidade e componentes, 29 de ponta a ponta (percurso das listas com acessibilidade, incluindo desfazer em Já assisti)
 - [ ] Sua revisão no navegador
 
 ## Etapa C – Assinatura (pagamento simulado)
