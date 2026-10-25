@@ -33,6 +33,23 @@ describe('TitleActions', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
+  it('favorito na página: coração cheio, palavra "Favorito" e fundo em destaque', () => {
+    setup(movie, {}, { 'movie-1': mk({ favorite: true }) });
+    const on = screen.getByRole('button', { name: 'Remover Duna dos favoritos' });
+    expect(on).toHaveTextContent('Favorito');
+    expect(on).toHaveClass('border-accent', 'bg-accent/15');
+    expect(on).not.toHaveClass('bg-surface');
+    expect(on.querySelector('svg')).toHaveClass('fill-current');
+  });
+
+  it('não favorito na página: fundo comum', () => {
+    setup(movie, {}, { 'movie-1': mk({ status: 'assistindo' }) });
+    const off = screen.getByRole('button', { name: 'Favoritar Duna' });
+    expect(off).toHaveTextContent('Favoritar');
+    expect(off).toHaveClass('bg-surface');
+    expect(off).not.toHaveClass('bg-accent/15');
+  });
+
   it('filme: três botões com aria-pressed; Já assisti desmarca Assistindo; clicar de novo desmarca', async () => {
     markTitleAction.mockImplementation(async (t, i, c) => ({ ok: true, mark: mk(c) }));
     setup(movie, {}, { 'movie-1': mk({ status: 'assistindo' }) });

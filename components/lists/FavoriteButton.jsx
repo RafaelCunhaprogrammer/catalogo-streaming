@@ -11,7 +11,7 @@ function Button({ title, variant }) {
   const message = `${title.title} ${on ? 'removido dos' : 'adicionado aos'} favoritos`;
   const base = 'inline-flex items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-2';
   const cls = variant === 'page'
-    ? `${base} gap-2 border border-line bg-surface px-4 py-2 text-sm font-semibold text-fg hover:bg-surface-2`
+    ? `${base} gap-2 border px-4 py-2 text-sm font-semibold text-fg ${on ? 'border-accent bg-accent/15' : 'border-line bg-surface hover:bg-surface-2'}`
     : `${base} absolute left-1.5 top-1.5 z-10 h-8 w-8 bg-black/75 text-white transition-opacity duration-200 calm:transition-none hover:bg-black/90 ${
       on ? 'opacity-100' : 'opacity-0 focus-visible:opacity-100 group-hover/card:opacity-100 [@media(hover:none)]:opacity-100'
     }`;
