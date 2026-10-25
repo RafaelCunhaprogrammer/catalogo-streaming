@@ -10,6 +10,7 @@ function Probe() {
       <p>tema:{prefs.theme} brilho:{prefs.brightness}</p>
       <button onClick={() => updatePrefs({ brightness: 40 })}>40</button>
       <button onClick={() => updatePrefs({ brightness: 30 })}>30</button>
+      <button onClick={() => updatePrefs({ theme: 'claro' })}>claro</button>
     </>
   );
 }
@@ -38,6 +39,32 @@ describe('preferências do perfil', () => {
     await act(async () => { vi.advanceTimersByTime(PREFS_SAVE_DEBOUNCE_MS); });
     expect(onSave).toHaveBeenCalledTimes(1);
     expect(onSave.mock.calls[0][0]).toMatchObject({ brightness: 30 });
+  });
+
+  it('mudança de tema grava na hora, sem esperar o debounce', async () => {
+    vi.useFakeTimers();
+    const onSave = vi.fn().mockResolvedValue({ ok: true });
+    render(<SettingsProvider initialPrefs={defaultPrefs()} onSave={onSave}><Probe /></SettingsProvider>);
+    await flush();
+    await act(async () => { screen.getByText('claro').click(); });
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave.mock.calls[0][0]).toMatchObject({ theme: 'claro' });
+    await act(async () => { vi.advanceTimersByTime(PREFS_SAVE_DEBOUNCE_MS * 2); });
+    expect(onSave).toHaveBeenCalledTimes(1);
+  });
+
+  it('brilho pendente é gravado ao sair da página (pagehide)', async () => {
+    vi.useFakeTimers();
+    const onSave = vi.fn().mockResolvedValue({ ok: true });
+    render(<SettingsProvider initialPrefs={defaultPrefs()} onSave={onSave}><Probe /></SettingsProvider>);
+    await flush();
+    await act(async () => { screen.getByText('40').click(); });
+    expect(onSave).not.toHaveBeenCalled();
+    await act(async () => { window.dispatchEvent(new Event('pagehide')); });
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(onSave.mock.calls[0][0]).toMatchObject({ brightness: 40 });
+    await act(async () => { vi.advanceTimersByTime(PREFS_SAVE_DEBOUNCE_MS * 2); });
+    expect(onSave).toHaveBeenCalledTimes(1);
   });
 
   it('visitante continua só com o navegador', async () => {

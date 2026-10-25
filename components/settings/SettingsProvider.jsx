@@ -10,6 +10,9 @@ const SettingsContext = createContext(null);
 // Com perfil, mudanças seguidas (ex.: arrastar o brilho) viram uma única gravação no servidor.
 export const PREFS_SAVE_DEBOUNCE_MS = 500;
 
+// Preferências ajustadas arrastando (várias mudanças por segundo): essas esperam o debounce.
+const CONTINUOUS_PREFS = new Set(['brightness']);
+
 function safeLocalStorage() {
   try {
     return window.localStorage;
@@ -42,18 +45,56 @@ export function SettingsProvider({ children, initialPrefs, onSave }) {
   }, [prefs, resolvedTheme, loaded]);
 
   // Com perfil: grava as mudanças no servidor (o localStorage acima vira só espelho, para o script do <head>).
+  // Mudanças discretas (tema, texto, interruptores, streamings) gravam na hora; só as contínuas (brilho) esperam o
+  // debounce. Qualquer gravação pendente é despachada ao sair da página, para recarregar não perder a mudança.
   const firstSave = useRef(true);
+  const lastPatchContinuous = useRef(false);
+  const pendingSave = useRef(null);
+  const onSaveRef = useRef(onSave);
+  useEffect(() => { onSaveRef.current = onSave; }, [onSave]);
+
   useEffect(() => {
     if (!loaded || !onSave) return undefined;
     if (firstSave.current) {
       firstSave.current = false;
       return undefined;
     }
-    const timer = setTimeout(() => onSave(prefs), PREFS_SAVE_DEBOUNCE_MS);
+    if (!lastPatchContinuous.current) {
+      pendingSave.current = null;
+      onSave(prefs);
+      return undefined;
+    }
+    pendingSave.current = prefs;
+    const timer = setTimeout(() => {
+      if (!pendingSave.current) return; // já despachada ao sair da página
+      pendingSave.current = null;
+      onSave(prefs);
+    }, PREFS_SAVE_DEBOUNCE_MS);
     return () => clearTimeout(timer);
   }, [prefs, loaded, onSave]);
 
-  const updatePrefs = useCallback((patch) => setPrefs((current) => ({ ...current, ...patch })), []);
+  useEffect(() => {
+    function flushPending() {
+      const pending = pendingSave.current;
+      if (!pending || !onSaveRef.current) return;
+      pendingSave.current = null;
+      onSaveRef.current(pending);
+    }
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') flushPending();
+    }
+    window.addEventListener('pagehide', flushPending);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.removeEventListener('pagehide', flushPending);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
+
+  const updatePrefs = useCallback((patch) => {
+    lastPatchContinuous.current = Object.keys(patch).every((key) => CONTINUOUS_PREFS.has(key));
+    setPrefs((current) => ({ ...current, ...patch }));
+  }, []);
   const value = useMemo(() => ({ prefs, resolvedTheme, updatePrefs, loaded }), [prefs, resolvedTheme, updatePrefs, loaded]);
 
   return (
