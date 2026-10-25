@@ -26,9 +26,10 @@ describe('menu do topo', () => {
     expect(within(nav).getByRole('link', { name: 'Filmes' })).toHaveAttribute('href', '/filmes');
     expect(within(nav).getByRole('link', { name: 'Séries' })).toHaveAttribute('href', '/series');
     expect(within(nav).getByRole('link', { name: 'Explorar' })).toHaveAttribute('href', '/explorar');
+    expect(within(nav).getByRole('link', { name: 'Minha lista' })).toHaveAttribute('href', '/minha-lista');
     expect(items).toContain('Categorias');
     const order = [...nav.querySelectorAll('a, button')].map((el) => el.textContent.trim());
-    expect(order).toEqual(['Início', 'Filmes', 'Séries', 'Categorias', 'Explorar']);
+    expect(order).toEqual(['Início', 'Filmes', 'Séries', 'Categorias', 'Explorar', 'Minha lista']);
   });
 
   it('marca a seção atual', () => {
@@ -59,6 +60,7 @@ describe('menu do topo', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Abrir menu' }));
     const menu = screen.getByRole('navigation', { name: 'Menu' });
     expect(within(menu).getByRole('link', { name: 'Filmes' })).toHaveAttribute('href', '/filmes');
+    expect(within(menu).getByRole('link', { name: 'Minha lista' })).toHaveAttribute('href', '/minha-lista');
     expect(within(menu).getByRole('link', { name: 'Guerra' })).toHaveAttribute('href', '/explorar?genero=10752');
   });
 

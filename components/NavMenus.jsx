@@ -9,6 +9,7 @@ export const NAV = [
   { href: '/filmes', label: 'Filmes' },
   { href: '/series', label: 'Séries' },
   { href: '/explorar', label: 'Explorar' },
+  { href: '/minha-lista', label: 'Minha lista' },
 ];
 
 export const isActive = (pathname, href) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
@@ -142,6 +143,7 @@ export function DesktopNav({ pathname, genres }) {
       {NAV.slice(0, 3).map(link)}
       <CategoriesMenu genres={genres} />
       {link(NAV[3])}
+      {link(NAV[4])}
     </nav>
   );
 }
