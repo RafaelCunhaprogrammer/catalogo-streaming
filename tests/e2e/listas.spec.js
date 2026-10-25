@@ -9,12 +9,28 @@ async function expectNoViolations(page, label) {
   expect(results.violations.map((v) => `${label} ${v.id}`)).toEqual([]);
 }
 
+// Deixa o perfil sem marcações: o banco do e2e pode ser reaproveitado entre execuções.
+async function clearLists(page) {
+  await page.goto('/minha-lista');
+  for (const tab of ['Favoritos', 'Assistindo', 'Já assisti']) {
+    await page.getByRole('tab', { name: `${tab} (` }).click();
+    const remove = page.getByRole('button', { name: /^Remover .* desta lista$/ });
+    while ((await remove.count()) > 0) {
+      const before = await remove.count();
+      await remove.first().click();
+      await expect(remove).toHaveCount(before - 1);
+    }
+  }
+}
+
 test.beforeEach(async ({ page }) => {
   await prepare(page);
 });
 
 test('listas: favoritar, acompanhar a série, ver no Início e na Minha lista, e favoritar no Kids', async ({ page }) => {
   await signInDemo(page, 'Pai');
+  await clearLists(page);
+  await page.goto('/');
 
   // Favoritar pelo cartaz no Início.
   await page.getByRole('button', { name: 'Favoritar Série Brilhante' }).first().click();
@@ -46,7 +62,7 @@ test('listas: favoritar, acompanhar a série, ver no Início e na Minha lista, e
 
   // Kids: troca de perfil com PIN, abre um título liberado e favorita.
   await page.getByRole('button', { name: 'Menu do perfil Pai' }).click();
-  await page.getByRole('menuitem', { name: 'Trocar perfil' }).or(page.getByRole('link', { name: 'Trocar perfil' })).click();
+  await page.getByRole('link', { name: 'Trocar perfil' }).click();
   await page.waitForURL('**/perfis');
   await page.getByRole('button', { name: 'Pequeno', exact: true }).click();
   await page.waitForURL((url) => url.pathname === '/');
@@ -55,7 +71,10 @@ test('listas: favoritar, acompanhar a série, ver no Início e na Minha lista, e
   await page.getByLabel('PIN dos pais').fill('1234');
   await page.getByRole('button', { name: 'Confirmar' }).click();
   await expect(page.getByRole('heading', { level: 1, name: /Aventura Neon/ })).toBeVisible();
-  const heart = page.getByRole('button', { name: /^Favoritar Aventura Neon/ });
-  await heart.click();
-  await expect(page.getByRole('button', { name: /^Remover Aventura Neon.* dos favoritos/ })).toBeVisible();
+  const remove = page.getByRole('button', { name: 'Remover Aventura Neon dos favoritos' });
+  if (await remove.isVisible()) await remove.click(); // sobra de uma execução anterior
+  await page.getByRole('button', { name: 'Favoritar Aventura Neon' }).click();
+  await expect(remove).toBeVisible();
+  await page.getByRole('button', { name: 'Remover Aventura Neon dos favoritos' }).click(); // deixa o banco limpo
+  await expect(page.getByRole('button', { name: 'Favoritar Aventura Neon' })).toBeVisible();
 });

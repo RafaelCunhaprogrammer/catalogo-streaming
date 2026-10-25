@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProfilePicker } from '@/components/profiles/ProfilePicker';
 import { ProfileManager } from '@/components/profiles/ProfileManager';
@@ -120,7 +120,7 @@ describe('Gerenciar perfis', () => {
     await userEvent.type(name, 'Rafael');
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
     expect(updateProfileAction).toHaveBeenCalled();
-    expect(push).toHaveBeenCalledWith('/filmes');
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/filmes'));
   });
 
   it('um perfil de outra conta (ou inexistente) no endereço não abre nada', () => {
