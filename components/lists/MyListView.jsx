@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PosterCard } from '@/components/PosterCard';
@@ -29,14 +29,21 @@ const chip = (on) => `rounded-full border px-3 py-1 text-sm font-semibold focus-
 }`;
 
 // Executa uma mudança na marcação de um título pela fila compartilhada dele (uma vez, ao montar).
-function Actor({ title, change, message }) {
-  const { run, pinDialog } = useMarkAction(title);
+// Some da tela quando o envio termina, a menos que esteja pedindo o PIN.
+function Actor({ title, change, message, onDone }) {
+  const { run, pending, pinDialog } = useMarkAction(title);
   const done = useRef(false);
+  const [started, setStarted] = useState(false);
+  const askingPin = pinDialog.props.open;
   useEffect(() => {
     if (done.current) return;
     done.current = true;
     run(change, { message });
+    setStarted(true);
   }, [run, change, message]);
+  useEffect(() => {
+    if (started && !pending && !askingPin) onDone();
+  }, [started, pending, askingPin, onDone]);
   return pinDialog;
 }
 
@@ -64,6 +71,7 @@ export function MyListView({ items, initialTab = 'favoritos' }) {
   const [undo, setUndo] = useState(null);
   const tabRefs = useRef({});
   const panelRef = useRef(null);
+  const nextKey = useRef(0);
 
   useEffect(() => {
     const onVisible = () => {
@@ -102,7 +110,8 @@ export function MyListView({ items, initialTab = 'favoritos' }) {
     selectTab(TABS[target].id, true);
   };
 
-  const act = (title, change, message) => setActs((prev) => [...prev, { key: prev.length, title, change, message }]);
+  const act = (title, change, message) => setActs((prev) => [...prev, { key: nextKey.current++, title, change, message }]);
+  const dropAct = useCallback((key) => setActs((prev) => (prev.some((a) => a.key === key) ? prev.filter((a) => a.key !== key) : prev)), []);
 
   const onRemove = ({ item, mark }) => {
     const title = { type: item.type, id: item.id, title: item.title };
@@ -111,7 +120,7 @@ export function MyListView({ items, initialTab = 'favoritos' }) {
       : { status: mark.status, season: mark.season, episode: mark.episode };
     if (!enabled) setRemoved((prev) => new Set(prev).add(titleKey(item.type, item.id)));
     act(title, tab.remove, `${item.title} removido da lista`);
-    setUndo({ title, restore, key: titleKey(item.type, item.id) });
+    setUndo({ title, restore, key: titleKey(item.type, item.id), n: nextKey.current++ });
     panelRef.current?.focus();
   };
   const onUndo = () => {
@@ -128,7 +137,7 @@ export function MyListView({ items, initialTab = 'favoritos' }) {
   };
 
   return (
-    <div>
+    <div data-actors={acts.length}>
       <div role="tablist" aria-label="Minha lista" className="flex flex-wrap gap-2 border-b border-line pb-2">
         {TABS.map((t, i) => {
           const on = t.id === tabId;
@@ -187,8 +196,8 @@ export function MyListView({ items, initialTab = 'favoritos' }) {
         )}
       </div>
 
-      {acts.map((a) => <Actor key={a.key} title={a.title} change={a.change} message={a.message} />)}
-      {undo ? <UndoToast message="Removido" onUndo={onUndo} onClose={() => setUndo(null)} seconds={6} /> : null}
+      {acts.map((a) => <Actor key={a.key} title={a.title} change={a.change} message={a.message} onDone={() => dropAct(a.key)} />)}
+      {undo ? <UndoToast key={undo.n} message="Removido" onUndo={onUndo} onClose={() => setUndo(null)} seconds={6} /> : null}
     </div>
   );
 }

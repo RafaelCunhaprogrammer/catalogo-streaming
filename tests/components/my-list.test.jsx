@@ -96,6 +96,35 @@ describe('Minha lista', () => {
     await waitFor(() => expect(markTitleAction).toHaveBeenLastCalledWith('movie', 4, { status: 'assistindo', season: 2, episode: 3 }));
   });
 
+  it('depois que o envio termina, o executor escondido sai da tela', async () => {
+    markTitleAction.mockResolvedValue({ ok: true, mark: { favorite: false, status: 'nenhum', season: null, episode: null } });
+    const { container } = setup();
+    expect(container.querySelector('[data-actors]')).toHaveAttribute('data-actors', '0');
+    await userEvent.click(screen.getByRole('button', { name: 'Remover Duna desta lista' }));
+    await waitFor(() => expect(markTitleAction).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(container.querySelector('[data-actors]')).toHaveAttribute('data-actors', '0'));
+  });
+
+  it('cada remoção reinicia os 6 segundos do aviso', async () => {
+    vi.useFakeTimers();
+    try {
+      markTitleAction.mockResolvedValue({ ok: true, mark: { favorite: false, status: 'nenhum', season: null, episode: null } });
+      setup();
+      const click = async (name) => {
+        await act(async () => { screen.getByRole('button', { name }).click(); });
+      };
+      await click('Remover Duna desta lista');
+      await act(async () => { vi.advanceTimersByTime(4000); });
+      await click('Remover Arcane desta lista');
+      await act(async () => { vi.advanceTimersByTime(4000); });
+      expect(screen.getByRole('button', { name: 'Desfazer' })).toBeInTheDocument();
+      await act(async () => { vi.advanceTimersByTime(2100); });
+      expect(screen.queryByRole('button', { name: 'Desfazer' })).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('título bloqueado aparece como cartaz com cadeado', () => {
     setup([{ ...all[0], locked: true }]);
     expect(screen.getByRole('button', { name: /Duna.*bloqueado/ })).toBeInTheDocument();
