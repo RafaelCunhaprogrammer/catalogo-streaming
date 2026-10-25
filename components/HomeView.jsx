@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import { getHomeHero, getHomeRowDefs, getMoodCards, loadHomeRow } from '@/lib/tmdb/catalog';
+import { getRecommendations } from '@/lib/recommendations';
 import { parseProvidersCookie, PROVIDERS_COOKIE } from '@/lib/preferences';
 import { Hero } from '@/components/Hero';
 import { MoodPicker } from '@/components/MoodPicker';
@@ -26,6 +27,18 @@ async function RowSection({ def }) {
   const row = await loadHomeRow(def);
   if (!row.items.length) return null;
   return <Row title={row.title} href={row.href} logoPath={row.logoPath} items={row.items} />;
+}
+
+// "Indicados para você": some em silêncio se não houver resultado ou se o banco/TMDB falhar.
+async function RecommendationsSection({ viewer, myProviders }) {
+  let items;
+  try {
+    items = await getRecommendations({ profile: viewer.profile, myProviders, viewer });
+  } catch {
+    return null;
+  }
+  if (!items.length) return null;
+  return <Row title="Indicados para você" items={items} />;
 }
 
 function HeroSkeleton() {
@@ -60,9 +73,14 @@ export async function HomeView({ heading, type, showMoods = true, viewer }) {
         </Suspense>
       </div>
       {type === undefined && viewer?.profile ? (
-        <Suspense fallback={<RowSkeleton title="Continuar assistindo" />}>
-          <ContinueRow viewer={viewer} />
-        </Suspense>
+        <>
+          <Suspense fallback={<RowSkeleton title="Continuar assistindo" />}>
+            <ContinueRow viewer={viewer} />
+          </Suspense>
+          <Suspense fallback={<RowSkeleton title="Indicados para você" />}>
+            <RecommendationsSection viewer={viewer} myProviders={myProviders} />
+          </Suspense>
+        </>
       ) : null}
       {showMoods && (
         <Suspense fallback={<MoodPicker />}>
