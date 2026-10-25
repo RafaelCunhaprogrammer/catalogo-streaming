@@ -70,11 +70,13 @@ test('listas: favoritar, acompanhar a série, ver no Início e na Minha lista, e
   await page.getByRole('button', { name: 'Digitar o PIN' }).click();
   await page.getByLabel('PIN dos pais').fill('1234');
   await page.getByRole('button', { name: 'Confirmar' }).click();
-  await expect(page.getByRole('heading', { level: 1, name: /Aventura Neon/ })).toBeVisible();
-  const remove = page.getByRole('button', { name: 'Remover Aventura Neon dos favoritos' });
+  await expect(page.getByRole('heading', { level: 1, name: 'Aventura Neon', exact: true })).toBeVisible();
+  const add = page.getByRole('button', { name: 'Favoritar Aventura Neon', exact: true });
+  const remove = page.getByRole('button', { name: 'Remover Aventura Neon dos favoritos', exact: true });
+  await expect(add.or(remove)).toBeVisible(); // espera a página hidratar antes de decidir
   if (await remove.isVisible()) await remove.click(); // sobra de uma execução anterior
-  await page.getByRole('button', { name: 'Favoritar Aventura Neon' }).click();
+  await add.click();
   await expect(remove).toBeVisible();
-  await page.getByRole('button', { name: 'Remover Aventura Neon dos favoritos' }).click(); // deixa o banco limpo
-  await expect(page.getByRole('button', { name: 'Favoritar Aventura Neon' })).toBeVisible();
+  await remove.click(); // deixa o banco limpo
+  await expect(add).toBeVisible();
 });
