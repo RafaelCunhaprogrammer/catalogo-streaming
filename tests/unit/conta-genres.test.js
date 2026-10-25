@@ -40,19 +40,29 @@ beforeEach(async () => {
 
 describe('gêneros do perfil: ações de Gerenciar perfis', () => {
   it('perfil de outra conta é rejeitado e nada muda', async () => {
-    expect((await saveProfileGenresAction('po', ['acao'])).ok).toBe(false);
-    expect((await dismissProfileGenresAction('po')).ok).toBe(false);
+    expect(await saveProfileGenresAction('po', ['acao'])).toEqual({ ok: false, error: 'Perfil não encontrado.' });
+    expect(await dismissProfileGenresAction('po')).toEqual({ ok: false, error: 'Perfil não encontrado.' });
     const other = await row('po');
+    expect(other.favoriteGenres).toEqual(['drama']);
+    expect(other.genresPromptDone).toBe(false);
+  });
+
+  it('editar perfil de outra conta (com gêneros) é rejeitado e nada muda', async () => {
+    const res = await updateProfileAction(null, form({ id: 'po', name: 'Invadido', color: '#8b5cf6', kind: 'adulto' }, ['acao']));
+    expect(res).toEqual({ ok: false, errors: { form: 'Perfil não encontrado.' } });
+    const other = await row('po');
+    expect(other.name).toBe('Outro');
     expect(other.favoriteGenres).toEqual(['drama']);
     expect(other.genresPromptDone).toBe(false);
   });
 
   it('Kids sem modo adulto é rejeitado nas duas ações e na edição', async () => {
     state.viewer = kidsLocked;
-    expect((await saveProfileGenresAction('pa', ['acao'])).ok).toBe(false);
-    expect((await dismissProfileGenresAction('pa')).ok).toBe(false);
+    const pinError = { ok: false, error: 'Peça para um adulto digitar o PIN.' };
+    expect(await saveProfileGenresAction('pa', ['acao'])).toEqual(pinError);
+    expect(await dismissProfileGenresAction('pa')).toEqual(pinError);
     const res = await updateProfileAction(null, form({ id: 'pa', name: 'Novo', color: '#8b5cf6', kind: 'adulto' }, ['acao']));
-    expect(res.ok).toBe(false);
+    expect(res).toEqual({ ok: false, errors: { form: 'Peça para um adulto digitar o PIN.' } });
     const p = await row('pa');
     expect(p.favoriteGenres).toEqual([]);
     expect(p.genresPromptDone).toBe(false);
@@ -82,7 +92,7 @@ describe('gêneros do perfil: ações de Gerenciar perfis', () => {
   });
 
   it('editar salva os gêneros do formulário (adulto limpo, Kids filtrado)', async () => {
-    await setPin(state.db, 'u1', '1234');
+    await setPin(state.db, 'u1', '1234'); // atualizar para Kids exige que a conta já tenha PIN
     expect((await updateProfileAction(null, form({ id: 'pa', name: 'Adulto', color: '#8b5cf6', kind: 'adulto' }, ['acao', 'xyz']))).ok).toBe(true);
     expect((await row('pa')).favoriteGenres).toEqual(['acao']);
     const res = await updateProfileAction(null, form({ id: 'pk', name: 'Kids', color: '#8b5cf6', kind: 'kids', maxRating: '10' }, ['acao', 'fantasia']));
