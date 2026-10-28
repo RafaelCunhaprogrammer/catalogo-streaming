@@ -37,3 +37,9 @@ Toda ideia nova entra aqui. No fim de cada etapa, revisamos esta lista e decidim
 
 ## Novas ideias
 - Logo alternativa com o **paneiro** cheio de caroços de açaí (versão 2, testada em 18/10/2026). Ficou guardada em `docs/marca/logo-paneiro.png`, já recortada e sem o texto. Por enquanto ficou a versão 1 (o caroço): em tamanho pequeno, no topo, o paneiro vira uma mancha escura no modo Escuro. Pode voltar numa mudança futura da marca, por exemplo em telas grandes ou na abertura.
+- **"Sala Pai d'Égua"**: filmes que tocam no próprio site, só com conteúdo que pode ser exibido legalmente (os filmes dos streamings não podem: exigiriam licença de cada estúdio).
+  - Domínio público: no Brasil, filmes lançados há mais de 70 anos (Lei 9.610, art. 44), ou seja, até 1955 em 2026. Muitos estão no Internet Archive, com player que pode ser embutido.
+  - Licença livre (Creative Commons), como os curtas da Blender Foundation (*Big Buck Bunny*, *Sintel*, *Tears of Steel*), citando os autores.
+  - Filmes completos liberados oficialmente pelas distribuidoras no YouTube (embutir é permitido, como já fazemos com os trailers).
+  - Sem custo de hospedagem usando Internet Archive e YouTube; conteúdo próprio exigiria um serviço de vídeo pago (Mux, Cloudflare Stream).
+  - Conferir a situação de direitos de cada título antes de incluir.
