@@ -54,7 +54,7 @@ A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A
 - [ ] Vídeo de abertura em 1080p (opcional; o atual é 720p)
 - [ ] Logo oficial do TMDB no rodapé (o download automático foi bloqueado)
 - [ ] Atualizar a especificação com o que mudou (nome, menu, abertura, protetor de tela)
-- [ ] Juntar o ramo `etapa-a-catalogo` ao `main`
+- [x] Juntar o ramo `etapa-a-catalogo` ao `main` (28/10/2026)
 - [ ] README de portfólio (com imagens e as decisões de acessibilidade)
 - [ ] Publicar na Vercel (link aberto para o portfólio)
 - [x] Apagar a pasta `app-temp` (sobra da criação do projeto)
@@ -86,7 +86,7 @@ A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A
 - [x] Minha conta: trocar senha, trocar PIN, excluir conta (desligado na demonstração)
 - [x] Testes: 331 de unidade e componentes, 28 de ponta a ponta com acessibilidade
 - [ ] Sua revisão no navegador (`npm run dev` e entrar pela demonstração)
-- [ ] Juntar o ramo ao `main` (depois da Etapa A)
+- [x] Juntar o ramo ao `main` (28/10/2026, junto com a B2)
 
 Feito depois da revisão (18/10): Kids só com títulos infantis, opção Todas/Todos nos filtros, botão Assistir na plataforma, sinopses justificadas, logo e som definitivos.
 
