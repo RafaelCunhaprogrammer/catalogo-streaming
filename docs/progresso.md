@@ -1,6 +1,6 @@
 # Pai d'Égua: progresso do projeto
 
-Atualizado em 25/10/2026. Marque aqui o que for sendo concluído.
+Atualizado em 28/10/2026. Marque aqui o que for sendo concluído.
 
 ## Visão geral
 
@@ -57,7 +57,7 @@ A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A
 - [ ] Juntar o ramo `etapa-a-catalogo` ao `main`
 - [ ] README de portfólio (com imagens e as decisões de acessibilidade)
 - [ ] Publicar na Vercel (link aberto para o portfólio)
-- [ ] Apagar a pasta `app-temp` (sobra da criação do projeto)
+- [x] Apagar a pasta `app-temp` (sobra da criação do projeto)
 
 **Ajustes pequenos já conhecidos**
 - [ ] No Noturno, a página aparece com brilho total por um instante antes de escurecer
