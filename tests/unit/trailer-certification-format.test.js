@@ -72,6 +72,24 @@ describe('brazilCertification', () => {
   it('lê a classificação brasileira de uma série', () => {
     expect(brazilCertification({ content_ratings: { results: [{ iso_3166_1: 'BR', rating: 'L' }] } }, 'tv')).toBe('L');
   });
+  it('com mais de uma classificação brasileira, vale a mais restritiva (série)', () => {
+    // Caso real: The Chosen tem BR=12 e BR=10 no TMDB.
+    const ratings = (...r) => ({ content_ratings: { results: r.map((rating) => ({ iso_3166_1: 'BR', rating })) } });
+    expect(brazilCertification(ratings('12', '10'), 'tv')).toBe('12');
+    expect(brazilCertification(ratings('10', '12'), 'tv')).toBe('12');
+    expect(brazilCertification(ratings('', 'L'), 'tv')).toBe('L');
+  });
+  it('com mais de uma classificação brasileira, vale a mais restritiva (filme)', () => {
+    const details = { release_dates: { results: [
+      { iso_3166_1: 'BR', release_dates: [{ certification: '10' }, { certification: '' }, { certification: '14' }] },
+      { iso_3166_1: 'BR', release_dates: [{ certification: '12' }] },
+    ] } };
+    expect(brazilCertification(details, 'movie')).toBe('14');
+  });
+  it('valor desconhecido não esconde uma classificação conhecida', () => {
+    const ratings = (...r) => ({ content_ratings: { results: r.map((rating) => ({ iso_3166_1: 'BR', rating })) } });
+    expect(brazilCertification(ratings('ER', '12'), 'tv')).toBe('12');
+  });
   it('devolve null quando não há classificação para o Brasil', () => {
     expect(brazilCertification({ release_dates: { results: [] } }, 'movie')).toBeNull();
     expect(brazilCertification({}, 'tv')).toBeNull();

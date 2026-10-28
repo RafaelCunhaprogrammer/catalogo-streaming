@@ -423,6 +423,9 @@ describe('perfil Kids: só títulos infantis', () => {
     mockTmdb({
       '/discover/movie': { results: [kidsMovie(1, 9, [35]), kidsMovie(2, 8, [35, 16])] },
       '/discover/tv': { results: [kidsTv(3, 7, [35, 10767]), kidsTv(4, 6, [35, 10762])] },
+      // cada título da fileira é conferido; aqui todos são livres
+      '/movie/2/release_dates': { results: [{ iso_3166_1: 'BR', release_dates: [{ certification: 'L' }] }] },
+      '/tv/4/content_ratings': { results: [{ iso_3166_1: 'BR', rating: 'L' }] },
     });
     const row = await loadHomeRow(defs.find((d) => d.key === 'genero-comedia'));
     expect(row.items.map((t) => `${t.type}-${t.id}`)).toEqual(['movie-2', 'tv-4']);
@@ -462,21 +465,35 @@ describe('perfil Kids: só títulos infantis', () => {
 describe('faixa de classificação (visitante e Kids)', () => {
   const tvRating = (rating) => ({ results: [{ iso_3166_1: 'BR', rating }] });
 
-  it('fileiras: filmes e séries filtrados pelo próprio TMDB, sem consultar título a título', async () => {
+  it('fileiras: o TMDB filtra pela faixa e cada título é conferido (vale a classificação mais restritiva)', async () => {
+    // O discover aceita um título se QUALQUER classificação brasileira couber na faixa (The Chosen: BR=12 e BR=10).
     const fetchMock = mockTmdb({
       '/discover/movie': { results: [movie(1, 5)] },
-      '/discover/tv': { results: [tv(2, 4)] },
+      '/discover/tv': { results: [tv(2, 4), tv(3, 3)] },
+      '/movie/1/release_dates': { results: [{ iso_3166_1: 'BR', release_dates: [{ certification: '10' }] }] },
+      '/tv/2/content_ratings': { results: [{ iso_3166_1: 'BR', rating: '16' }, { iso_3166_1: 'BR', rating: '14' }] },
+      '/tv/3/content_ratings': tvRating('12'),
     });
     const [def] = getHomeRowDefs([8], undefined, { maxRating: '14' });
     const row = await loadHomeRow(def);
-    expect(row.items.map((t) => `${t.type}-${t.id}`)).toEqual(['movie-1', 'tv-2']);
+    expect(row.items.map((t) => `${t.type}-${t.id}`)).toEqual(['movie-1', 'tv-3']);
     const urls = fetchMock.mock.calls.map(([u]) => new URL(u));
     for (const path of ['/discover/movie', '/discover/tv']) {
       const call = urls.find((u) => u.pathname.endsWith(path));
       expect(call.searchParams.get('certification_country')).toBe('BR');
       expect(call.searchParams.get('certification.lte')).toBe('14');
     }
-    expect(calledPaths(fetchMock).some((p) => p.includes('content_ratings') || p.includes('release_dates'))).toBe(false);
+  });
+
+  it('Kids: série com duas classificações (12 e 10) não entra numa faixa de 10 anos', async () => {
+    mockTmdb({
+      '/discover/movie': { results: [] },
+      '/discover/tv': { results: [{ ...tv(85077, 9), genre_ids: [10759, 10751, 18] }] },
+      '/tv/85077/content_ratings': { results: [{ iso_3166_1: 'BR', rating: '12' }, { iso_3166_1: 'BR', rating: '10' }] },
+    });
+    const defs = getHomeRowDefs([8], undefined, { maxRating: '10', kids: true });
+    const row = await loadHomeRow(defs.find((d) => d.key === 'plataforma-8'));
+    expect(row.items).toEqual([]);
   });
 
   it('sem faixa (adulto), nada muda e nenhuma classificação é consultada', async () => {
@@ -511,8 +528,23 @@ describe('faixa de classificação (visitante e Kids)', () => {
       '/discover/movie': { results: [{ id: 1, title: 'X', backdrop_path: '/x.jpg' }] },
     });
     await getMoodCards({ maxRating: '14' });
-    const calls = fetchMock.mock.calls.map(([u]) => new URL(u)).filter((u) => u.pathname.endsWith('/discover/movie'));
+    const calls = fetchMock.mock.calls.map(([u]) => new URL(u)).filter((u) => u.pathname.endsWith('/discover/movie') && !u.pathname.includes('release_dates'));
     expect(calls.length).toBe(8);
     expect(calls.every((u) => u.searchParams.get('certification.lte') === '14')).toBe(true);
+  });
+
+  it('humores: o filme da imagem também é conferido (vale a classificação mais restritiva)', async () => {
+    mockTmdb({
+      '/search/keyword': (url) => ({ results: [{ id: 1, name: url.searchParams.get('query') }] }),
+      '/discover/movie': { results: [
+        { id: 1, title: 'Duas faixas', backdrop_path: '/a.jpg', genre_ids: [16] },
+        { id: 2, title: 'Livre', backdrop_path: '/b.jpg', genre_ids: [16] },
+      ] },
+      '/movie/1/release_dates': { results: [{ iso_3166_1: 'BR', release_dates: [{ certification: '10' }, { certification: '14' }] }] },
+      '/movie/2/release_dates': { results: [{ iso_3166_1: 'BR', release_dates: [{ certification: 'L' }] }] },
+    });
+    const cards = await getMoodCards({ maxRating: '10', kids: true });
+    expect(cards.some((c) => c.filmTitle === 'Duas faixas')).toBe(false);
+    expect(cards.some((c) => c.filmTitle === 'Livre')).toBe(true);
   });
 });
