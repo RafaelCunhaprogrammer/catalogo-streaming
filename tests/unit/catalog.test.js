@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { mockTmdb, calledPaths } from '../helpers/mock-tmdb';
 import {
   discoverMixed, getHomeData, searchAvailable, discoverPage, getTitleDetails, getTitleBasics, resolveKeywordIds, filterAvailable, getMoodCards,
-  getHomeRowDefs, loadHomeRow, getHomeHero,
+  getHomeRowDefs, loadHomeRow, getHomeHero, loadHomeHero, getGenreLists,
 } from '@/lib/tmdb/catalog';
 import { parseExploreParams } from '@/lib/explore-params';
 import { PROVIDERS } from '@/lib/providers';
@@ -31,6 +31,35 @@ describe('discoverMixed', () => {
     const url = new URL(fetchMock.mock.calls[0][0]);
     expect(url.searchParams.get('with_genres')).toBe('27');
     expect(url.searchParams.get('with_watch_providers')).toBe('8|119');
+  });
+});
+
+describe('loadHomeHero', () => {
+  it('avisa quando o TMDB falhou', async () => {
+    mockTmdb({ '/trending/all/week': 500 });
+    expect(await loadHomeHero()).toEqual({ items: [], failed: true });
+  });
+
+  it('lista vazia não é falha', async () => {
+    mockTmdb({ '/trending/all/week': { results: [] }, '/discover/movie': { results: [] }, '/discover/tv': { results: [] } });
+    expect(await loadHomeHero()).toEqual({ items: [], failed: false });
+  });
+});
+
+describe('getGenreLists', () => {
+  it('traduz os gêneros de série que o TMDB manda em inglês', async () => {
+    mockTmdb({
+      '/genre/movie/list': { genres: [{ id: 28, name: 'Ação' }] },
+      '/genre/tv/list': { genres: [{ id: 10765, name: 'Sci-Fi & Fantasy' }, { id: 10768, name: 'War & Politics' }, { id: 18, name: 'Drama' }] },
+    });
+    const { filme, serie } = await getGenreLists();
+    expect(filme).toEqual([{ id: 28, name: 'Ação' }]);
+    expect(serie.map((g) => g.name)).toEqual(['Ficção científica e Fantasia', 'Guerra e Política', 'Drama']);
+  });
+
+  it('se uma das listas falhar, a outra continua e nada quebra', async () => {
+    mockTmdb({ '/genre/movie/list': 500, '/genre/tv/list': { genres: [{ id: 18, name: 'Drama' }] } });
+    expect(await getGenreLists()).toEqual({ filme: [], serie: [{ id: 18, name: 'Drama' }] });
   });
 });
 

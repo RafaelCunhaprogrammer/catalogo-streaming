@@ -27,6 +27,14 @@ describe('login com e-mail e senha', () => {
       .rejects.toThrow();
   });
 
+  it('o servidor recusa nome com mais de 40 letras', async () => {
+    const { auth } = await createTestAuth();
+    await expect(auth.api.signUpEmail({ body: { name: 'a'.repeat(41), email: 'ana@ex.com', password: 'senha-forte-1' } }))
+      .rejects.toMatchObject({ status: 'BAD_REQUEST' });
+    const { response } = await signUp(auth, { name: 'a'.repeat(40) });
+    expect(response.status).toBe(200);
+  });
+
   it('entra com a senha certa e recusa a errada', async () => {
     const { auth } = await createTestAuth();
     await signUp(auth);

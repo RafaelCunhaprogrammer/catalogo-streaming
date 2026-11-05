@@ -1,13 +1,13 @@
 # Pai d'Égua: progresso do projeto
 
-Atualizado em 28/10/2026. Marque aqui o que for sendo concluído.
+Atualizado em 05/11/2026. Marque aqui o que for sendo concluído.
 
 ## Visão geral
 
 | Etapa | O que é | Situação |
 |---|---|---|
-| **A – Catálogo** | O site em si: vitrine, busca, páginas de filmes e séries, visual e acessibilidade | **Quase pronta** (falta fechar e publicar) |
-| **B – Contas e Perfis** | Login, perfis, Kids com controle dos pais, favoritos, "Continuar assistindo" | **B1 e B2 prontas** no ramo `etapa-b-contas` (falta revisar e juntar) |
+| **A – Catálogo** | O site em si: vitrine, busca, páginas de filmes e séries, visual e acessibilidade | **Quase pronta** (falta publicar) |
+| **B – Contas e Perfis** | Login, perfis, Kids com controle dos pais, favoritos, "Continuar assistindo" | **B1 e B2 prontas** e juntadas ao `main` |
 | **C – Assinatura** | Planos, teste grátis e pagamento simulado | Não iniciada |
 | **D – Personalização** | Avatares regionais e capa do perfil | Não iniciada |
 
@@ -48,6 +48,12 @@ A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A
 - [x] "Meus streamings" filtrando o site
 - [x] Imagens em alta resolução; carregamento em partes, com esqueletos
 
+### Visual novo (05/11/2026)
+- [x] Destaque com a foto em tela cheia, arte do título e a luz do filme vazando atrás das fileiras
+- [x] Fileiras com cartões horizontais, fonte Archivo e uma só margem no site
+- [x] Gêneros de série em português (o TMDB manda alguns em inglês)
+- [ ] Conferir no navegador: trailer tocando no destaque, tema Noturno, Modo calmo e cartões com cadeado do Kids
+
 ### Falta para fechar a Etapa A
 - [ ] Sua revisão final no navegador, sem pressa
 - [ ] Ajustes pequenos já conhecidos (lista abaixo)
@@ -55,16 +61,16 @@ A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A
 - [ ] Logo oficial do TMDB no rodapé (o download automático foi bloqueado)
 - [ ] Atualizar a especificação com o que mudou (nome, menu, abertura, protetor de tela)
 - [x] Juntar o ramo `etapa-a-catalogo` ao `main` (28/10/2026)
-- [ ] README de portfólio (com imagens e as decisões de acessibilidade)
+- [x] README de portfólio (com imagens e as decisões de acessibilidade)
 - [ ] Publicar na Vercel (link aberto para o portfólio)
 - [x] Apagar a pasta `app-temp` (sobra da criação do projeto)
 
 **Ajustes pequenos já conhecidos**
 - [ ] No Noturno, a página aparece com brilho total por um instante antes de escurecer
 - [ ] Filtro de nota do Explorar só oferece 5 a 9 (perde valores como 7,5)
-- [ ] Busca: setas do teclado não navegam pelas sugestões
-- [ ] Se o TMDB cair por completo, o Início fica vazio, sem "Tentar novamente"
-- [ ] Se a lista de gêneros falhar, o Explorar inteiro mostra erro
+- [x] Busca: setas do teclado não navegam pelas sugestões
+- [x] Se o TMDB cair por completo, o Início fica vazio, sem "Tentar novamente"
+- [x] Se a lista de gêneros falhar, o Explorar inteiro mostra erro
 - [ ] O destaque pode sumir se a lista em alta encolher depois de mudar "Meus streamings"
 - [ ] Regras de preferências repetidas em dois arquivos
 
@@ -95,7 +101,7 @@ Ajustes pequenos já conhecidos da B1:
 - [ ] Duas entradas na demonstração na virada do dia podem recriar os perfis duas vezes
 - [ ] Na demonstração (compartilhada), um visitante pode mexer nos perfis dos outros até o dia seguinte
 - [ ] No Kids, o título da aba mostra o nome de um título bloqueado
-- [ ] Nome do cadastro (até 40 letras) só é conferido no navegador
+- [x] Nome do cadastro (até 40 letras) só é conferido no navegador
 - [ ] Ao pedir para entrar a partir da busca, a palavra buscada se perde
 
 ### B2 – Listas e Indicações (pronta, no ramo `etapa-b-contas`)

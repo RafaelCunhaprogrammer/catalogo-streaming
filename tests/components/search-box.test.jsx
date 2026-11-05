@@ -76,6 +76,54 @@ describe('SearchBox', () => {
     render(<SearchBox />);
     await userEvent.type(screen.getByRole('combobox'), 'cidade');
     await screen.findByRole('link', { name: 'Cidade de Deus (2002)' });
-    expect(screen.getByRole('list', { name: 'Sugestões' })).toHaveClass('overflow-y-auto', 'overscroll-contain');
+    expect(screen.getByRole('listbox', { name: 'Sugestões' })).toHaveClass('overflow-y-auto', 'overscroll-contain');
+  });
+
+  describe('teclado', () => {
+    async function comSugestoes() {
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ results }))));
+      const genres = { filme: [{ id: 10752, name: 'Guerra' }] };
+      render(<SearchBox genres={genres} />);
+      const box = screen.getByRole('combobox');
+      await userEvent.type(box, 'guerra');
+      await screen.findByRole('link', { name: 'Cidade de Deus (2002)' });
+      return box;
+    }
+
+    it('as setas percorrem as sugestões e Enter abre a escolhida', async () => {
+      const box = await comSugestoes();
+      await userEvent.keyboard('{ArrowDown}{ArrowDown}');
+      const option = screen.getAllByRole('option')[1];
+      expect(option).toHaveAttribute('aria-selected', 'true');
+      expect(box).toHaveAttribute('aria-activedescendant', option.id);
+      await userEvent.keyboard('{Enter}');
+      expect(push).toHaveBeenCalledTimes(1);
+      expect(push).toHaveBeenCalledWith('/filme/1');
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    });
+
+    it('a seta para cima a partir do campo vai para Ver todos os resultados', async () => {
+      await comSugestoes();
+      await userEvent.keyboard('{ArrowUp}{Enter}');
+      expect(push).toHaveBeenCalledWith('/busca?q=guerra');
+    });
+
+    it('as setas dão a volta na lista', async () => {
+      await comSugestoes();
+      await userEvent.keyboard('{ArrowUp}{ArrowDown}');
+      expect(screen.getAllByRole('option')[0]).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('Esc fecha a lista, a seta reabre e digitar limpa a escolha', async () => {
+      const box = await comSugestoes();
+      await userEvent.keyboard('{ArrowDown}{Escape}');
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+      expect(box).not.toHaveAttribute('aria-activedescendant');
+      await userEvent.keyboard('{ArrowDown}');
+      expect(screen.getByRole('listbox')).toBeInTheDocument();
+      await userEvent.keyboard('{ArrowDown}');
+      await userEvent.type(box, 's');
+      expect(box).not.toHaveAttribute('aria-activedescendant');
+    });
   });
 });

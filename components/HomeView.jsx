@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
-import { getHomeHero, getHomeRowDefs, getMoodCards, loadHomeRow } from '@/lib/tmdb/catalog';
+import { getHomeRowDefs, getMoodCards, loadHomeHero, loadHomeRow } from '@/lib/tmdb/catalog';
 import { getRecommendations } from '@/lib/recommendations';
 import { parseProvidersCookie, PROVIDERS_COOKIE } from '@/lib/preferences';
 import { Hero } from '@/components/Hero';
@@ -8,10 +8,18 @@ import { MoodPicker } from '@/components/MoodPicker';
 import { Row } from '@/components/Row';
 import { ContinueRow } from '@/components/lists/ContinueRow';
 import { GenresInvite } from '@/components/lists/GenresInvite';
+import { LoadError } from '@/components/LoadError';
 import { PosterSkeletonRow } from '@/components/PosterSkeleton';
 
-async function HeroSection({ myProviders, type, maxRating, kids }) {
-  return <Hero items={await getHomeHero(myProviders, type, { maxRating, kids })} />;
+export async function HeroSection({ myProviders, type, maxRating, kids }) {
+  const { items, failed } = await loadHomeHero(myProviders, type, { maxRating, kids });
+  if (!failed) return <Hero items={items} />;
+  // Fundo escuro do destaque: o topo fica transparente nesta página, com letras claras.
+  return (
+    <div className="bg-[var(--hero-bg)] pb-28 pt-[calc(var(--header-h,0px)+1rem)]">
+      <LoadError />
+    </div>
+  );
 }
 
 async function MoodSection({ maxRating, kids }) {
