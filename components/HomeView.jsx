@@ -43,14 +43,14 @@ async function RecommendationsSection({ viewer, myProviders }) {
 }
 
 function HeroSkeleton() {
-  return <div aria-hidden="true" className="aspect-video max-h-[85vh] w-full animate-pulse bg-surface-2" />;
+  return <div aria-hidden="true" className="min-h-[clamp(32rem,80svh,54rem)] w-full animate-pulse bg-[var(--hero-bg)]" />;
 }
 
 function RowSkeleton({ title }) {
   return (
     <section aria-hidden="true" className="mt-10">
-      <p className="px-4 text-lg font-bold text-muted sm:px-8 sm:text-xl">{title}</p>
-      <PosterSkeletonRow />
+      <p className="condensado px-margem text-xl font-bold text-muted sm:text-2xl">{title}</p>
+      <PosterSkeletonRow wide />
     </section>
   );
 }
@@ -73,6 +73,8 @@ export async function HomeView({ heading, type, showMoods = true, viewer }) {
           <HeroSection myProviders={myProviders} type={type} maxRating={maxRating} kids={kids} />
         </Suspense>
       </div>
+      {/* As fileiras sobem um pouco sobre a base do destaque e ficam acima da luz do filme. */}
+      <div className="relative z-10 -mt-24">
       {type === undefined && viewer?.profile ? (
         <>
           <Suspense fallback={<RowSkeleton title="Continuar assistindo" />}>
@@ -94,6 +96,7 @@ export async function HomeView({ heading, type, showMoods = true, viewer }) {
           <RowSection def={def} />
         </Suspense>
       ))}
+      </div>
     </>
   );
 }

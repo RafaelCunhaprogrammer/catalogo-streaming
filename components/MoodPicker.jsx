@@ -9,13 +9,13 @@ import { imageUrl } from '@/lib/images';
 export function MoodPicker({ cards }) {
   const items = cards ?? MOODS.map((m) => ({ slug: m.slug, label: m.label, icon: m.icon, backdropPath: null }));
   return (
-    <section aria-labelledby="humor-titulo" className="mt-10 px-4 sm:px-8">
-      <h2 id="humor-titulo" className="text-lg font-bold sm:text-xl">Como você quer se sentir hoje?</h2>
+    <section aria-labelledby="humor-titulo" className="mt-10 px-margem">
+      <h2 id="humor-titulo" className="condensado text-xl font-bold sm:text-2xl">Como você quer se sentir hoje?</h2>
       <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {items.map((mood) => (
           <li
             key={mood.slug}
-            className="group relative aspect-[16/9] overflow-hidden rounded-xl border border-line bg-surface-2 transition hover:border-accent hover:shadow-glow"
+            className="group relative aspect-[16/9] overflow-hidden rounded-md bg-surface-2"
           >
             {mood.backdropPath ? (
               <img
@@ -29,7 +29,7 @@ export function MoodPicker({ cards }) {
             )}
             <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
             <Link href={`/explorar?humor=${mood.slug}`} aria-label={mood.label} className="absolute inset-0 flex items-end p-3 pb-8">
-              <span className="flex items-center gap-2 font-bold text-white drop-shadow">
+              <span className="condensado flex items-center gap-2 text-lg font-extrabold text-white drop-shadow sm:text-xl">
                 <MoodIcon name={mood.icon} className="h-5 w-5" />
                 {mood.label}
               </span>

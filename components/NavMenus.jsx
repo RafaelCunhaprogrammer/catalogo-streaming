@@ -15,7 +15,7 @@ export const NAV = [
 export const isActive = (pathname, href) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
 
 const linkClass =
-  'text-sm font-semibold uppercase tracking-wide text-muted hover:text-fg aria-[current=page]:text-fg aria-[current=page]:underline aria-[current=page]:decoration-accent-2 aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8';
+  'text-[0.95rem] font-medium text-muted hover:text-fg aria-[current=page]:text-fg aria-[current=page]:underline aria-[current=page]:decoration-accent-2 aria-[current=page]:decoration-2 aria-[current=page]:underline-offset-8';
 
 function GenreColumns({ genres, onPick }) {
   const columns = [
@@ -26,7 +26,7 @@ function GenreColumns({ genres, onPick }) {
     <div className="grid gap-6 sm:grid-cols-2">
       {columns.map((col) => (
         <div key={col.title}>
-          <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">{col.title}</p>
+          <p className="mb-2 text-sm font-bold text-muted">{col.title}</p>
           <ul className="grid grid-cols-2 gap-x-4 gap-y-1">
             {col.items.map((g) => (
               <li key={g.id}>
@@ -122,7 +122,7 @@ export function MobileMenu({ pathname, genres }) {
               </li>
             ))}
           </ul>
-          <p className="mt-4 text-xs font-bold uppercase tracking-wider text-muted">Categorias</p>
+          <p className="mt-4 text-sm font-bold text-muted">Categorias</p>
           <div className="mt-2">
             <GenreColumns genres={genres} onPick={() => setOpen(false)} />
           </div>

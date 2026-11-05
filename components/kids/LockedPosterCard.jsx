@@ -7,22 +7,23 @@ import { FavoriteButton } from '@/components/lists/FavoriteButton';
 import { PinDialog } from '@/components/kids/PinDialog';
 import { titleHref } from '@/lib/tmdb/normalize';
 import { imageSet } from '@/lib/images';
+import { WIDE_CARD_WIDTH } from '@/components/PosterSkeleton';
 
 // Cartaz de um título acima da faixa do perfil Kids: o clique pede o PIN em vez de abrir.
-export function LockedPosterCard({ title, fluid = false }) {
+export function LockedPosterCard({ title, fluid = false, wide = false }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const img = imageSet(title.posterPath, 'poster');
   const label = title.year ? `${title.title} (${title.year})` : title.title;
   return (
-    <div className={`group/card relative ${fluid ? 'w-full' : 'w-36 shrink-0 sm:w-44'}`}>
+    <div className={`group/card relative ${wide ? WIDE_CARD_WIDTH : fluid ? 'w-full' : 'w-36 shrink-0 sm:w-44'}`}>
       <button
         type="button"
         onClick={() => setOpen(true)}
         aria-label={`${label} — bloqueado para este perfil`}
         className="group block w-full text-left"
       >
-        <span className="relative block aspect-[2/3] overflow-hidden rounded-lg bg-surface-2">
+        <span className={`relative block overflow-hidden bg-surface-2 ${wide ? 'aspect-video rounded-md' : 'aspect-[2/3] rounded-lg'}`}>
           {img ? (
             <img src={img.src} srcSet={img.srcSet} sizes="176px" alt="" className="h-full w-full object-cover opacity-40 blur-[2px]" />
           ) : (

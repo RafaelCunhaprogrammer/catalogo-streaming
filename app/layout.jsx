@@ -1,4 +1,5 @@
 import './globals.css';
+import { Archivo } from 'next/font/google';
 import { THEME_SCRIPT } from '@/lib/theme-bootstrap';
 import { APP_NAME } from '@/lib/brand';
 import { SettingsProvider } from '@/components/settings/SettingsProvider';
@@ -12,6 +13,9 @@ import { Footer } from '@/components/Footer';
 import { BrightnessOverlay } from '@/components/BrightnessOverlay';
 import { IntroScene } from '@/components/IntroScene';
 import { IdleScreensaver } from '@/components/IdleScreensaver';
+
+// Uma família só: o eixo de largura faz o papel de letra de cartaz nos títulos (classe "condensado").
+const archivo = Archivo({ subsets: ['latin'], axes: ['wdth'], display: 'swap', variable: '--font-archivo' });
 
 export const metadata = {
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
@@ -42,7 +46,7 @@ export default async function RootLayout({ children }) {
     </>
   );
   return (
-    <html lang="pt-BR" data-theme="escuro" data-text="normal" data-calm="false" data-contrast="false" suppressHydrationWarning>
+    <html lang="pt-BR" className={archivo.variable} data-theme="escuro" data-text="normal" data-calm="false" data-contrast="false" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
         {/* Abre a conexão com o player e com as imagens antes de precisar: trailer e cartazes começam mais rápido. */}

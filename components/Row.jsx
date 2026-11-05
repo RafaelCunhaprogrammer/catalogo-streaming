@@ -26,9 +26,9 @@ export function Row({ title, href, items, logoPath }) {
   }
 
   return (
-    <section aria-labelledby={headingId} className="mt-10">
-      <div className="flex items-baseline justify-between px-4 sm:px-8">
-        <h2 id={headingId} className="flex items-center gap-2 text-lg font-bold sm:text-xl">
+    <section aria-labelledby={headingId} className="group/row mt-10">
+      <div className="flex items-baseline justify-between px-margem">
+        <h2 id={headingId} className="condensado flex items-center gap-2 text-xl font-bold sm:text-2xl">
           {logoPath && <img {...imageSet(logoPath, 'logo')} sizes="28px" alt="" className="h-7 w-7 rounded-md" />}
           {title}
         </h2>
@@ -43,14 +43,14 @@ export function Row({ title, href, items, logoPath }) {
           onClick={() => scrollByPage(-1)}
           aria-label={`Rolar ${title} para a esquerda`}
           tabIndex={-1}
-          className="absolute left-0 top-0 z-10 hidden h-full w-10 bg-gradient-to-r from-bg to-transparent sm:flex sm:items-center sm:justify-center"
+          className="absolute left-0 top-0 z-10 hidden h-full w-14 bg-gradient-to-r from-bg to-transparent opacity-0 transition-opacity group-hover/row:opacity-100 sm:flex sm:items-center sm:justify-center"
         >
           <ChevronLeft aria-hidden="true" className="h-8 w-8" />
         </button>
-        <ul ref={listRef} onKeyDown={onKeyDown} className="flex gap-3 overflow-x-auto scroll-smooth px-4 pb-3 pt-3 [scrollbar-width:none] sm:px-8">
+        <ul ref={listRef} onKeyDown={onKeyDown} className="flex gap-2.5 overflow-x-auto scroll-smooth scroll-pl-[var(--margem)] px-margem pb-3 pt-3 [scrollbar-width:none]">
           {items.map((item) => (
             <li key={`${item.type}-${item.id}`}>
-              <PosterCard title={item} />
+              <PosterCard title={item} wide />
             </li>
           ))}
         </ul>
@@ -58,7 +58,7 @@ export function Row({ title, href, items, logoPath }) {
           onClick={() => scrollByPage(1)}
           aria-label={`Rolar ${title} para a direita`}
           tabIndex={-1}
-          className="absolute right-0 top-0 z-10 hidden h-full w-10 bg-gradient-to-l from-bg to-transparent sm:flex sm:items-center sm:justify-center"
+          className="absolute right-0 top-0 z-10 hidden h-full w-14 bg-gradient-to-l from-bg to-transparent opacity-0 transition-opacity group-hover/row:opacity-100 sm:flex sm:items-center sm:justify-center"
         >
           <ChevronRight aria-hidden="true" className="h-8 w-8" />
         </button>

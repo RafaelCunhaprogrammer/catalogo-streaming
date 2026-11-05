@@ -38,7 +38,7 @@ export default async function SearchPage({ searchParams }) {
   const results = viewer.kids ? await annotateRatings(unique, viewer.maxRating, viewer.unlocked) : unique;
 
   return (
-    <div className="px-4 py-8 sm:px-8">
+    <div className="px-margem py-8">
       <h1 className="text-2xl font-black sm:text-3xl">{query ? `Resultados para “${query}”` : 'Buscar'}</h1>
       {query && (
         <nav aria-label="Tipo de resultado" className="mt-5 flex gap-2">

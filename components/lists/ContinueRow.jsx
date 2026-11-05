@@ -52,8 +52,8 @@ export async function ContinueRow({ viewer }) {
   if (!items.length) return null;
   return (
     <section aria-labelledby="continuar-titulo" className="mt-10">
-      <h2 id="continuar-titulo" className="px-4 text-lg font-bold sm:px-8 sm:text-xl">Continuar assistindo</h2>
-      <ul className="mt-3 flex gap-4 overflow-x-auto px-4 pb-2 sm:px-8">
+      <h2 id="continuar-titulo" className="condensado px-margem text-xl font-bold sm:text-2xl">Continuar assistindo</h2>
+      <ul className="mt-3 flex gap-4 overflow-x-auto px-margem pb-2">
         {items.map((item) => <ContinueCard key={`${item.type}-${item.id}`} item={item} />)}
       </ul>
     </section>

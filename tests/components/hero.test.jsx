@@ -203,6 +203,37 @@ describe('Hero', () => {
     expect(screen.queryByRole('button', { name: /^Destaque 1 de 1/ })).not.toBeInTheDocument();
   });
 
+  it('usa a arte oficial como nome do título, e o leitor de tela ouve o nome', async () => {
+    renderWithSettings(<Hero items={[{ ...items[1], titleArtPath: '/arte.png' }]} />);
+    await flush();
+    expect(heading('Segundo').querySelector('img')).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w500/arte.png');
+  });
+
+  it('sem arte oficial, o nome aparece em texto', async () => {
+    renderWithSettings(<Hero items={[items[1]]} />);
+    await flush();
+    expect(heading('Segundo').querySelector('img')).toBeNull();
+  });
+
+  it('mostra nota, ano, duração, classificação e gêneros', async () => {
+    const item = { ...items[1], rating: 8.2, year: 2024, seasons: 2, certification: '14', genres: ['Drama', 'Mistério'] };
+    renderWithSettings(<Hero items={[item]} />);
+    await flush();
+    expect(screen.getByLabelText('Nota 8.2 de 10')).toBeInTheDocument();
+    expect(screen.getByText('2024')).toBeInTheDocument();
+    expect(screen.getByText('2 temporadas')).toBeInTheDocument();
+    expect(screen.getByLabelText('Classificação indicativa: 14 anos')).toBeInTheDocument();
+    expect(screen.getByText('Drama, Mistério')).toBeInTheDocument();
+  });
+
+  it('a luz do filme usa uma cópia pequena da imagem, escondida do leitor de tela', async () => {
+    const { container } = renderWithSettings(<Hero items={[items[1]]} />);
+    await flush();
+    const luz = container.querySelector('.luz-do-filme');
+    expect(luz).toHaveAttribute('aria-hidden', 'true');
+    expect(luz.querySelector('img')).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w300/b2.jpg');
+  });
+
   it('sem itens não mostra nada', () => {
     const { container } = renderWithSettings(<Hero items={[]} />);
     expect(container).toBeEmptyDOMElement();

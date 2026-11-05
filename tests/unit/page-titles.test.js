@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { mockTmdb } from '../helpers/mock-tmdb';
 import { metadata as layoutMetadata } from '@/app/layout';
 import { metadata as exploreMetadata } from '@/app/explorar/page';
@@ -8,6 +8,9 @@ import { metadata as seriesPageMetadata } from '@/app/(vitrine)/series/page';
 import { generateMetadata as searchMetadata } from '@/app/busca/page';
 import { generateMetadata as movieMetadata } from '@/app/filme/[id]/page';
 import { generateMetadata as seriesMetadata } from '@/app/serie/[id]/page';
+
+// A fonte só existe no build do Next.
+vi.mock('next/font/google', () => ({ Archivo: () => ({ variable: 'fonte' }) }));
 
 const available = { results: { BR: { flatrate: [{ provider_id: 8, provider_name: 'Netflix', logo_path: null }] } } };
 

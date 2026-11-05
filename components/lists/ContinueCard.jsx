@@ -10,7 +10,7 @@ import { FinishAsk, btn, useAdvanceEpisode } from '@/components/lists/AdvanceEpi
 import { titleHref } from '@/lib/tmdb/normalize';
 import { imageSet } from '@/lib/images';
 
-const wrap = 'w-72 shrink-0 overflow-hidden rounded-xl border border-line bg-surface sm:w-80';
+const wrap = 'w-72 shrink-0 overflow-hidden rounded-md border border-line bg-surface sm:w-80';
 const focus = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-2';
 
 function Locked({ item }) {

@@ -1,6 +1,6 @@
 export function Footer() {
   return (
-    <footer className="mt-16 border-t border-line px-4 py-8 text-sm text-muted sm:px-8">
+    <footer className="mt-16 border-t border-line px-margem py-8 text-sm text-muted">
       <div className="flex flex-wrap items-center gap-4">
         {/* Para usar o logo oficial, baixe-o em themoviedb.org/about/logos-attribution e troque este texto por <img>. */}
         <a

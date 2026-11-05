@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import { getTitleBasics, getTitleDetails } from '@/lib/tmdb/catalog';
 import { imageSet } from '@/lib/images';
-import { formatRuntime, formatSeasons, certificationLabel, CERTIFICATION_STYLES } from '@/lib/format';
+import { formatRuntime, formatSeasons } from '@/lib/format';
+import { CertificationBadge } from '@/components/CertificationBadge';
 import { TrailerButton } from '@/components/TrailerButton';
 import { Row } from '@/components/Row';
 import { ExternalLink, Star } from 'lucide-react';
@@ -16,14 +17,7 @@ import { parseTarget } from '@/lib/lists/rules';
 
 function Certification({ value }) {
   if (!value) return <span className="text-sm text-white/70">Classificação não informada</span>;
-  return (
-    <span
-      aria-label={certificationLabel(value)}
-      className={`inline-flex h-7 min-w-7 items-center justify-center rounded px-1.5 text-sm font-black ${CERTIFICATION_STYLES[value] ?? 'bg-white/20 text-white'}`}
-    >
-      {value}
-    </span>
-  );
+  return <CertificationBadge value={value} />;
 }
 
 export function TitleView({ title }) {
@@ -34,13 +28,13 @@ export function TitleView({ title }) {
 
   return (
     <article>
-      <section className="relative overflow-hidden bg-[#0d0820] text-white">
-        {backdrop && <img src={backdrop.src} srcSet={backdrop.srcSet} sizes="100vw" alt="" className="absolute inset-0 h-full w-full object-cover opacity-40" />}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0820] via-[#0d0820]/70 to-transparent" />
-        <div className="relative flex flex-col gap-6 px-4 py-10 sm:flex-row sm:px-8 sm:py-16">
-          {poster && <img src={poster.src} srcSet={poster.srcSet} sizes="(min-width: 640px) 224px, 160px" alt={`Cartaz de ${title.title}`} className="w-40 self-start rounded-xl shadow-glow sm:w-56" />}
-          <div className="max-w-3xl">
-            <h1 className="text-3xl font-black sm:text-5xl">{title.title}</h1>
+      <section className="relative overflow-hidden bg-[var(--hero-bg)] text-white">
+        {backdrop && <img src={backdrop.src} srcSet={backdrop.srcSet} sizes="100vw" alt="" className="hero-midia absolute inset-y-0 right-0 h-full w-full object-cover md:w-[78%]" />}
+        <div aria-hidden="true" className="hero-veu-largo absolute inset-0" />
+        <div className="relative flex flex-col gap-6 px-margem py-10 sm:flex-row sm:py-16">
+          {poster && <img src={poster.src} srcSet={poster.srcSet} sizes="(min-width: 640px) 224px, 160px" alt={`Cartaz de ${title.title}`} className="w-40 self-start rounded-md sm:w-56" />}
+          <div className="max-w-2xl">
+            <h1 className="condensado text-balance text-4xl font-extrabold leading-none sm:text-6xl">{title.title}</h1>
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-white/85">
               <Certification value={title.certification} />
               {meta.map((item) => <span key={item}>{item}</span>)}
@@ -57,7 +51,7 @@ export function TitleView({ title }) {
         </div>
       </section>
 
-      <section aria-labelledby="onde-assistir" className="px-4 pt-10 sm:px-8">
+      <section aria-labelledby="onde-assistir" className="px-margem pt-10">
         <h2 id="onde-assistir" className="text-lg font-bold sm:text-xl">Onde assistir</h2>
         {title.providers.length === 0 ? (
           <p className="mt-4 text-muted">Este título não está mais em nenhum streaming no Brasil.</p>
@@ -101,7 +95,7 @@ export function TitleView({ title }) {
       </section>
 
       {title.cast.length > 0 && (
-        <section aria-labelledby="elenco" className="px-4 pt-10 sm:px-8">
+        <section aria-labelledby="elenco" className="px-margem pt-10">
           <h2 id="elenco" className="text-lg font-bold sm:text-xl">Elenco</h2>
           <ul className="mt-4 flex gap-4 overflow-x-auto pb-2">
             {title.cast.map((person) => (

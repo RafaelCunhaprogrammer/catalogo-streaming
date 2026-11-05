@@ -49,10 +49,10 @@ export function Header({ genres, account = { signedIn: false, profile: null } })
       data-over-hero={String(overHero)}
       data-theme={overHero ? 'escuro' : undefined}
       className={`sticky top-0 z-30 border-b text-fg transition-colors duration-300 ${
-        overHero ? 'border-transparent bg-gradient-to-b from-black/75 via-black/35 to-transparent' : 'border-line bg-[var(--header-bg)] backdrop-blur-md'
+        overHero ? 'border-transparent bg-gradient-to-b bg-no-repeat from-black/75 via-black/35 to-transparent' : 'border-line bg-[var(--header-bg)] backdrop-blur-md'
       }`}
     >
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 sm:flex-nowrap sm:px-8">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-margem py-3 sm:flex-nowrap">
         <Link
           href="/"
           aria-label={`${APP_NAME} — Início`}

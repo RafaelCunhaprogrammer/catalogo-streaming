@@ -15,6 +15,7 @@
   --border: rgb(255 255 255 / 0.12);
   --glow: 0 0 18px rgb(236 72 153 / 0.55);
   --header-bg: rgb(13 8 32 / 0.7);
+  --hero-bg: #0d0820;
 }
 
 [data-theme="claro"] {
@@ -29,6 +30,7 @@
   --border: rgb(30 20 51 / 0.12);
   --glow: 0 4px 14px rgb(124 58 237 / 0.25);
   --header-bg: rgb(255 255 255 / 0.8);
+  --hero-bg: #0d0820; /* o destaque é sempre escuro, como uma sala de cinema */
 }
 
 [data-theme="noturno"] {
@@ -43,10 +45,15 @@
   --border: rgb(255 255 255 / 0.08);
   --glow: none;
   --header-bg: rgb(5 3 10 / 0.9);
+  --hero-bg: #05030a;
 }
 
 [data-calm="true"] {
   --glow: none;
+}
+
+[data-contrast="true"] {
+  --hero-bg: #000000;
 }
 
 [data-contrast="true"][data-theme="claro"] {
@@ -76,7 +83,12 @@
 html[data-text="grande"] { font-size: 125%; }
 html[data-text="muito-grande"] { font-size: 150%; }
 
+:root {
+  --margem: clamp(1rem, 5vw, 5rem); /* mesma margem no topo, no destaque e nas fileiras */
+}
+
 @theme inline {
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
@@ -92,6 +104,7 @@ html[data-text="muito-grande"] { font-size: 150%; }
 body {
   background: var(--bg);
   color: var(--text);
+  word-spacing: .05em;
 }
 
 /* Mãozinha em tudo que é clicável (o Tailwind 4 deixou de pôr nos botões). Fica na camada
@@ -125,6 +138,61 @@ body {
 @utility neon-gradient {
   background-image: linear-gradient(90deg, var(--accent), var(--accent-2));
 }
+
+@utility px-margem {
+  padding-inline: var(--margem);
+}
+
+/* Letra de cartaz: Archivo estreita, para títulos e nomes de fileira. */
+@utility condensado {
+  font-stretch: 72%;
+  word-spacing: .14em; /* a Archivo estreita tem espaço curto: sem isto, as palavras colam */
+}
+
+/* Destaque. A foto se dissolve na própria luz: nas bordas ela fica transparente e deixa ver a
+   cópia desfocada (.luz-do-filme), que continua atrás das fileiras e some aos poucos. */
+.luz-do-filme {
+  height: calc(100% + 30rem);
+  background: var(--hero-bg);
+  mask-image: linear-gradient(to bottom, #000 50%, transparent);
+}
+.luz-do-filme img {
+  filter: blur(72px) saturate(1.6) brightness(.8);
+  transform: scale(1.2);
+  opacity: .6;
+}
+/* Sem luz nos modos que pedem menos estímulo; no Claro ela não combina com o fundo da página. */
+[data-theme="claro"] .luz-do-filme { height: 100%; mask-image: none; }
+[data-theme="claro"] .luz-do-filme img,
+[data-theme="noturno"] .luz-do-filme img,
+[data-contrast="true"] .luz-do-filme img,
+[data-calm="true"] .luz-do-filme img { display: none; }
+
+.hero-midia { mask-image: linear-gradient(to top, transparent, #000 40%); }
+.hero-veu { background: linear-gradient(to top, var(--hero-bg) 12%, rgb(13 8 32 / .75) 45%, transparent 75%); }
+@media (min-width: 768px) {
+  .hero-midia {
+    mask-image: linear-gradient(to right, transparent, #000 36%), linear-gradient(to top, transparent, #000 30%);
+    mask-composite: intersect;
+  }
+  .hero-veu { background: linear-gradient(90deg, var(--hero-bg) 8%, rgb(13 8 32 / .8) 32%, transparent 62%); }
+}
+/* Página do título: o texto é mais largo, então o véu vai mais longe que no destaque. */
+.hero-veu-largo { background: rgb(13 8 32 / .84); }
+@media (min-width: 768px) {
+  .hero-veu-largo { background: linear-gradient(90deg, var(--hero-bg) 30%, rgb(13 8 32 / .88) 68%, transparent 92%); }
+}
+/* No Claro, a base do destaque desce até a cor da página, por baixo da primeira fileira. */
+.hero-fundo-claro { display: none; }
+[data-theme="claro"] .hero-fundo-claro {
+  display: block;
+  background: linear-gradient(to top, var(--bg) 4rem, transparent 8rem);
+}
+/* Aproximação lenta na foto (some com as regras de movimento reduzido logo abaixo). */
+.hero-aproxima { animation: hero-aproxima 16s ease-out both; }
+@keyframes hero-aproxima { from { transform: scale(1.06); } to { transform: none; } }
+.hero-texto { animation: hero-texto .8s ease-out both; }
+@keyframes hero-texto { from { opacity: 0; } to { opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

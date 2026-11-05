@@ -25,6 +25,26 @@ describe('PosterCard', () => {
   });
 });
 
+describe('PosterCard horizontal', () => {
+  it('usa a imagem de cena e mantém link, descrição e nota', () => {
+    render(<PosterCard wide title={title(1, { backdropPath: '/b1.jpg' })} />);
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/filme/1');
+    expect(screen.getByRole('img', { name: 'Filme 1 (2020)' })).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w1280/b1.jpg');
+    expect(screen.getByLabelText('Nota 7.3 de 10')).toBeInTheDocument();
+  });
+
+  it('sem imagem de cena, usa o cartaz', () => {
+    render(<PosterCard wide title={title(1)} />);
+    expect(screen.getByRole('img', { name: 'Filme 1 (2020)' })).toHaveAttribute('src', 'https://image.tmdb.org/t/p/w500/p1.jpg');
+  });
+
+  it('sem nenhuma imagem, o nome continua legível', () => {
+    render(<PosterCard wide title={title(2, { posterPath: null, year: null, rating: null })} />);
+    expect(screen.getByTestId('poster-fallback')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Filme 2' })).toBeInTheDocument();
+  });
+});
+
 describe('Row', () => {
   it('mostra o título, o link Ver tudo e os cartazes', () => {
     render(<Row title="Em alta na Netflix" href="/explorar?plataforma=8" items={[title(1), title(2)]} />);
