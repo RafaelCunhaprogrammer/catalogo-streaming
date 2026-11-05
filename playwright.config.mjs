@@ -2,7 +2,9 @@ import { defineConfig, devices } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'tests/e2e',
-  timeout: 30_000,
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
+  globalSetup: './tests/e2e/warm-cache.mjs',
   use: { baseURL: 'http://localhost:3100', trace: 'on-first-retry' },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [

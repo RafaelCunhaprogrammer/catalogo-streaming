@@ -28,6 +28,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('listas: favoritar, acompanhar a série, ver no Início e na Minha lista, e favoritar no Kids', async ({ page }) => {
+  test.setTimeout(150000); // percurso longo: com o cache vazio, cada Início leva até uns 15 s
   await signInDemo(page, 'Pai');
   await clearLists(page);
   await page.goto('/');
