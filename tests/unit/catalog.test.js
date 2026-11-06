@@ -35,9 +35,21 @@ describe('discoverMixed', () => {
 });
 
 describe('loadHomeHero', () => {
-  it('avisa quando o TMDB falhou', async () => {
+  it('avisa quando o TMDB falhou e registra o motivo', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
     mockTmdb({ '/trending/all/week': 500 });
     expect(await loadHomeHero()).toEqual({ items: [], failed: true });
+    expect(log).toHaveBeenCalledWith('Destaque sem dados do TMDB:', 500);
+    log.mockRestore();
+  });
+
+  it('numa falha de rede, o registro não leva o token', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubEnv('TMDB_READ_TOKEN', 'token-secreto');
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Bearer token-secreto is an invalid header value')));
+    expect((await loadHomeHero()).failed).toBe(true);
+    expect(log).toHaveBeenCalledWith('Destaque sem dados do TMDB:', 'TypeError');
+    log.mockRestore();
   });
 
   it('lista vazia não é falha', async () => {
