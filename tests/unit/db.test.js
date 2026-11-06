@@ -1,11 +1,40 @@
 // @vitest-environment node
 import { describe, it, expect } from 'vitest';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { createTestDb } from '../helpers/test-db';
-import { createDb } from '@/lib/db';
+import { createDb, pgConfig } from '@/lib/db';
 import { user, profiles, parentalPins } from '@/lib/db/schema';
 
+describe('pgConfig', () => {
+  const url = 'postgresql://postgres.ref:se%23nha@pooler.exemplo.com:6543/postgres?sslmode=require';
+
+  it('sem certificado, usa o endereço como veio', () => {
+    expect(pgConfig(url).connectionString).toBe(url);
+    expect(pgConfig(url).ssl).toBeUndefined();
+  });
+
+  it('com certificado, confere o servidor e tira o sslmode, que anularia o certificado', () => {
+    const config = pgConfig(url, 'PEM');
+    expect(config.ssl).toEqual({ ca: 'PEM' });
+    expect(config.connectionString).toBe('postgresql://postgres.ref:se%23nha@pooler.exemplo.com:6543/postgres');
+  });
+
+  it('aceita certificado com as quebras de linha escritas como \\n', () => {
+    expect(pgConfig(url, 'linha1\\nlinha2').ssl.ca).toBe('linha1\nlinha2');
+  });
+});
+
 describe('banco de dados', () => {
+  it('toda tabela tem RLS ligada: nada fica aberto pela Data API do Supabase', async () => {
+    const db = await createTestDb();
+    const { rows } = await db.execute(sql`
+      select c.relname, c.relrowsecurity from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'public' and c.relkind = 'r'`);
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.filter((t) => !t.relrowsecurity).map((t) => t.relname)).toEqual([]);
+  });
+
   it('cria as tabelas e apaga perfis e PIN junto com a conta', async () => {
     const db = await createTestDb();
     await db.insert(user).values({ id: 'u1', name: 'Ana', email: 'ana@ex.com' });

@@ -44,7 +44,7 @@ A acessibilidade foi tratada como requisito desde o começo, não como ajuste no
 | Aplicação | Next.js 16 (App Router, Server Components e Server Actions), React 19 |
 | Visual | Tailwind CSS 4, com temas por variáveis CSS |
 | Dados de filmes | API do TMDB (só títulos com plataforma no Brasil), em cache por 6 a 24 h |
-| Banco | PostgreSQL com Drizzle ORM e migrações; PGlite em desenvolvimento e testes, Neon em produção |
+| Banco | PostgreSQL com Drizzle ORM e migrações; PGlite em desenvolvimento e testes, Supabase em produção |
 | Login | Better Auth (e-mail e senha, sessão de 30 dias), e-mail de recuperação com Resend |
 | Testes | Vitest e Testing Library (unidade e componentes), Playwright com axe (ponta a ponta) |
 
