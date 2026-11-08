@@ -91,6 +91,17 @@ describe('gêneros do perfil: ações de Gerenciar perfis', () => {
     expect(p.favoriteGenres).toEqual(['crime']);
   });
 
+  it('editar salva o avatar do formulário; avatar desconhecido é recusado', async () => {
+    const base = { id: 'pa', name: 'Adulto', color: '#8b5cf6', kind: 'adulto' };
+    expect((await updateProfileAction(null, form({ ...base, avatar: 'jambu' }, []))).ok).toBe(true);
+    expect((await row('pa')).avatar).toBe('jambu');
+    const res = await updateProfileAction(null, form({ ...base, avatar: 'mickey' }, []));
+    expect(res.errors.avatar).toBe('Escolha um dos avatares.');
+    expect((await row('pa')).avatar).toBe('jambu');
+    expect((await updateProfileAction(null, form({ ...base, avatar: '' }, []))).ok).toBe(true);
+    expect((await row('pa')).avatar).toBeNull();
+  });
+
   it('editar salva os gêneros do formulário (adulto limpo, Kids filtrado)', async () => {
     await setPin(state.db, 'u1', '1234'); // atualizar para Kids exige que a conta já tenha PIN
     expect((await updateProfileAction(null, form({ id: 'pa', name: 'Adulto', color: '#8b5cf6', kind: 'adulto' }, ['acao', 'xyz']))).ok).toBe(true);

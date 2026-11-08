@@ -154,6 +154,34 @@ describe('Gerenciar perfis', () => {
     expect(screen.queryByRole('heading', { name: 'Do que você gosta?' })).not.toBeInTheDocument();
   });
 
+  it('novo perfil já vem com avatar: Açaí no adulto, Boto ao trocar para Kids', async () => {
+    createProfileAction.mockResolvedValue({ ok: false, errors: {} });
+    render(<ProfileManager profiles={[p('p1', 'Ana')]} hasPin isDemo={false} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Adicionar perfil' }));
+    const form = screen.getByRole('form', { name: 'Novo perfil' });
+    expect(within(form).getByRole('radio', { name: 'Açaí' })).toBeChecked();
+    await userEvent.click(within(form).getByRole('radio', { name: 'Kids' }));
+    expect(within(form).getByRole('radio', { name: 'Boto' })).toBeChecked();
+    await userEvent.type(within(form).getByLabelText('Nome'), 'Pequeno');
+    await userEvent.click(within(form).getByRole('button', { name: 'Salvar' }));
+    expect(createProfileAction.mock.calls[0][1].get('avatar')).toBe('boto');
+  });
+
+  it('depois de escolher um avatar, trocar o tipo não muda a escolha', async () => {
+    render(<ProfileManager profiles={[p('p1', 'Ana')]} hasPin isDemo={false} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Adicionar perfil' }));
+    const form = screen.getByRole('form', { name: 'Novo perfil' });
+    await userEvent.click(within(form).getByRole('radio', { name: 'Onça' }));
+    await userEvent.click(within(form).getByRole('radio', { name: 'Kids' }));
+    await userEvent.click(within(form).getByRole('radio', { name: 'Adulto' }));
+    expect(within(form).getByRole('radio', { name: 'Onça' })).toBeChecked();
+  });
+
+  it('editar um perfil antigo, sem avatar, mostra "Só a inicial" marcada', () => {
+    render(<ProfileManager profiles={[p('p1', 'Ana', { avatar: null })]} hasPin editId="p1" voltar="/" />);
+    expect(screen.getByRole('radio', { name: 'Só a inicial' })).toBeChecked();
+  });
+
   it('editar mostra os gêneros atuais marcados e envia genres no formulário', async () => {
     updateProfileAction.mockResolvedValue({ ok: true });
     render(<ProfileManager profiles={[p('p1', 'Ana', { favoriteGenres: ['drama'] })]} hasPin editId="p1" voltar="/" />);
