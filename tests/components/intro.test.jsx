@@ -28,7 +28,13 @@ describe('IntroScene', () => {
     expect(video).toHaveAttribute('src', INTRO_VIDEO_SRC);
     expect(playMock).toHaveBeenCalled();
     expect(video.muted).toBe(false);
+    // com som (ex.: ao rever pela logo, depois de um clique), o botão permite desligar
     expect(screen.queryByRole('button', { name: 'Ativar som' })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Desligar som' }));
+    expect(video.muted).toBe(true);
+    expect(intro()).toHaveAttribute('data-leaving', 'false');
+    fireEvent.click(screen.getByRole('button', { name: 'Ativar som' }));
+    expect(video.muted).toBe(false);
     await act(async () => { fireEvent.ended(video); });
     expect(intro()).toHaveAttribute('data-leaving', 'true');
     const done = vi.fn();
@@ -70,6 +76,16 @@ describe('IntroScene', () => {
     expect(video.muted).toBe(false);
     expect(intro()).toHaveAttribute('data-leaving', 'false');
     expect(screen.queryByRole('button', { name: 'Ativar som' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Desligar som' })).toBeInTheDocument();
+  });
+
+  it('ao rever a abertura pela logo, o botão de som continua lá', async () => {
+    renderWithSettings(<IntroScene />);
+    await flush();
+    fireEvent.click(screen.getByRole('button', { name: 'Pular abertura' }));
+    await act(async () => { window.dispatchEvent(new Event(REPLAY_EVENT)); });
+    await flush();
+    expect(screen.getByRole('button', { name: /^(Ativar|Desligar) som$/ })).toBeInTheDocument();
   });
 
   it('se o vídeo travar, a abertura some sozinha depois de um tempo máximo', async () => {

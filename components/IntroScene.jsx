@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { usePathname } from 'next/navigation';
 import { useSettings } from '@/components/settings/SettingsProvider';
 import { APP_NAME } from '@/lib/brand';
-import { Volume2 } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { INTRO_DONE_EVENT, REPLAY_EVENT } from '@/lib/intro-events';
 
 export const INTRO_SESSION_KEY = 'paidegua:abertura';
@@ -216,7 +216,7 @@ export function IntroScene() {
   const [dismissed, setDismissed] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const [soundBlocked, setSoundBlocked] = useState(false);
+  const [soundOff, setSoundOff] = useState(false);
   const [replay, setReplay] = useState(false);
   const timers = useRef([]);
   const videoRef = useRef(null);
@@ -228,7 +228,7 @@ export function IntroScene() {
       timers.current.forEach(clearTimeout);
       timers.current = [];
       setVideoFailed(false);
-      setSoundBlocked(false);
+      setSoundOff(false);
       setLeaving(false);
       setDismissed(false);
       setReplay(true);
@@ -263,7 +263,8 @@ export function IntroScene() {
   }, [calm]);
 
   // Tenta tocar com som. O navegador pode bloquear som automático antes do primeiro clique:
-  // nesse caso toca mudo e mostra o botão "Ativar som". No Modo calmo, nada toca.
+  // nesse caso toca mudo e o botão vira "Ativar som". Depois de um clique (ex.: rever pela logo),
+  // o som já sai, e o botão serve para desligar. No Modo calmo, nada toca.
   useEffect(() => {
     const video = videoRef.current;
     if (!visible || !video || calm || videoFailed) return;
@@ -273,7 +274,7 @@ export function IntroScene() {
     if (attempt && typeof attempt.catch === 'function') {
       attempt.catch(() => {
         video.muted = true;
-        setSoundBlocked(true);
+        setSoundOff(true);
         const muted = video.play();
         if (muted && typeof muted.catch === 'function') muted.catch(() => {});
       });
@@ -292,12 +293,13 @@ export function IntroScene() {
     return () => clearInterval(timer);
   }, [leaving]);
 
-  function enableSound(e) {
+  function toggleSound(e) {
     e.stopPropagation();
     const video = videoRef.current;
     if (!video) return;
-    video.muted = false;
-    setSoundBlocked(false);
+    video.muted = !soundOff;
+    if (!video.muted) video.volume = 1;
+    setSoundOff(video.muted);
   }
 
   useEffect(() => {
@@ -353,13 +355,13 @@ export function IntroScene() {
         />
       )}
 
-      {soundBlocked && !videoFailed && (
+      {!videoFailed && !calm && (
         <button
-          onClick={enableSound}
+          onClick={toggleSound}
           className="absolute bottom-6 left-6 inline-flex items-center gap-2 rounded-full border border-white/40 bg-black/40 px-5 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-white/20"
         >
-          <Volume2 aria-hidden="true" className="h-4 w-4" />
-          Ativar som
+          {soundOff ? <Volume2 aria-hidden="true" className="h-4 w-4" /> : <VolumeX aria-hidden="true" className="h-4 w-4" />}
+          {soundOff ? 'Ativar som' : 'Desligar som'}
         </button>
       )}
       <button
