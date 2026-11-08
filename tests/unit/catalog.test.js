@@ -442,6 +442,44 @@ describe('acabamentos visuais', () => {
   });
 });
 
+describe('fileiras de gênero sem repetir o começo', () => {
+  // Filmes por gênero (Ação 28, Terror 27, Romance 10749); séries vazias.
+  const byGenre = { 28: [1, 2, 3], 27: [2, 4], 10749: [1, 5, 6] };
+  const tmdbByGenre = (fail = []) => ({
+    '/discover/movie': (url) => {
+      const g = Number(url.searchParams.get('with_genres'));
+      if (fail.includes(g)) return 500;
+      return { results: (byGenre[g] ?? []).map((id, i) => movie(id, 100 - i)) };
+    },
+    '/discover/tv': { results: [] },
+  });
+  const ids = (row) => row.items.map((t) => t.id);
+  const genreRow = (defs, slug) => loadHomeRow(defs.find((d) => d.key === `genero-${slug}`));
+
+  it('título que já apareceu numa fileira de gênero anterior vai para o fim', async () => {
+    mockTmdb(tmdbByGenre());
+    const defs = getHomeRowDefs([8]);
+    expect(ids(await genreRow(defs, 'acao'))).toEqual([1, 2, 3]);
+    expect(ids(await genreRow(defs, 'terror'))).toEqual([4, 2]);
+    expect(ids(await genreRow(defs, 'romance'))).toEqual([5, 6, 1]);
+  });
+
+  it('cada gênero é buscado uma vez só, mesmo servindo de referência a várias fileiras', async () => {
+    const fetchMock = mockTmdb(tmdbByGenre());
+    const defs = getHomeRowDefs([8]);
+    await Promise.all(defs.filter((d) => d.key.startsWith('genero-')).map(loadHomeRow));
+    const acao = fetchMock.mock.calls.filter(([u]) => new URL(u).searchParams.get('with_genres') === '28');
+    expect(acao).toHaveLength(1);
+  });
+
+  it('se uma fileira anterior falhar, as seguintes aparecem normalmente', async () => {
+    mockTmdb(tmdbByGenre([28]));
+    const defs = getHomeRowDefs([8]);
+    expect(ids(await genreRow(defs, 'acao'))).toEqual([]);
+    expect(ids(await genreRow(defs, 'terror'))).toEqual([2, 4]);
+  });
+});
+
 describe('perfil Kids: só títulos infantis', () => {
   const kidsMovie = (id, popularity, genres) => ({ ...movie(id, popularity), genre_ids: genres });
   const kidsTv = (id, popularity, genres) => ({ ...tv(id, popularity), genre_ids: genres });
