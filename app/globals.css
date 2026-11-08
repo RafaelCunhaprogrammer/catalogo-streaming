@@ -87,6 +87,16 @@ html[data-text="muito-grande"] { font-size: 150%; }
   --margem: clamp(1rem, 5vw, 5rem); /* mesma margem no topo, no destaque e nas fileiras */
 }
 
+/* Capa do perfil (Etapa D): a cor tirada da imagem, só em enfeites (sublinhado, bordas).
+   Noturno e alto contraste ficam com a cor do tema. */
+[data-theme="escuro"]:not([data-contrast="true"]) [data-cover-accent] {
+  --cover-accent: var(--cover-accent-dark);
+}
+
+[data-theme="claro"]:not([data-contrast="true"]) [data-cover-accent] {
+  --cover-accent: var(--cover-accent-light);
+}
+
 @theme inline {
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --color-bg: var(--bg);

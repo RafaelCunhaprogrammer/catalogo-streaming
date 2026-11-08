@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildCover, coverOptions, visibleCover } from '@/lib/cover';
+import { buildCover, coverHeaderData, coverOptions, visibleCover } from '@/lib/cover';
 
 const at = (n) => new Date(Date.UTC(2026, 10, n));
 const mark = (id, extra = {}, snap = {}) => ({
@@ -26,6 +26,25 @@ describe('coverOptions', () => {
   it('no Kids, só os favoritos dentro da faixa (sem contar liberações do PIN)', () => {
     const marks = [mark(1, {}, { certification: '10' }), mark(2, {}, { certification: '14' }), mark(3, {}, { certification: null })];
     expect(coverOptions(marks, { maxRating: '10' }).map((o) => o.id)).toEqual([1]);
+  });
+});
+
+describe('coverHeaderData (o que a Minha lista manda ao navegador)', () => {
+  it('contagens, opções e a capa; no Kids, capa acima da faixa não sai do servidor', () => {
+    const rows = [
+      mark(1, { status: 'assistindo' }),
+      mark(2, { favorite: false, status: 'assistido' }),
+      mark(3, { favorite: false, status: 'assistido' }, { certification: '10' }),
+    ];
+    const cover = buildCover(mark(9, {}, { certification: '14' }), null);
+    const adulto = coverHeaderData(rows, { cover }, null);
+    expect(adulto.counts).toEqual({ favoritos: 1, assistindo: 1, assistidos: 2 });
+    expect(adulto.cover).toEqual(cover);
+    expect(adulto.options.map((o) => o.id)).toEqual([1]);
+    const kids = coverHeaderData(rows, { cover }, '10');
+    expect(kids.cover).toBeNull();
+    expect(kids.options).toEqual([]);
+    expect(coverHeaderData([], {}, null)).toEqual({ counts: { favoritos: 0, assistindo: 0, assistidos: 0 }, options: [], cover: null });
   });
 });
 

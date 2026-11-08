@@ -159,7 +159,7 @@ export function MyListView({ items, initialTab = 'favoritos' }) {
               onClick={() => selectTab(t.id)}
               onKeyDown={(e) => onTabKey(e, i)}
               className={`rounded-lg px-3 py-2 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-2 ${
-                on ? 'bg-surface-2 text-fg underline decoration-accent-2 decoration-2 underline-offset-8' : 'text-muted hover:text-fg'
+                on ? 'bg-surface-2 text-fg underline decoration-[var(--cover-accent,var(--accent-2))] decoration-2 underline-offset-8' : 'text-muted hover:text-fg'
               }`}
             >
               {`${t.label} (${inTab(t).length})`}

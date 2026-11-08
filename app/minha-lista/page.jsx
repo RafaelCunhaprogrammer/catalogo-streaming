@@ -3,6 +3,8 @@ import { getDb } from '@/lib/db';
 import { listMarks } from '@/lib/lists/store';
 import { ratingAllowed } from '@/lib/tmdb/ratings';
 import { MyListView } from '@/components/lists/MyListView';
+import { CoverHeader } from '@/components/lists/CoverHeader';
+import { coverHeaderData } from '@/lib/cover';
 
 export const metadata = { title: 'Minha lista' };
 
@@ -36,10 +38,20 @@ export default async function MyListPage({ searchParams }) {
       };
     });
 
+  const header = coverHeaderData(rows, viewer.profile, viewer.maxRating);
+  const accent = header.cover?.accent;
+
+  // As cores da capa valem para a página toda (sublinhado das abas), mas só em enfeites.
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
-      <h1 className="mb-6 text-3xl font-extrabold">Minha lista</h1>
-      <MyListView items={items} initialTab={initialTab} />
+    <div
+      data-cover-accent={accent ? 'true' : undefined}
+      style={accent ? { '--cover-accent-dark': accent.dark, '--cover-accent-light': accent.light } : undefined}
+    >
+      <CoverHeader profile={viewer.profile} cover={header.cover} counts={header.counts} options={header.options} />
+      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6">
+        <h1 className="mb-6 text-3xl font-extrabold">Minha lista</h1>
+        <MyListView items={items} initialTab={initialTab} />
+      </div>
     </div>
   );
 }
