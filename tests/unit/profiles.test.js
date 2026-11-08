@@ -20,7 +20,7 @@ const adulto = (name = 'Ana') => ({ name, color: PROFILE_COLORS[0], kind: 'adult
 
 describe('validação', () => {
   it('aceita adulto e Kids com faixa', () => {
-    expect(validateProfileInput(adulto())).toEqual({ ok: true, value: { name: 'Ana', color: PROFILE_COLORS[0], kind: 'adulto', maxRating: null } });
+    expect(validateProfileInput(adulto())).toEqual({ ok: true, value: { name: 'Ana', color: PROFILE_COLORS[0], kind: 'adulto', maxRating: null, avatar: null } });
     expect(validateProfileInput({ name: ' Pequeno ', color: PROFILE_COLORS[1], kind: 'kids', maxRating: '10' }).value)
       .toMatchObject({ name: 'Pequeno', kind: 'kids', maxRating: '10' });
   });
@@ -31,6 +31,12 @@ describe('validação', () => {
     expect(Object.keys(r.errors).sort()).toEqual(['color', 'kind', 'name']);
     expect(validateProfileInput({ ...adulto('x'.repeat(21)) }).errors.name).toBe('Use de 1 a 20 caracteres.');
     expect(validateProfileInput({ ...adulto(), kind: 'kids', maxRating: '16' }).errors.maxRating).toBe('Escolha Livre, 10, 12 ou 14 anos.');
+  });
+
+  it('avatar: slug da lista, vazio vira "só a inicial", outro valor é recusado', () => {
+    expect(validateProfileInput({ ...adulto(), avatar: 'onca' }).value.avatar).toBe('onca');
+    expect(validateProfileInput({ ...adulto(), avatar: '' }).value.avatar).toBeNull();
+    expect(validateProfileInput({ ...adulto(), avatar: 'mickey' }).errors.avatar).toBe('Escolha um dos avatares.');
   });
 
   it('adulto nunca guarda faixa', () => {
@@ -76,6 +82,14 @@ describe('perfis no banco', () => {
     const { profile } = await createProfile(db, 'u1', adulto());
     const r = await updateProfile(db, 'u1', profile.id, { name: 'Ana Kids', color: PROFILE_COLORS[2], kind: 'kids', maxRating: '12' });
     expect(r.profile).toMatchObject({ name: 'Ana Kids', kind: 'kids', maxRating: '12' });
+  });
+
+  it('cria e edita com avatar; editar sem mandar o avatar mantém o atual', async () => {
+    const { profile } = await createProfile(db, 'u1', { ...adulto(), avatar: 'jambu' });
+    expect(profile.avatar).toBe('jambu');
+    expect((await updateProfile(db, 'u1', profile.id, { ...adulto('Ana B') })).profile.avatar).toBe('jambu');
+    expect((await updateProfile(db, 'u1', profile.id, { ...adulto(), avatar: 'boto' })).profile.avatar).toBe('boto');
+    expect((await updateProfile(db, 'u1', profile.id, { ...adulto(), avatar: '' })).profile.avatar).toBeNull();
   });
 
   it('não exclui o último perfil', async () => {
