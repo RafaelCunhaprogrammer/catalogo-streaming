@@ -1,7 +1,11 @@
 // @vitest-environment node
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { createTestAuth } from '../helpers/test-auth';
-import { listProfiles, createProfile, PROFILE_COLORS } from '@/lib/profiles';
+import { listProfiles, createProfile, updateProfile, PROFILE_COLORS } from '@/lib/profiles';
+
+// A cor da capa viria da imagem no TMDB: aqui, uma cor fixa, sem rede.
+const ACCENT = { dark: '#aabbcc', light: '#112233' };
+vi.mock('@/lib/cover-accent', () => ({ extractAccent: vi.fn(async () => ACCENT) }));
 import { verifyPin } from '@/lib/pin';
 import { DEMO_EMAIL, DEMO_PIN, belemDate, ensureDemoAccount, resetDemoIfNeeded } from '@/lib/demo';
 import { listMarks, saveMark } from '@/lib/lists/store';
@@ -21,6 +25,8 @@ describe('conta de demonstração', () => {
     expect(profiles.map((p) => [p.name, p.kind, p.maxRating])).toEqual([
       ['Pai', 'adulto', null], ['Mãe', 'adulto', null], ['Pequeno', 'kids', '10'],
     ]);
+    expect(profiles.map((p) => p.avatar)).toEqual(['acai', 'ver-o-peso', 'boto']);
+    expect(profiles.map((p) => p.cover)).toEqual([null, null, null]); // sem exemplos, sem capa
     expect(await verifyPin(db, userId, DEMO_PIN)).toEqual({ ok: true });
     const login = await auth.api.signInEmail({ body: { email: DEMO_EMAIL, password: 'demo-paidegua-2026' }, asResponse: true });
     expect(login.status).toBe(200);
@@ -39,10 +45,14 @@ describe('conta de demonstração', () => {
     const day1 = new Date('2026-10-17T15:00:00Z');
     const userId = await ensureDemoAccount(db, auth, 'demo-paidegua-2026', day1);
     await createProfile(db, userId, { name: 'Bagunça', color: PROFILE_COLORS[0], kind: 'adulto' });
+    const [pai] = await listProfiles(db, userId);
+    await updateProfile(db, userId, pai.id, { name: 'Pai', color: pai.color, kind: 'adulto', avatar: 'onca' });
     expect(await resetDemoIfNeeded(db, userId, new Date('2026-10-17T23:00:00Z'))).toBe(false);
     expect(await listProfiles(db, userId)).toHaveLength(4);
     expect(await resetDemoIfNeeded(db, userId, new Date('2026-10-18T04:00:00Z'))).toBe(true);
-    expect((await listProfiles(db, userId)).map((p) => p.name)).toEqual(['Pai', 'Mãe', 'Pequeno']);
+    const depois = await listProfiles(db, userId);
+    expect(depois.map((p) => p.name)).toEqual(['Pai', 'Mãe', 'Pequeno']);
+    expect(depois[0].avatar).toBe('acai');
   });
 
   describe('exemplos', () => {
@@ -63,6 +73,8 @@ describe('conta de demonstração', () => {
       const tv = marks.find((m) => m.mediaType === 'tv');
       expect([tv.status, tv.season, tv.episode]).toEqual(['assistindo', 1, 3]);
       expect(pai.favoriteGenres).toEqual(['acao', 'comedia', 'ficcao']);
+      expect(pai.cover).toEqual({ type: 'movie', id: 10, title: 'Título 10', backdropPath: '/b.jpg', certification: '12', accent: ACCENT });
+      expect(mae.cover).toBeNull();
       expect(await listMarks(db, mae.id)).toHaveLength(0);
       expect(await listMarks(db, pequeno.id)).toHaveLength(0);
     });
