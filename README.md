@@ -2,9 +2,9 @@
 
 **Catálogo dos filmes e séries incluídos nas assinaturas de streaming no Brasil**, com contas de família, perfil Kids com controle dos pais, listas pessoais e indicações. "Pai d'égua", no Pará, quer dizer "muito bom".
 
-> 🔗 **Ver no ar:** _link da Vercel (em breve)_ · entre em **"Experimentar sem cadastro"** para usar a conta de demonstração (PIN dos pais: `1234`).
+> 🔗 **Ver no ar:** [pai-degua.vercel.app](https://pai-degua.vercel.app) · entre em **"Experimentar sem cadastro"** para usar a conta de demonstração (PIN dos pais: `1234`).
 
-![Início do Pai d'Égua com o destaque em trailer](docs/imagens/inicio.webp)
+![Início do Pai d'Égua com o destaque em tela cheia e "Como você quer se sentir hoje?"](docs/imagens/inicio.webp)
 
 ## O que dá para fazer
 
@@ -47,12 +47,14 @@ A acessibilidade foi tratada como requisito desde o começo, não como ajuste no
 | Banco | PostgreSQL com Drizzle ORM e migrações; PGlite em desenvolvimento e testes, Supabase em produção |
 | Login | Better Auth (e-mail e senha, sessão de 30 dias), e-mail de recuperação com Resend |
 | Testes | Vitest e Testing Library (unidade e componentes), Playwright com axe (ponta a ponta) |
+| Publicação | Vercel, com o banco no Supabase (região São Paulo) |
 
 **Alguns cuidados que valem mencionar:**
 - Toda ação usa o perfil da sessão no servidor; o navegador nunca escolhe de quem é a lista.
 - O cadeado do Kids é conferido no servidor, e títulos bloqueados não mandam imagem nem sinopse ao navegador. Quando o TMDB tem mais de uma classificação brasileira para o mesmo título, vale a mais restritiva.
 - As marcações aparecem na hora (atualização otimista) e voltam atrás se o servidor recusar; cliques repetidos no mesmo título entram numa fila única, mesmo vindos de cartazes diferentes.
 - As fileiras pessoais carregam em partes, sem atrasar o resto da página.
+- No Supabase, todas as tabelas têm RLS ligada e nenhuma política: o site fala com o banco direto pelo servidor, e a API pública do Supabase não lê nem grava nada.
 
 ## Como rodar no seu computador
 
@@ -81,7 +83,7 @@ Em etapas, cada uma com especificação, plano e revisão de código antes de ju
 | A – Catálogo | ✅ |
 | B – Contas, perfis, Kids, listas e indicações | ✅ |
 | C – Assinatura (pagamento simulado) | planejada |
-| D – Personalização (avatares regionais e capa do perfil) | planejada |
+| D – Personalização (avatares regionais e capa do perfil) | em andamento |
 
 ## Créditos
 

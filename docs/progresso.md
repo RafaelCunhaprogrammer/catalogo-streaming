@@ -1,15 +1,17 @@
 # Pai d'Égua: progresso do projeto
 
-Atualizado em 05/11/2026. Marque aqui o que for sendo concluído.
+Atualizado em 08/11/2026. Marque aqui o que for sendo concluído.
+
+**No ar:** [pai-degua.vercel.app](https://pai-degua.vercel.app)
 
 ## Visão geral
 
 | Etapa | O que é | Situação |
 |---|---|---|
-| **A – Catálogo** | O site em si: vitrine, busca, páginas de filmes e séries, visual e acessibilidade | **Quase pronta** (falta publicar) |
+| **A – Catálogo** | O site em si: vitrine, busca, páginas de filmes e séries, visual e acessibilidade | **Publicada** (faltam ajustes pequenos) |
 | **B – Contas e Perfis** | Login, perfis, Kids com controle dos pais, favoritos, "Continuar assistindo" | **B1 e B2 prontas** e juntadas ao `main` |
 | **C – Assinatura** | Planos, teste grátis e pagamento simulado | Não iniciada |
-| **D – Personalização** | Avatares regionais e capa do perfil | Não iniciada |
+| **D – Personalização** | Avatares regionais e capa do perfil | Em andamento (protótipo) |
 
 A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A C e a D são menores e dependem da B.
 
@@ -62,7 +64,17 @@ A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A
 - [ ] Atualizar a especificação com o que mudou (nome, menu, abertura, protetor de tela)
 - [x] Juntar o ramo `etapa-a-catalogo` ao `main` (28/10/2026)
 - [x] README de portfólio (com imagens e as decisões de acessibilidade)
-- [ ] Publicar na Vercel (link aberto para o portfólio)
+- [x] Publicar na Vercel (link aberto para o portfólio)
+
+### Publicação (05 a 08/11/2026)
+- [x] Site na Vercel: [pai-degua.vercel.app](https://pai-degua.vercel.app)
+- [x] Banco de produção trocado do Neon para o **Supabase** (região São Paulo), com as migrações aplicadas
+- [x] RLS ligada em todas as tabelas, sem políticas: só o servidor do site acessa o banco (conferido no Security Advisor em 08/11, sem o alerta "RLS Disabled in Public")
+- [x] Conexão com o certificado do Supabase
+- [x] Registro do motivo quando o destaque fica sem dados do TMDB (sem expor o token)
+- [x] Token do TMDB trocado, no `.env.local` e na Vercel, depois de aparecer no chat
+- [x] `BETTER_AUTH_SECRET` local trocado
+- [x] Imagem do Início no README atualizada com o visual novo
 - [x] Apagar a pasta `app-temp` (sobra da criação do projeto)
 
 **Ajustes pequenos já conhecidos**
