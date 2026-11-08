@@ -45,6 +45,20 @@ describe('banco de dados', () => {
     expect(await db.select().from(parentalPins)).toEqual([]);
   });
 
+  it('perfil guarda avatar e capa; perfil antigo fica com os dois nulos', async () => {
+    const db = await createTestDb();
+    await db.insert(user).values({ id: 'u1', name: 'Ana', email: 'ana@ex.com' });
+    await db.insert(profiles).values({ id: 'p1', userId: 'u1', name: 'Ana', color: '#8b5cf6', kind: 'adulto', prefs: {} });
+    const [antigo] = await db.select().from(profiles);
+    expect(antigo.avatar).toBeNull();
+    expect(antigo.cover).toBeNull();
+    const cover = { type: 'movie', id: 1, title: 'X', backdropPath: '/x.jpg', certification: '12', accent: null };
+    await db.update(profiles).set({ avatar: 'acai', cover }).where(eq(profiles.id, 'p1'));
+    const [novo] = await db.select().from(profiles);
+    expect(novo.avatar).toBe('acai');
+    expect(novo.cover).toEqual(cover);
+  });
+
   it('valores padrão: e-mail não verificado e PIN sem tentativas', async () => {
     const db = await createTestDb();
     await db.insert(user).values({ id: 'u1', name: 'Ana', email: 'ana@ex.com' });
