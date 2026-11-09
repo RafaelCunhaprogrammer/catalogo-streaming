@@ -44,6 +44,15 @@ describe('getAccess', () => {
     await getAccess();
     expect(ensure).toHaveBeenCalledWith(expect.anything(), 'u1', expect.any(Date));
   });
+  it('falha no banco: resolve null e registra o erro', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const boom = new Error('db fora');
+    viewer.mockResolvedValue({ user: { id: 'u1' } });
+    ensure.mockRejectedValue(boom);
+    expect(await getAccess()).toBeNull();
+    expect(spy).toHaveBeenCalledWith('Falha ao ler a assinatura', boom);
+    spy.mockRestore();
+  });
   it('teste vencido: sem acesso', async () => {
     viewer.mockResolvedValue({ user: { id: 'u1' } });
     ensure.mockResolvedValue({ status: 'teste', trialEndsAt: past(1), periodEnd: null });
@@ -62,6 +71,13 @@ describe('requireAccess', () => {
     viewer.mockResolvedValue(ok);
     ensure.mockResolvedValue({ status: 'teste', trialEndsAt: past(1), periodEnd: null });
     await expect(requireAccess('/filmes')).rejects.toMatchObject({ url: '/assinar?motivo=expirou' });
+  });
+  it('falha no banco deixa passar (fail-open)', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    viewer.mockResolvedValue(ok);
+    ensure.mockRejectedValue(new Error('db fora'));
+    await expect(requireAccess('/filmes')).resolves.toBe(ok);
+    spy.mockRestore();
   });
   it('visitante vai para a entrada', async () => {
     viewer.mockResolvedValue({ user: null });

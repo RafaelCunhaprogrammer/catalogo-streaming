@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SearchBox } from '@/components/SearchBox';
 
@@ -24,6 +24,13 @@ describe('SearchBox', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][0]).toBe('/api/buscar?q=Cidade%20de%20Deus');
     expect(screen.getByRole('link', { name: 'Ver todos os resultados' })).toHaveAttribute('href', '/busca?q=Cidade%20de%20Deus');
+  });
+
+  it('403 leva a /assinar?motivo=expirou', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 403 })));
+    render(<SearchBox />);
+    await userEvent.type(screen.getByRole('combobox'), 'cidade');
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/assinar?motivo=expirou'));
   });
 
   it('não busca com menos de 2 caracteres', async () => {

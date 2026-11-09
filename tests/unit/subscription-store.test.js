@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { createTestAuth, signUp } from '../helpers/test-auth';
 import { user, subscriptions } from '@/lib/db/schema';
@@ -44,6 +44,17 @@ describe('assinatura no banco', () => {
     const b = await ensureSubscription(db, id, new Date(NOW.getTime() + H));
     expect(b.trialEndsAt.getTime()).toBe(NOW.getTime() + 6 * H);
     expect(await db.select().from(subscriptions).where(eq(subscriptions.userId, id))).toHaveLength(1);
+  });
+
+  it('ensureSubscription devolve a linha existente sem escrever nada', async () => {
+    const { db } = await createTestAuth();
+    const id = await newUser(db);
+    const first = await ensureSubscription(db, id, NOW);
+    const insert = vi.spyOn(db, 'insert');
+    const again = await ensureSubscription(db, id, new Date(NOW.getTime() + 2 * H));
+    expect(insert).not.toHaveBeenCalled();
+    expect(again).toEqual(first);
+    insert.mockRestore();
   });
 
   it('startTrial grava o teste; chamadas concorrentes de ensureSubscription são seguras', async () => {
