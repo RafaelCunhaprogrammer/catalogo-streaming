@@ -155,4 +155,18 @@ Protótipo aprovado em 08/11/2026: https://claude.ai/artifact/2hFdr3aR1CwZSdHQEG
 - [x] Foto só em perfis adultos (inclusive na demonstração), apagada na recriação diária
 - [x] Teste de ponta a ponta: escolher, recortar e salvar a foto, ver no menu do topo e apagar o arquivo ao voltar para um desenho (649 testes de unidade e componentes; personalizacao.spec.js com 2 de ponta a ponta, passando)
 
+## Correções da auditoria de qualidade (09/11/2026, ramo `correcoes-auditoria`)
+- [x] Prévias da Vercel não migram mais o banco (usam o mesmo `DATABASE_URL` da produção); só o build de produção migra
+- [x] Em produção, sem `RESEND_API_KEY`, o "Esqueci minha senha" dá erro em vez de escrever o link no log
+- [x] Conta de demonstração (compartilhada): não cria nem exclui perfis; na edição, só avatar dos desenhos e cor (sem nome novo nem foto própria). Revê a decisão da D2 de aceitar foto na demonstração: qualquer visitante publicaria uma imagem para todos
+- [x] Cabeçalhos de segurança: `X-Frame-Options`, `frame-ancestors`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`
+- [x] Topo em tablets: o menu completo só a partir de 1024 px (entre 768 e 850 px os botões saíam da tela)
+- [x] Gerenciar perfis no celular: botões descem de linha em vez de sair da tela
+- [x] Celular: campos com letra de 16 px em telas de toque (o iPhone não dá mais zoom ao tocar na busca)
+- [x] Alvos de toque de pelo menos 24 px ("Ver tudo", TMDB); topo numa linha só em 320 px
+- [x] `zod` do `@vercel/cli-config` atualizado (4 vulnerabilidades altas do `@vercel/blob`)
+- [x] Teste de ponta a ponta de responsividade: 320 a 1280 px, sem rolagem para o lado
+- [ ] Na Vercel: chave do Resend e `EMAIL_FROM`; `DATABASE_URL` e `TMDB_READ_TOKEN` próprios para as prévias
+- [ ] Depois da Etapa C: limite de tentativas de login guardado no banco (precisa de migração) e reset da demonstração sem disputa
+
 Ideias novas continuam indo para [ideias-para-depois.md](ideias-para-depois.md).
