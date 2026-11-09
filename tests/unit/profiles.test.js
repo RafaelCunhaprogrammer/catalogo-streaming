@@ -39,6 +39,12 @@ describe('validação', () => {
     expect(validateProfileInput({ ...adulto(), avatar: 'mickey' }).errors.avatar).toBe('Escolha um dos avatares.');
   });
 
+  it('avatar "foto": aceito no adulto, recusado no Kids', () => {
+    expect(validateProfileInput({ ...adulto(), avatar: 'foto' }).value.avatar).toBe('foto');
+    const kids = { name: 'Zé', color: PROFILE_COLORS[0], kind: 'kids', maxRating: '10', avatar: 'foto' };
+    expect(validateProfileInput(kids).errors.avatar).toBe('Escolha um dos avatares.');
+  });
+
   it('adulto nunca guarda faixa', () => {
     expect(validateProfileInput({ ...adulto(), maxRating: '10' }).value.maxRating).toBeNull();
   });

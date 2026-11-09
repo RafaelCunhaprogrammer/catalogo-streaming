@@ -59,6 +59,17 @@ describe('banco de dados', () => {
     expect(novo.cover).toEqual(cover);
   });
 
+  it('perfil guarda a chave da foto; por padrão ela é nula', async () => {
+    const db = await createTestDb();
+    await db.insert(user).values({ id: 'u1', name: 'Ana', email: 'ana@ex.com' });
+    await db.insert(profiles).values({ id: 'p1', userId: 'u1', name: 'Ana', color: '#8b5cf6', kind: 'adulto', prefs: {} });
+    const [antigo] = await db.select().from(profiles);
+    expect(antigo.photoKey).toBeNull();
+    await db.update(profiles).set({ photoKey: 'u1/p1.jpg' }).where(eq(profiles.id, 'p1'));
+    const [novo] = await db.select().from(profiles);
+    expect(novo.photoKey).toBe('u1/p1.jpg');
+  });
+
   it('valores padrão: e-mail não verificado e PIN sem tentativas', async () => {
     const db = await createTestDb();
     await db.insert(user).values({ id: 'u1', name: 'Ana', email: 'ana@ex.com' });
