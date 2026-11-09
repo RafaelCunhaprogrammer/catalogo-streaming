@@ -10,9 +10,15 @@ export async function GET(_request, ctx) {
   if (!viewer.user) return naoEncontrada();
   const perfil = (viewer.profiles ?? []).find((p) => p.id === id && p.userId === viewer.user.id);
   if (!perfil?.photoKey) return naoEncontrada();
-  const arquivo = await getPhotoStorage().get(perfil.photoKey);
+  let arquivo;
+  try {
+    arquivo = await getPhotoStorage().get(perfil.photoKey);
+  } catch (e) {
+    console.error('Foto não lida:', e);
+    return naoEncontrada();
+  }
   if (!arquivo) return naoEncontrada();
   return new Response(arquivo.body, {
-    headers: { 'Content-Type': arquivo.contentType, 'Cache-Control': 'private, max-age=3600' },
+    headers: { 'Content-Type': arquivo.contentType, 'Cache-Control': 'private, max-age=3600', 'X-Content-Type-Options': 'nosniff' },
   });
 }

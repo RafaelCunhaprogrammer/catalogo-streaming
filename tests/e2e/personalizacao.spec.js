@@ -77,6 +77,7 @@ function arquivosDeFotos() {
 }
 
 test('foto própria: escolher, recortar, salvar, aparecer no topo e ser apagada ao trocar de avatar', async ({ page }) => {
+  test.skip(!!process.env.BLOB_READ_WRITE_TOKEN, 'Este teste confere a pasta local de fotos; com BLOB_READ_WRITE_TOKEN definido as fotos iriam para o Blob real.');
   test.setTimeout(150000);
   await signInDemo(page, 'Pai');
   await page.goto('/perfis/gerenciar');

@@ -58,6 +58,53 @@ describe('PhotoCropper', () => {
     expect(onDone.mock.calls[0][0].type).toBe('image/jpeg');
   });
 
+  it('Safari: webp devolvido como PNG cai para JPEG', async () => {
+    const onDone = vi.fn();
+    toBlobImpl = (cb, type) => cb(new Blob(['x'], { type: type === 'image/webp' ? 'image/png' : type }));
+    render(<PhotoCropper file={arquivo()} onDone={onDone} onCancel={() => {}} />);
+    carregar();
+    await userEvent.click(screen.getByRole('button', { name: 'Usar esta foto' }));
+    expect(onDone.mock.calls[0][0].type).toBe('image/jpeg');
+  });
+
+  it('JPEG acima de 200 KB baixa a qualidade até caber', async () => {
+    const onDone = vi.fn();
+    const qualidades = [];
+    toBlobImpl = (cb, type, q) => {
+      if (type === 'image/webp') return cb(null);
+      qualidades.push(q);
+      cb(new Blob([new Uint8Array(q > 0.5 ? 300 * 1024 : 100 * 1024)], { type }));
+    };
+    render(<PhotoCropper file={arquivo()} onDone={onDone} onCancel={() => {}} />);
+    carregar();
+    await userEvent.click(screen.getByRole('button', { name: 'Usar esta foto' }));
+    expect(qualidades).toEqual([0.85, 0.7, 0.5]);
+    expect(onDone.mock.calls[0][0].size).toBe(100 * 1024);
+  });
+
+  it('arrastar a imagem move o recorte, sem sair da imagem', () => {
+    render(<PhotoCropper file={arquivo()} onDone={() => {}} onCancel={() => {}} />);
+    carregar(800, 400);
+    const quadro = screen.getByTestId('quadro-recorte');
+    quadro.setPointerCapture = vi.fn();
+    quadro.releasePointerCapture = vi.fn();
+    const usar = () => {
+      drawImage.mockClear();
+      fireEvent.click(screen.getByRole('button', { name: 'Usar esta foto' }));
+      return drawImage.mock.calls[0][1];
+    };
+    expect(usar()).toBe(200);
+    fireEvent.pointerDown(quadro, { pointerId: 1, clientX: 100, clientY: 100 });
+    fireEvent.pointerMove(quadro, { pointerId: 1, clientX: 140, clientY: 100 }); // arrasta para a direita: mostra mais da esquerda
+    fireEvent.pointerUp(quadro, { pointerId: 1 });
+    expect(quadro.setPointerCapture).toHaveBeenCalledWith(1);
+    expect(usar()).toBeLessThan(200);
+    fireEvent.pointerDown(quadro, { pointerId: 1, clientX: 0, clientY: 0 });
+    fireEvent.pointerMove(quadro, { pointerId: 1, clientX: 5000, clientY: 0 });
+    fireEvent.pointerUp(quadro, { pointerId: 1 });
+    expect(usar()).toBe(0); // travou na borda
+  });
+
   it('as setas movem o recorte e o zoom o aproxima', async () => {
     render(<PhotoCropper file={arquivo()} onDone={() => {}} onCancel={() => {}} />);
     carregar(800, 400);

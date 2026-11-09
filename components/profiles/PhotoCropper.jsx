@@ -5,6 +5,7 @@ import { buttonClass } from '@/components/auth/AuthShell';
 
 const QUADRO = 224; // lado do quadro na tela, em px
 const SAIDA = 256; // lado da foto final (o servidor exige 256 x 256)
+const LIMITE = 200 * 1024; // o servidor recusa fotos maiores que isso
 const PASSO = 0.2; // quanto cada seta move, de -1 a 1
 
 const seta = 'flex h-11 w-11 items-center justify-center rounded-xl border border-line text-lg font-black focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent-text)]';
@@ -35,6 +36,34 @@ export function PhotoCropper({ file, onDone, onCancel }) {
 
   const mover = (dx, dy) => setPos((p) => ({ x: Math.max(-1, Math.min(1, p.x + dx)), y: Math.max(-1, Math.min(1, p.y + dy)) }));
 
+  // Arrastar a imagem com o dedo ou o mouse; as setas e o zoom continuam valendo.
+  const arrasto = useRef(null);
+  const comecar = (e) => {
+    if (!natural) return;
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    arrasto.current = { x: e.clientX, y: e.clientY, pos };
+  };
+  const arrastar = (e) => {
+    const a = arrasto.current;
+    if (!a || !natural) return;
+    const { w, h } = natural;
+    const lado = Math.min(w, h) / zoom;
+    const escala = QUADRO / lado;
+    // Sobra de imagem em cada eixo, em px da tela; sem sobra o eixo não anda.
+    const folgaX = ((w - lado) / 2) * escala;
+    const folgaY = ((h - lado) / 2) * escala;
+    const limitar = (v) => Math.max(-1, Math.min(1, v));
+    setPos({
+      x: folgaX > 0 ? limitar(a.pos.x - (e.clientX - a.x) / folgaX) : a.pos.x,
+      y: folgaY > 0 ? limitar(a.pos.y - (e.clientY - a.y) / folgaY) : a.pos.y,
+    });
+  };
+  const soltar = (e) => {
+    if (!arrasto.current) return;
+    arrasto.current = null;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+  };
+
   const usar = () => {
     if (!natural) return;
     const { lado, sx, sy } = regiao();
@@ -42,9 +71,15 @@ export function PhotoCropper({ file, onDone, onCancel }) {
     canvas.width = SAIDA;
     canvas.height = SAIDA;
     canvas.getContext('2d').drawImage(imgRef.current, sx, sy, lado, lado, 0, 0, SAIDA, SAIDA);
-    const entregar = (blob) => (blob ? onDone(blob) : setErro('Não foi possível preparar essa imagem. Tente outra foto.'));
-    // Webp é o mais leve; navegador que não sabe gerar devolve null, e aí vai JPEG.
-    canvas.toBlob((webp) => (webp ? entregar(webp) : canvas.toBlob(entregar, 'image/jpeg', 0.85)), 'image/webp', 0.85);
+    const falhou = () => setErro('Não foi possível preparar essa imagem. Tente outra foto.');
+    // JPEG com qualidade cada vez menor até caber no limite do servidor.
+    const jpeg = (qualidades) => canvas.toBlob((blob) => {
+      if (!blob) return falhou();
+      if (blob.size > LIMITE && qualidades.length > 1) return jpeg(qualidades.slice(1));
+      onDone(blob);
+    }, 'image/jpeg', qualidades[0]);
+    // Webp é o mais leve. Safari/iOS não sabe gerar e devolve PNG (ou null): aí vai JPEG.
+    canvas.toBlob((webp) => (webp && webp.type === 'image/webp' ? onDone(webp) : jpeg([0.85, 0.7, 0.5])), 'image/webp', 0.85);
   };
 
   let estilo = { visibility: 'hidden' };
@@ -56,7 +91,15 @@ export function PhotoCropper({ file, onDone, onCancel }) {
 
   return (
     <div className="mt-2 space-y-3 rounded-xl border border-line p-3">
-      <div className="relative mx-auto overflow-hidden rounded-2xl bg-black/20" style={{ width: QUADRO, height: QUADRO, maxWidth: '100%' }}>
+      <div
+        data-testid="quadro-recorte"
+        onPointerDown={comecar}
+        onPointerMove={arrastar}
+        onPointerUp={soltar}
+        onPointerCancel={soltar}
+        className="relative mx-auto cursor-grab touch-none overflow-hidden rounded-2xl bg-black/20 active:cursor-grabbing"
+        style={{ width: QUADRO, height: QUADRO, maxWidth: '100%' }}
+      >
         {src && (
           // eslint-disable-next-line @next/next/no-img-element
           <img

@@ -22,6 +22,7 @@ describe('GET /api/foto/[id]', () => {
     expect(r.status).toBe(200);
     expect(r.headers.get('content-type')).toBe('image/webp');
     expect(r.headers.get('cache-control')).toBe('private, max-age=3600');
+    expect(r.headers.get('x-content-type-options')).toBe('nosniff');
     expect([...Buffer.from(await r.arrayBuffer())]).toEqual([1, 2, 3]);
     expect(storage.get).toHaveBeenCalledWith('fotos/p1/abcd1234abcd1234.webp');
   });
@@ -45,5 +46,13 @@ describe('GET /api/foto/[id]', () => {
   it('arquivo ausente no armazenamento: 404', async () => {
     storage.get.mockResolvedValue(null);
     expect((await chamar('p1')).status).toBe(404);
+  });
+
+  it('falha ao ler do armazenamento: registra e responde 404', async () => {
+    const erro = vi.spyOn(console, 'error').mockImplementation(() => {});
+    storage.get.mockRejectedValue(new Error('blob fora do ar'));
+    expect((await chamar('p1')).status).toBe(404);
+    expect(erro).toHaveBeenCalledWith('Foto não lida:', expect.any(Error));
+    erro.mockRestore();
   });
 });

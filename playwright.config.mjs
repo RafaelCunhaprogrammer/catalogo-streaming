@@ -22,6 +22,7 @@ export default defineConfig({
         DATABASE_URL: 'pglite:./.data/e2e',
         BETTER_AUTH_SECRET: 'segredo-dos-testes-e2e-com-mais-de-32-caracteres',
         BETTER_AUTH_URL: 'http://localhost:3100',
+        BLOB_READ_WRITE_TOKEN: '', // fotos do e2e ficam na pasta local, nunca no Blob real
         DEMO_PASSWORD: 'demo-paidegua-2026',
       },
     },

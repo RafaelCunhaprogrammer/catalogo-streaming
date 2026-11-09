@@ -8,11 +8,15 @@ import sharp from 'sharp';
 import { createTestDb } from '../helpers/test-db';
 import { user, profiles } from '@/lib/db/schema';
 
-const state = { db: null, viewer: null, storage: null };
+const state = { db: null, viewer: null, storage: null, updateProfile: null };
 vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => undefined, set: () => {}, delete: () => {} }), headers: async () => new Headers() }));
 vi.mock('next/navigation', () => ({ redirect: (to) => { throw new Error(`redirect ${to}`); } }));
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }));
 vi.mock('@/lib/photos/storage', async (orig) => ({ ...(await orig()), getPhotoStorage: () => state.storage }));
+vi.mock('@/lib/profiles', async (orig) => {
+  const real = await orig();
+  return { ...real, updateProfile: (...a) => (state.updateProfile ?? real.updateProfile)(...a) };
+});
 vi.mock('@/lib/db', () => ({ getDb: () => state.db }));
 vi.mock('@/lib/auth/viewer', () => ({ getViewer: async () => state.viewer }));
 
@@ -30,6 +34,7 @@ const form = (obj, genres) => {
 };
 
 beforeEach(async () => {
+  state.updateProfile = null;
   state.db = await createTestDb();
   await state.db.insert(user).values([
     { id: 'u1', name: 'U', email: 'u@x.com', emailVerified: true },
@@ -217,6 +222,21 @@ describe('foto do perfil nas ações', () => {
     expect(p.kind).toBe('adulto');
     expect(p.avatar).toBe('foto');
     await expect(fs.access(path.join(dir, p.photoKey))).resolves.toBeUndefined();
+  });
+
+  it('Kids para adulto com foto: se updateProfile falha, a foto é desfeita e o perfil continua Kids sem foto', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    for (const falha of [async () => ({ ok: false, errors: { form: 'x' } }), async () => { throw new Error('banco caiu'); }]) {
+      state.updateProfile = falha;
+      const res = await updateProfileAction(null, await comFoto({ id: 'pk', name: 'Kids', color: '#8b5cf6', kind: 'adulto', avatar: 'foto' }));
+      expect(res.ok).toBe(false);
+      const p = await row('pk');
+      expect(p.kind).toBe('kids');
+      expect(p.photoKey).toBeNull();
+      expect(p.avatar).not.toBe('foto');
+      expect(await fs.readdir(dir, { recursive: true, withFileTypes: true }).then((l) => l.filter((e) => e.isFile()))).toEqual([]);
+    }
+    state.updateProfile = null;
   });
 
   it('criar perfil Kids ignora um arquivo photo perdido: cria e não guarda nada', async () => {
