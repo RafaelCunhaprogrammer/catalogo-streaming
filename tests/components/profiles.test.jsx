@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, within, waitFor } from '@testing-library/react';
+import { configure, render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProfilePicker } from '@/components/profiles/ProfilePicker';
 import { ProfileManager } from '@/components/profiles/ProfileManager';
@@ -24,6 +24,9 @@ vi.mock('@/lib/actions/conta', () => ({
 const p = (id, name, extra = {}) => ({ id, name, color: '#8b5cf6', kind: 'adulto', maxRating: null, prefs: defaultPrefs(), ...extra });
 
 beforeEach(() => vi.clearAllMocks());
+
+// O formulário do perfil (com os 19 avatares) é pesado: com a suíte cheia, a tela seguinte ao Salvar pode passar de 1 s.
+configure({ asyncUtilTimeout: 5000 });
 
 describe('Quem está assistindo?', () => {
   it('escolher um perfil toca o som de abertura e entra', async () => {
