@@ -1,6 +1,14 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from 'vitest';
-import { createTestAuth } from '../helpers/test-auth';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import sharp from 'sharp';
+import { createTestAuth, signUp, TEST_SECRET } from '../helpers/test-auth';
+import { createTestDb } from '../helpers/test-db';
+import { createAuth } from '@/lib/auth/create-auth';
+import { getPhotoStorage } from '@/lib/photos/storage';
+import { setProfilePhoto } from '@/lib/photos/service';
 import { listProfiles, createProfile, updateProfile, PROFILE_COLORS } from '@/lib/profiles';
 
 // A cor da capa viria da imagem no TMDB: aqui, uma cor fixa, sem rede.
@@ -109,5 +117,24 @@ describe('conta de demonstração', () => {
       const marks = await listMarks(db, novoPai.id);
       expect(marks.map((m) => m.tmdbId).sort()).toEqual([10, 20]);
     });
+  });
+});
+
+describe('excluir a conta', () => {
+  it('apaga as fotos dos perfis da conta', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'fotos-conta-'));
+    try {
+      const storage = getPhotoStorage({ env: {}, dir });
+      const db = await createTestDb();
+      const auth = createAuth({ db, secret: TEST_SECRET, baseURL: 'http://localhost:3000', sendResetEmail: async () => {}, rateLimit: false, withNextCookies: false, photoStorage: storage });
+      const { user: u, cookie } = await signUp(auth);
+      const { profile } = await createProfile(db, u.id, { name: 'Ana', color: PROFILE_COLORS[0], kind: 'adulto' });
+      const buf = await sharp({ create: { width: 256, height: 256, channels: 3, background: '#ffffff' } }).webp().toBuffer();
+      const { photoKey } = await setProfilePhoto(db, storage, u.id, profile.id, buf);
+      await auth.api.deleteUser({ body: { password: 'senha-forte-1' }, headers: new Headers({ cookie }) });
+      await expect(fs.access(path.join(dir, photoKey))).rejects.toThrow();
+    } finally {
+      await fs.rm(dir, { recursive: true, force: true });
+    }
   });
 });
