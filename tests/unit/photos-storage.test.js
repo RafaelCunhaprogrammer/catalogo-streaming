@@ -39,7 +39,28 @@ describe('armazenamento local', () => {
     expect(await s.get('fotos/nada/y.png')).toBeNull()
     await expect(s.del('fotos/nada/y.png')).resolves.toBeUndefined()
   })
-})
+
+  describe.each(['../x', 'fotos/../../x', path.resolve(os.tmpdir(), 'fora.png')])('chave fora da pasta: %s', (chave) => {
+    it('put recusa, get devolve null e del não faz nada', async () => {
+      const s = getPhotoStorage({ env: {}, dir })
+      await expect(s.put(chave, Buffer.from([1]), 'image/png')).rejects.toThrow()
+      expect(await s.get(chave)).toBeNull()
+      await expect(s.del(chave)).resolves.toBeUndefined()
+    })
+  })
+
+  it('del com chave fora da pasta não apaga arquivo de fora', async () => {
+    const fora = path.join(path.dirname(dir), 'alvo-' + path.basename(dir) + '.png')
+    fs.writeFileSync(fora, 'x')
+    try {
+      const s = getPhotoStorage({ env: {}, dir })
+      await s.del('../' + path.basename(fora))
+      expect(fs.existsSync(fora)).toBe(true)
+      expect(await s.get('../' + path.basename(fora))).toBeNull()
+    } finally {
+      fs.rmSync(fora, { force: true })
+    }
+  })})
 
 describe('armazenamento Blob', () => {
   const env = { BLOB_READ_WRITE_TOKEN: 'tok' }
