@@ -93,11 +93,13 @@ export function CategoriesMenu({ genres }) {
   );
 }
 
-// Menu ☰ para telas pequenas, com os mesmos itens e as categorias.
+// Menu ☰ para celulares e tablets, com os mesmos itens e as categorias.
+// O menu completo só entra a partir de 1024 px (lg): com os cinco links, Categorias, a busca e os botões,
+// ele precisa de uns 840 px e, entre 768 e 850 (iPad em pé, iPad Air), empurrava o topo para fora da tela.
 export function MobileMenu({ pathname, genres }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="md:hidden">
+    <div className="lg:hidden">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? 'Fechar menu' : 'Abrir menu'}
@@ -139,7 +141,7 @@ export function DesktopNav({ pathname, genres }) {
     </Link>
   );
   return (
-    <nav aria-label="Principal" className="hidden items-center gap-6 md:flex">
+    <nav aria-label="Principal" className="hidden items-center gap-6 lg:flex">
       {NAV.slice(0, 3).map(link)}
       <CategoriesMenu genres={genres} />
       {link(NAV[3])}

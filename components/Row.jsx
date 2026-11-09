@@ -33,7 +33,8 @@ export function Row({ title, href, items, logoPath }) {
           {title}
         </h2>
         {href && (
-          <Link href={href} aria-label={`Ver tudo: ${title}`} className="text-sm font-semibold text-accent-text hover:underline">
+          // py-1: área de toque com pelo menos 24 px de altura (WCAG 2.5.8).
+          <Link href={href} aria-label={`Ver tudo: ${title}`} className="inline-block py-1 text-sm font-semibold text-accent-text hover:underline">
             Ver tudo
           </Link>
         )}

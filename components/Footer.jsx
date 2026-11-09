@@ -7,7 +7,7 @@ export function Footer() {
           href="https://www.themoviedb.org"
           target="_blank"
           rel="noreferrer"
-          className="rounded bg-gradient-to-r from-[#90cea1] to-[#01b4e4] bg-clip-text font-black tracking-wide text-transparent"
+          className="inline-block rounded bg-gradient-to-r from-[#90cea1] to-[#01b4e4] bg-clip-text py-1 font-black tracking-wide text-transparent"
         >
           TMDB
         </a>

@@ -11,7 +11,8 @@ export function BrandLogo({ className = '', showName = true }) {
     <span role="img" aria-label={APP_NAME} className={`inline-flex items-center gap-2 ${className}`}>
       <BrandSymbol className="h-9 w-9 shrink-0 drop-shadow-[0_0_6px_rgba(167,139,250,.45)]" />
       {showName && (
-        <span aria-hidden="true" className="neon-gradient bg-clip-text text-xl font-black tracking-tight text-transparent">
+        // Um ponto menor abaixo de 360 px: assim a logo e os botões do topo cabem na mesma linha num celular de 320 px.
+        <span aria-hidden="true" className="neon-gradient bg-clip-text text-lg font-black tracking-tight text-transparent min-[360px]:text-xl">
           {APP_NAME}
         </span>
       )}

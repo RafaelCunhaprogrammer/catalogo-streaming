@@ -52,7 +52,7 @@ export function Header({ genres, account = { signedIn: false, profile: null } })
         overHero ? 'border-transparent bg-gradient-to-b bg-no-repeat from-black/75 via-black/35 to-transparent' : 'border-line bg-[var(--header-bg)] backdrop-blur-md'
       }`}
     >
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-margem py-3 sm:flex-nowrap">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-2 px-margem py-3 sm:flex-nowrap sm:gap-x-4">
         <Link
           href="/"
           aria-label={`${APP_NAME} — Início`}
@@ -69,7 +69,7 @@ export function Header({ genres, account = { signedIn: false, profile: null } })
         </Link>
         <DesktopNav pathname={pathname} genres={genres} />
         <SearchBox genres={genres} signedIn={account.signedIn} />
-        <div data-slot="header-actions" className="ml-auto flex items-center gap-2">
+        <div data-slot="header-actions" className="ml-auto flex items-center gap-1 sm:gap-2">
           <MobileMenu pathname={pathname} genres={genres} />
           <button
             onClick={() => setSettingsOpen(true)}
