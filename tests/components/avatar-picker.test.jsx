@@ -4,19 +4,19 @@ import userEvent from '@testing-library/user-event';
 import { AvatarPicker } from '@/components/profiles/AvatarPicker';
 
 describe('AvatarPicker', () => {
-  it('três grupos com os nomes dos avatares, mais "Só a inicial"', () => {
+  it('quatro grupos com os nomes dos avatares, mais "Só a inicial"', () => {
     render(<AvatarPicker kind="adulto" color="#8b5cf6" value="acai" onChange={() => {}} />);
     const grupos = screen.getAllByRole('group').filter((g) => g.tagName === 'FIELDSET' && g.querySelector('legend'));
-    expect(grupos.map((g) => g.querySelector('legend').textContent)).toEqual(['Avatar', 'Frutas e símbolos do Pará', 'Bichos da Amazônia', 'Lendas do Pará']);
+    expect(grupos.map((g) => g.querySelector('legend').textContent)).toEqual(['Avatar', 'Frutas e símbolos do Pará', 'Bichos da Amazônia', 'Lendas do Pará', 'Sabores e festas do Pará']);
     expect(screen.getByRole('radio', { name: 'Açaí' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Só a inicial' })).not.toBeChecked();
-    expect(screen.getAllByRole('radio')).toHaveLength(20);
+    expect(screen.getAllByRole('radio')).toHaveLength(29);
   });
 
   it('cada grupo é uma fileira horizontal, que rola de lado em vez de quebrar a linha', () => {
     render(<AvatarPicker kind="adulto" color="#8b5cf6" value="acai" onChange={() => {}} />);
     const fileiras = [...document.querySelectorAll('[data-avatar-row]')];
-    expect(fileiras).toHaveLength(3);
+    expect(fileiras).toHaveLength(4);
     for (const f of fileiras) {
       expect(f.className).toContain('flex-nowrap');
       expect(f.className).toContain('overflow-x-auto');
@@ -27,7 +27,7 @@ describe('AvatarPicker', () => {
     const onChange = vi.fn();
     render(<AvatarPicker kind="kids" color="#8b5cf6" value="boto" onChange={onChange} />);
     const legendas = [...document.querySelectorAll('fieldset fieldset > legend')].map((l) => l.textContent);
-    expect(legendas).toEqual(['Bichos da Amazônia', 'Lendas do Pará', 'Frutas e símbolos do Pará']);
+    expect(legendas).toEqual(['Bichos da Amazônia', 'Lendas do Pará', 'Sabores e festas do Pará', 'Frutas e símbolos do Pará']);
     await userEvent.click(screen.getByRole('radio', { name: 'Matinta Perera' }));
     expect(onChange).toHaveBeenCalledWith('matinta-perera');
   });

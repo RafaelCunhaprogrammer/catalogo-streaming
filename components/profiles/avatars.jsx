@@ -353,6 +353,182 @@ function MocaDoTaxi() {
   );
 }
 
+// Uirapuru: o pássaro do canto que dá sorte, cantando.
+function Uirapuru() {
+  return (
+    <>
+      <path d="M30 78 L10 92 L16 74 Z" fill="#6b4423" />
+      <ellipse cx="54" cy="74" rx="28" ry="22" fill="#8b5a2b" />
+      <path d="M38 70 Q50 58 66 70 Q54 84 38 70 Z" fill="#6b4423" />
+      <ellipse cx="58" cy="84" rx="14" ry="8" fill="#d6a46b" />
+      <circle cx="76" cy="54" r="17" fill="#8b5a2b" />
+      <path d="M62 46 Q72 32 90 44 Q78 42 64 52 Z" fill="#dc2626" />
+      <path d="M92 54 L106 50 L93 60 Z" fill="#facc15" />
+      <Olho cx={80} cy={53} r={3.5} fill="#1c1917" glint={1.2} />
+      <path d="M50 96 V104 M60 96 V104" stroke="#3b2614" strokeWidth="3" strokeLinecap="round" />
+      <path d="M100 24 V36 M100 24 L108 21 V33" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="97" cy="37" r="3.5" fill="#ffffff" />
+      <circle cx="105" cy="34" r="3.5" fill="#ffffff" />
+      <path d="M86 14 V24" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="83" cy="25" r="3.5" fill="#ffffff" />
+    </>
+  );
+}
+
+// Sabores e festas do Pará.
+function Carimbo() {
+  return (
+    <>
+      {/* ela: saia rodada florida */}
+      <path d="M14 108 Q22 70 42 66 Q62 70 70 108 Q42 116 14 108 Z" fill="#dc2626" />
+      <path d="M20 100 Q42 108 64 100" fill="none" stroke="#facc15" strokeWidth="4" />
+      <path d="M24 88 Q42 94 60 88" fill="none" stroke="#22c55e" strokeWidth="4" />
+      <circle cx="30" cy="96" r="3" fill="#ffffff" />
+      <circle cx="52" cy="94" r="3" fill="#ffffff" />
+      <rect x="34" y="50" width="16" height="18" rx="6" fill="#ffffff" />
+      <circle cx="42" cy="38" r="11" fill="#b7794b" />
+      <path d="M31 36 Q32 24 42 24 Q52 24 53 36 Q48 30 42 30 Q36 30 31 36 Z" fill="#1c1917" />
+      <circle cx="51" cy="28" r="4.5" fill="#f472b6" />
+      <path d="M38 41 Q42 45 46 41" fill="none" stroke="#7c2d12" strokeWidth="2" strokeLinecap="round" />
+      {/* ele: camisa branca, faixa vermelha e chapéu de palha */}
+      <path d="M50 58 Q60 52 64 62" fill="none" stroke="#b7794b" strokeWidth="5" strokeLinecap="round" />
+      <rect x="70" y="54" width="20" height="26" rx="7" fill="#f8fafc" />
+      <rect x="70" y="72" width="20" height="5" fill="#dc2626" />
+      <path d="M72 80 L68 108 M88 80 L94 108" stroke="#f8fafc" strokeWidth="7" strokeLinecap="round" />
+      <circle cx="80" cy="42" r="11" fill="#a86b3c" />
+      <ellipse cx="80" cy="33" rx="17" ry="4" fill="#e9c46a" />
+      <path d="M71 33 Q72 22 80 22 Q88 22 89 33 Z" fill="#e9c46a" />
+      <path d="M76 45 Q80 49 84 45" fill="none" stroke="#3b1d0e" strokeWidth="2" strokeLinecap="round" />
+    </>
+  );
+}
+
+function Manicoba() {
+  const pedacos = [[46, 52, 7], [70, 50, 6], [58, 70, 8], [42, 72, 5], [76, 70, 6]];
+  return (
+    <>
+      <path d="M48 22 Q44 14 48 8 M60 20 Q56 12 60 6 M72 22 Q68 14 72 8" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+      <ellipse cx="60" cy="66" rx="46" ry="40" fill="#f8fafc" />
+      <ellipse cx="60" cy="66" rx="38" ry="32" fill="#e2e8f0" />
+      <ellipse cx="60" cy="64" rx="32" ry="26" fill="#1f3315" />
+      <ellipse cx="54" cy="58" rx="12" ry="6" fill="#2f4a1f" />
+      {pedacos.map(([cx, cy, r]) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r={r} fill="#7c3f1d" />)}
+      <circle cx="58" cy="68" r="3" fill="#a3582a" />
+      <path d="M96 40 L110 18" stroke="#94a3b8" strokeWidth="5" strokeLinecap="round" />
+    </>
+  );
+}
+
+function Tacaca() {
+  return (
+    <>
+      <path d="M44 24 Q40 16 44 10 M60 22 Q56 14 60 8 M76 24 Q72 16 76 10" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" opacity="0.8" />
+      {/* suporte trançado da cuia */}
+      <path d="M36 98 L46 112 H74 L84 98 Z" fill="#c08a4a" />
+      <path d="M42 104 H78 M48 110 H72" stroke="#8a5a2b" strokeWidth="2" />
+      {/* cuia com tucupi, jambu, goma e camarão */}
+      <path d="M16 52 Q18 102 60 102 Q102 102 104 52 Z" fill="#3b2314" />
+      <path d="M24 60 Q60 72 96 60" fill="none" stroke="#5c3a1e" strokeWidth="3" />
+      <ellipse cx="60" cy="52" rx="44" ry="12" fill="#eab308" />
+      <ellipse cx="52" cy="52" rx="10" ry="4" fill="#fef3c7" opacity="0.8" />
+      <ellipse cx="40" cy="50" rx="8" ry="4" fill="#16a34a" transform="rotate(-20 40 50)" />
+      <ellipse cx="72" cy="48" rx="8" ry="4" fill="#22c55e" transform="rotate(15 72 48)" />
+      <path d="M80 54 Q92 44 96 52 Q90 50 86 58 Z" fill="#fb923c" />
+      <path d="M58 46 Q66 38 72 44 Q66 44 62 50 Z" fill="#fb923c" />
+    </>
+  );
+}
+
+function Camarao() {
+  const gomos = [[70, 46, 18], [80, 62, 16], [78, 80, 14], [66, 92, 12]];
+  return (
+    <>
+      <path d="M42 40 Q20 20 8 28 M44 46 Q24 36 12 44" fill="none" stroke="#f97316" strokeWidth="2.5" strokeLinecap="round" />
+      {gomos.map(([cx, cy, r], i) => <circle key={cx + cy} cx={cx} cy={cy} r={r} fill={i % 2 ? '#fb923c' : '#f97316'} />)}
+      <path d="M58 92 L40 102 L46 90 L36 84 L56 84 Z" fill="#ea580c" />
+      <ellipse cx="54" cy="46" rx="18" ry="16" fill="#fb923c" />
+      <Olho cx={48} cy={42} r={4.5} fill="#1c1917" />
+      <circle cx="44" cy="52" r="3.5" fill="#f87171" opacity="0.7" />
+      <path d="M42 56 Q48 60 54 56" fill="none" stroke="#9a3412" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M60 64 L52 72 M66 74 L58 82 M68 86 L60 92" stroke="#c2410c" strokeWidth="3" strokeLinecap="round" />
+    </>
+  );
+}
+
+// Nossa Senhora de Nazaré, pelo Círio: imagem simples e respeitosa, sem tom de brincadeira
+// (manto triangular, coroa, o Menino e as flores da berlinda).
+function Cirio() {
+  const flores = [[30, '#ffffff'], [42, '#f43f5e'], [54, '#ffffff'], [66, '#f43f5e'], [78, '#ffffff'], [90, '#f43f5e']];
+  return (
+    <>
+      <circle cx="60" cy="50" r="34" fill="#fde68a" opacity="0.45" />
+      <path d="M60 28 L30 96 H90 Z" fill="#1e3a8a" stroke="#facc15" strokeWidth="3" strokeLinejoin="round" />
+      <path d="M60 50 L46 86 M60 50 L74 86 M60 50 V92" stroke="#facc15" strokeWidth="1.5" opacity="0.7" />
+      <path d="M49 38 Q60 22 71 38 L67 48 H53 Z" fill="#f8fafc" />
+      <ellipse cx="60" cy="38" rx="7" ry="8" fill="#e9c9a8" />
+      <path d="M56 38 h3 M61 38 h3" stroke="#7c4a21" strokeWidth="1.2" strokeLinecap="round" />
+      <path d="M50 22 L54 14 L57 20 L60 11 L63 20 L66 14 L70 22 Z" fill="#facc15" />
+      <circle cx="60" cy="60" r="6" fill="#f8fafc" />
+      <circle cx="60" cy="59" r="4" fill="#e9c9a8" />
+      <path d="M56 54 L58 50 L60 53 L62 50 L64 54 Z" fill="#facc15" />
+      <rect x="24" y="100" width="72" height="8" rx="2" fill="#ca8a04" />
+      {flores.map(([cx, fill]) => <circle key={cx} cx={cx} cy="98" r="6" fill={fill} />)}
+    </>
+  );
+}
+
+// Urubu, figura conhecida do Ver-o-Peso, empoleirado num poste.
+function Urubu() {
+  return (
+    <>
+      <rect x="54" y="98" width="12" height="22" fill="#78716c" />
+      <path d="M30 96 Q24 62 60 54 Q96 62 90 96 Z" fill="#1c1917" />
+      <path d="M34 92 Q30 70 48 64 Q44 80 46 96 Z M86 92 Q90 70 72 64 Q76 80 74 96 Z" fill="#292524" />
+      <circle cx="60" cy="40" r="17" fill="#6b7280" />
+      <path d="M48 34 Q52 30 56 34 M64 34 Q68 30 72 34" fill="none" stroke="#4b5563" strokeWidth="1.5" />
+      <Olho cx={53} cy={40} r={3.5} fill="#111111" glint={1.2} />
+      <Olho cx={67} cy={40} r={3.5} fill="#111111" glint={1.2} />
+      <path d="M56 46 Q60 44 64 46 L62 56 Q60 60 58 56 Z" fill="#d6d3d1" />
+      <path d="M58 56 Q60 60 62 56" fill="none" stroke="#1c1917" strokeWidth="1.5" />
+      <path d="M50 96 V104 M70 96 V104" stroke="#a8a29e" strokeWidth="3" strokeLinecap="round" />
+    </>
+  );
+}
+
+function Garca() {
+  return (
+    <>
+      <path d="M0 98 Q15 92 30 98 T60 98 T90 98 T120 98 V120 H0 Z" fill="#0369a1" opacity="0.85" />
+      <path d="M54 80 L50 104 M64 80 L68 104" stroke="#1c1917" strokeWidth="3" strokeLinecap="round" />
+      <path d="M36 70 Q42 54 62 56 Q84 58 86 72 Q70 86 48 82 Q38 80 36 70 Z" fill="#f8fafc" />
+      <path d="M80 70 L100 80 L84 76 Z" fill="#e2e8f0" />
+      <path d="M44 62 Q40 44 50 34 Q58 26 54 18" fill="none" stroke="#f8fafc" strokeWidth="7" strokeLinecap="round" />
+      <circle cx="56" cy="18" r="8" fill="#f8fafc" />
+      <path d="M62 16 L84 20 L62 22 Z" fill="#facc15" />
+      <circle cx="57" cy="16" r="2.2" fill="#111111" />
+    </>
+  );
+}
+
+// Barquinho de madeira dos ribeirinhos, com faixa pintada e toldo.
+function Barquinho() {
+  return (
+    <>
+      <path d="M0 92 Q15 86 30 92 T60 92 T90 92 T120 92 V120 H0 Z" fill="#0369a1" />
+      <path d="M40 54 H84 V66 H40 Z" fill="#f59e0b" />
+      <path d="M36 54 L62 42 L88 54 Z" fill="#dc2626" />
+      <path d="M44 66 V78 M80 66 V78" stroke="#7c4a21" strokeWidth="3" />
+      <path d="M12 76 H108 L96 98 H26 Z" fill="#92400e" />
+      <path d="M16 80 H104" stroke="#2563eb" strokeWidth="5" />
+      <path d="M22 88 H98" stroke="#ffffff" strokeWidth="3" />
+      <path d="M30 94 H92" stroke="#78350f" strokeWidth="2" />
+      <path d="M96 60 L110 100" stroke="#a16207" strokeWidth="3" strokeLinecap="round" />
+      <ellipse cx="111" cy="102" rx="4" ry="7" fill="#a16207" transform="rotate(-20 111 102)" />
+      <path d="M0 104 Q15 98 30 104 T60 104 T90 104 T120 104 V120 H0 Z" fill="#0ea5e9" opacity="0.8" />
+    </>
+  );
+}
+
 const ART = {
   acai: Acai,
   cupuacu: Cupuacu,
@@ -373,6 +549,15 @@ const ART = {
   iara: Iara,
   'cobra-grande': CobraGrande,
   'moca-do-taxi': MocaDoTaxi,
+  uirapuru: Uirapuru,
+  carimbo: Carimbo,
+  manicoba: Manicoba,
+  tacaca: Tacaca,
+  camarao: Camarao,
+  cirio: Cirio,
+  urubu: Urubu,
+  garca: Garca,
+  barquinho: Barquinho,
 };
 
 export const hasArt = (slug) => Object.hasOwn(ART, slug ?? '');
