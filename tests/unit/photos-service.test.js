@@ -10,6 +10,7 @@ import { getPhotoStorage } from '@/lib/photos/storage';
 import { setProfilePhoto, removeProfilePhoto, deletePhotosOf } from '@/lib/photos/service';
 import { PROFILE_COLORS, createProfile, deleteProfile, getOwnedProfile, listProfiles, updateProfile } from '@/lib/profiles';
 import { eq } from 'drizzle-orm';
+import { setPin } from '@/lib/pin';
 import { resetDemo, DEMO_PROFILES } from '@/lib/demo';
 
 let db;
@@ -34,6 +35,19 @@ const existe = (key) => fs.access(path.join(dir, key)).then(() => true, () => fa
 const novo = async (userId, input = {}) => (await createProfile(db, userId, { name: 'Ana', color: PROFILE_COLORS[0], kind: 'adulto', ...input })).profile;
 
 describe('setProfilePhoto', () => {
+  it('com { kind: "kids" } num perfil adulto responde "perfil" e não grava nada', async () => {
+    const p = await novo('u1');
+    expect(await setProfilePhoto(db, storage, 'u1', p.id, await foto(), { kind: 'kids' })).toEqual({ ok: false, error: 'perfil' });
+    expect((await db.select().from(profiles).where(eq(profiles.id, p.id)))[0].photoKey).toBeNull();
+  });
+
+  it('com { kind: "adulto" } vale o tipo informado (perfil Kids virando adulto na mesma edição)', async () => {
+    await setPin(db, 'u1', '1234');
+    const p = await novo('u1', { kind: 'kids', maxRating: '10', avatar: 'boto' });
+    expect((await setProfilePhoto(db, storage, 'u1', p.id, await foto())).error).toBe('perfil');
+    expect((await setProfilePhoto(db, storage, 'u1', p.id, await foto(), { kind: 'adulto' })).ok).toBe(true);
+  });
+
   it('grava o arquivo e aponta o banco para ele', async () => {
     const p = await novo('u1');
     const r = await setProfilePhoto(db, storage, 'u1', p.id, await foto());

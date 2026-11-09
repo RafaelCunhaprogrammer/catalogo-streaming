@@ -209,4 +209,30 @@ describe('foto do perfil nas ações', () => {
     expect(o.name).toBe('Outro');
     expect(o.photoKey).toBeNull();
   });
+
+  it('editar um perfil Kids para adulto com foto nova funciona na mesma edição', async () => {
+    const res = await updateProfileAction(null, await comFoto({ id: 'pk', name: 'Kids', color: '#8b5cf6', kind: 'adulto', avatar: 'foto' }));
+    expect(res.ok).toBe(true);
+    const p = await row('pk');
+    expect(p.kind).toBe('adulto');
+    expect(p.avatar).toBe('foto');
+    await expect(fs.access(path.join(dir, p.photoKey))).resolves.toBeUndefined();
+  });
+
+  it('criar perfil Kids ignora um arquivo photo perdido: cria e não guarda nada', async () => {
+    await setPin(state.db, 'u1', '1234');
+    const res = await createProfileAction(null, await comFoto({ name: 'Peque', color: '#8b5cf6', kind: 'kids', maxRating: '10', avatar: 'boto' }));
+    expect(res.ok).toBe(true);
+    const p = await row(res.profileId);
+    expect(p.photoKey).toBeNull();
+    expect(await fs.readdir(dir)).toEqual([]);
+  });
+
+  it('editar para Kids ignora o arquivo photo: salva os campos e não guarda nada', async () => {
+    await setPin(state.db, 'u1', '1234');
+    const res = await updateProfileAction(null, await comFoto({ id: 'pk', name: 'Kids 2', color: '#8b5cf6', kind: 'kids', maxRating: '10', avatar: 'boto' }));
+    expect(res.ok).toBe(true);
+    expect((await row('pk')).name).toBe('Kids 2');
+    expect(await fs.readdir(dir)).toEqual([]);
+  });
 });
