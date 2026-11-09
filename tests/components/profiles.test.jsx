@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { configure, render, screen, within, waitFor } from '@testing-library/react';
+import { configure, render, screen, within, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ProfilePicker } from '@/components/profiles/ProfilePicker';
 import { ProfileManager } from '@/components/profiles/ProfileManager';
@@ -194,5 +194,27 @@ describe('Gerenciar perfis', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
     const formData = updateProfileAction.mock.calls[0][1];
     expect(formData.getAll('genres')).toEqual(['acao', 'drama']);
+  });
+
+  it('escolher e recortar uma foto envia o arquivo "photo" e o avatar "foto"', async () => {
+    updateProfileAction.mockResolvedValue({ ok: true });
+    URL.createObjectURL = vi.fn(() => 'blob:fake');
+    URL.revokeObjectURL = vi.fn();
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ drawImage: vi.fn() });
+    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation((cb, type) => cb(new Blob(['x'], { type })));
+    render(<ProfileManager profiles={[p('p1', 'Ana')]} hasPin editId="p1" voltar="/" />);
+    await userEvent.upload(screen.getByLabelText('Escolher foto'), new File(['x'], 'eu.jpg', { type: 'image/jpeg' }));
+    const img = screen.getByAltText('Prévia do recorte');
+    Object.defineProperty(img, 'naturalWidth', { value: 300 });
+    Object.defineProperty(img, 'naturalHeight', { value: 300 });
+    fireEvent.load(img);
+    await userEvent.click(screen.getByRole('button', { name: 'Usar esta foto' }));
+    expect(screen.getByRole('radio', { name: 'Sua foto' })).toBeChecked();
+    await userEvent.click(screen.getByRole('button', { name: 'Salvar' }));
+    const formData = updateProfileAction.mock.calls[0][1];
+    expect(formData.get('avatar')).toBe('foto');
+    expect(formData.get('photo')).toBeInstanceOf(File);
+    expect(formData.get('photo').type).toBe('image/webp');
+    vi.restoreAllMocks();
   });
 });

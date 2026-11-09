@@ -1,17 +1,22 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { eq } from 'drizzle-orm';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import sharp from 'sharp';
 import { createTestDb } from '../helpers/test-db';
 import { user, profiles } from '@/lib/db/schema';
 
-const state = { db: null, viewer: null };
+const state = { db: null, viewer: null, storage: null };
 vi.mock('next/headers', () => ({ cookies: async () => ({ get: () => undefined, set: () => {}, delete: () => {} }), headers: async () => new Headers() }));
 vi.mock('next/navigation', () => ({ redirect: (to) => { throw new Error(`redirect ${to}`); } }));
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }));
+vi.mock('@/lib/photos/storage', async (orig) => ({ ...(await orig()), getPhotoStorage: () => state.storage }));
 vi.mock('@/lib/db', () => ({ getDb: () => state.db }));
 vi.mock('@/lib/auth/viewer', () => ({ getViewer: async () => state.viewer }));
 
-const { saveProfileGenresAction, dismissProfileGenresAction, updateProfileAction } = await import('@/lib/actions/conta');
+const { saveProfileGenresAction, dismissProfileGenresAction, updateProfileAction, createProfileAction } = await import('@/lib/actions/conta');
 const { setPin } = await import('@/lib/pin');
 
 const row = async (id) => (await state.db.select().from(profiles).where(eq(profiles.id, id)))[0];
@@ -109,5 +114,69 @@ describe('gêneros do perfil: ações de Gerenciar perfis', () => {
     const res = await updateProfileAction(null, form({ id: 'pk', name: 'Kids', color: '#8b5cf6', kind: 'kids', maxRating: '10' }, ['acao', 'fantasia']));
     expect(res.ok).toBe(true);
     expect((await row('pk')).favoriteGenres).toEqual(['fantasia']);
+  });
+});
+
+describe('foto do perfil nas ações', () => {
+  const foto = () => sharp({ create: { width: 256, height: 256, channels: 3, background: '#8b5cf6' } }).webp().toBuffer();
+  const comFoto = async (obj, bytes) => {
+    const fd = form(obj, []);
+    fd.set('photo', new File([bytes ?? (await foto())], 'foto.webp', { type: 'image/webp' }));
+    return fd;
+  };
+  const base = { id: 'pa', name: 'Adulto', color: '#8b5cf6', kind: 'adulto', avatar: 'foto' };
+  let dir;
+  beforeEach(async () => {
+    dir = await fs.mkdtemp(path.join(os.tmpdir(), 'fotos-conta-'));
+    state.storage = (await vi.importActual('@/lib/photos/storage')).getPhotoStorage({ env: {}, dir });
+  });
+  afterEach(() => fs.rm(dir, { recursive: true, force: true }));
+
+  it('editar com photo válido grava a foto e deixa o avatar "foto"', async () => {
+    const res = await updateProfileAction(null, await comFoto(base));
+    expect(res.ok).toBe(true);
+    const p = await row('pa');
+    expect(p.avatar).toBe('foto');
+    expect(p.photoKey).toMatch(/^fotos\/pa\//);
+    await expect(fs.access(path.join(dir, p.photoKey))).resolves.toBeUndefined();
+  });
+
+  it('photo inválido devolve o erro da imagem e não muda nada', async () => {
+    const res = await updateProfileAction(null, await comFoto({ ...base, name: 'Outro nome' }, Buffer.from('não sou imagem')));
+    expect(res).toEqual({ ok: false, errors: { form: 'Não foi possível usar essa imagem. Tente outra foto.' } });
+    const p = await row('pa');
+    expect(p.name).toBe('Adulto');
+    expect(p.photoKey).toBeNull();
+  });
+
+  it('avatar "foto" sem foto salva e sem arquivo mantém o avatar atual', async () => {
+    await state.db.update(profiles).set({ avatar: 'jambu' }).where(eq(profiles.id, 'pa'));
+    const res = await updateProfileAction(null, form(base, []));
+    expect(res.ok).toBe(true);
+    expect((await row('pa')).avatar).toBe('jambu');
+  });
+
+  it('avatar "foto" com foto já salva e sem arquivo continua sendo a foto', async () => {
+    await updateProfileAction(null, await comFoto(base));
+    const antes = (await row('pa')).photoKey;
+    expect((await updateProfileAction(null, form({ ...base, name: 'Novo nome' }, []))).ok).toBe(true);
+    const p = await row('pa');
+    expect(p.avatar).toBe('foto');
+    expect(p.photoKey).toBe(antes);
+  });
+
+  it('criar com photo grava a foto no perfil novo', async () => {
+    const res = await createProfileAction(null, await comFoto({ name: 'Nova', color: '#8b5cf6', kind: 'adulto', avatar: 'foto' }));
+    expect(res.ok).toBe(true);
+    const p = await row(res.profileId);
+    expect(p.avatar).toBe('foto');
+    expect(p.photoKey).toBeTruthy();
+  });
+
+  it('criar com photo inválido não cria o perfil', async () => {
+    const res = await createProfileAction(null, await comFoto({ name: 'Nova', color: '#8b5cf6', kind: 'adulto', avatar: 'foto' }, Buffer.from('x')));
+    expect(res.ok).toBe(false);
+    expect(res.errors.form).toBe('Não foi possível usar essa imagem. Tente outra foto.');
+    expect((await state.db.select().from(profiles).where(eq(profiles.name, 'Nova'))).length).toBe(0);
   });
 });

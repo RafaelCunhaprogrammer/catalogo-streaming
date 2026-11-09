@@ -1,18 +1,28 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { createProfileAction, updateProfileAction } from '@/lib/actions/conta';
 import { PROFILE_COLORS } from '@/lib/profiles';
 import { GenrePicker } from '@/components/lists/GenrePicker';
 import { AvatarPicker } from '@/components/profiles/AvatarPicker';
-import { defaultAvatar } from '@/lib/avatars';
+import { defaultAvatar, PHOTO_AVATAR } from '@/lib/avatars';
+import { photoUrl } from '@/lib/photos/url';
 import { Field, buttonClass, inputClass } from '@/components/auth/AuthShell';
 
 const RATINGS = [['L', 'Livre'], ['10', '10 anos'], ['12', '12 anos'], ['14', '14 anos']];
 
 // Criar ou editar um perfil: nome, cor, tipo (adulto ou Kids) e, no Kids, a classificação máxima.
 export function ProfileForm({ profile, onDone, onNeedsPin, autoFocus = false }) {
-  const [state, action, pending] = useActionState(profile ? updateProfileAction : createProfileAction, null);
+  // A foto recortada fica aqui (blob + endereço da prévia) e entra no FormData como o arquivo "photo" ao enviar.
+  const [photo, setPhoto] = useState(null);
+  const photoRef = useRef(null);
+  useEffect(() => { photoRef.current = photo; }, [photo]);
+  const submit = profile ? updateProfileAction : createProfileAction;
+  const [state, action, pending] = useActionState((prev, formData) => {
+    const novo = photoRef.current;
+    if (novo && formData.get('avatar') === PHOTO_AVATAR) formData.set('photo', new File([novo.blob], 'foto', { type: novo.blob.type }));
+    return submit(prev, formData);
+  }, null);
   const [kind, setKind] = useState(profile?.kind ?? 'adulto');
   // Gêneros só são perguntados na edição; na criação vem o passo "Do que você gosta?" depois.
   const [genres, setGenres] = useState(profile?.favoriteGenres ?? []);
@@ -22,8 +32,15 @@ export function ProfileForm({ profile, onDone, onNeedsPin, autoFocus = false }) 
   const [avatarChosen, setAvatarChosen] = useState(Boolean(profile));
   const changeKind = (value) => {
     setKind(value);
-    if (!avatarChosen) setAvatar(defaultAvatar(value));
+    // Kids não tem foto: quem escolheu a foto e muda para Kids volta ao avatar padrão.
+    if (!avatarChosen || (value === 'kids' && avatar === PHOTO_AVATAR)) setAvatar(defaultAvatar(value));
   };
+  const choosePhoto = (blob) => {
+    if (photo) URL.revokeObjectURL(photo.url);
+    setPhoto({ blob, url: URL.createObjectURL(blob) });
+    chooseAvatar(PHOTO_AVATAR);
+  };
+  useEffect(() => () => { if (photoRef.current) URL.revokeObjectURL(photoRef.current.url); }, []);
   const chooseAvatar = (value) => {
     setAvatar(value);
     setAvatarChosen(true);
@@ -38,7 +55,7 @@ export function ProfileForm({ profile, onDone, onNeedsPin, autoFocus = false }) 
       {profile && <input type="hidden" name="id" value={profile.id} />}
       <Field id={`nome-${profile?.id ?? 'novo'}`} name="name" label="Nome" maxLength={20} required defaultValue={profile?.name ?? ''} autoFocus={autoFocus} />
       {errors.name && <p role="alert" className="text-sm text-accent-2">{errors.name}</p>}
-      <AvatarPicker kind={kind} color={color} value={avatar} onChange={chooseAvatar} initial={profile?.name?.trim().charAt(0).toUpperCase() || 'A'} />
+      <AvatarPicker kind={kind} color={color} value={avatar} onChange={chooseAvatar} onPhoto={choosePhoto} photoSrc={photo?.url ?? (profile?.photoKey ? photoUrl(profile) : null)} initial={profile?.name?.trim().charAt(0).toUpperCase() || 'A'} />
       {errors.avatar && <p role="alert" className="text-sm text-accent-2">{errors.avatar}</p>}
       <fieldset>
         <legend className="text-sm font-semibold">Cor</legend>
@@ -77,7 +94,7 @@ export function ProfileForm({ profile, onDone, onNeedsPin, autoFocus = false }) 
         </fieldset>
       )}
       {errors.form && <p role="alert" className="text-sm font-semibold text-accent-2">{errors.form}</p>}
-      <button type="submit" disabled={pending} className={buttonClass}>Salvar</button>
+      <button type="submit" disabled={pending} className={buttonClass}>{pending && photo && avatar === PHOTO_AVATAR ? 'Enviando foto…' : 'Salvar'}</button>
     </form>
   );
 }
