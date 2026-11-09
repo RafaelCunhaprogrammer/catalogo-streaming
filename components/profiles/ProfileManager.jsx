@@ -9,9 +9,11 @@ import { PinSetupForm } from '@/components/profiles/PinSetupForm';
 import { GenrePicker } from '@/components/lists/GenrePicker';
 import { deleteProfileAction, dismissProfileGenresAction, saveProfileGenresAction } from '@/lib/actions/conta';
 import { MAX_PROFILES } from '@/lib/profile-limits';
+import { DEMO_PROFILES_LOCKED } from '@/lib/account-rules';
 
 // editId/voltar: vindo do "Editar perfil" do menu, já abre aquele perfil e, ao salvar, volta para `voltar`.
-export function ProfileManager({ profiles, hasPin, editId, voltar }) {
+// isDemo: conta de demonstração, compartilhada por todos os visitantes; não cria nem exclui perfis.
+export function ProfileManager({ profiles, hasPin, editId, voltar, isDemo = false }) {
   const router = useRouter();
   const direct = profiles.some((profile) => profile.id === editId) ? editId : null;
   const [editing, setEditing] = useState(direct); // 'novo' | id do perfil
@@ -64,30 +66,35 @@ export function ProfileManager({ profiles, hasPin, editId, voltar }) {
       <ul className="mt-8 space-y-4">
         {profiles.map((profile) => (
           <li key={profile.id} className="rounded-2xl border border-line bg-surface p-4">
-            <div className="flex items-center gap-4">
+            {/* No celular estreito, os botões descem para a linha de baixo em vez de sair da tela. */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
               <ProfileAvatar profile={profile} size="sm" />
-              <span className="flex-1 font-semibold">
+              <span className="min-w-0 flex-1 break-words font-semibold">
                 {profile.name}
                 {profile.kind === 'kids' && <span className="ml-2 text-sm text-muted">Kids · até {profile.maxRating === 'L' ? 'Livre' : `${profile.maxRating} anos`}</span>}
               </span>
-              <button onClick={() => setEditing(profile.id)} className="rounded-full border border-line px-4 py-1.5 text-sm">Editar</button>
-              <button
-                onClick={() => setConfirming(profile.id)}
-                disabled={onlyOne}
-                aria-label={`Excluir ${profile.name}`}
-                className="rounded-full border border-line px-4 py-1.5 text-sm disabled:opacity-40"
-              >
-                Excluir
-              </button>
+              <div className="flex gap-2">
+                <button onClick={() => setEditing(profile.id)} className="rounded-full border border-line px-4 py-1.5 text-sm">Editar</button>
+                {!isDemo && (
+                  <button
+                    onClick={() => setConfirming(profile.id)}
+                    disabled={onlyOne}
+                    aria-label={`Excluir ${profile.name}`}
+                    className="rounded-full border border-line px-4 py-1.5 text-sm disabled:opacity-40"
+                  >
+                    Excluir
+                  </button>
+                )}
+              </div>
             </div>
             {confirming === profile.id && (
-              <div className="mt-3 flex items-center gap-3 text-sm">
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
                 <span>Excluir {profile.name}? Não dá para desfazer.</span>
                 <button onClick={() => remove(profile)} className="rounded-full bg-red-600 px-4 py-1.5 font-bold text-white">Sim, excluir {profile.name}</button>
                 <button onClick={() => setConfirming(null)} className="underline">Cancelar</button>
               </div>
             )}
-            {editing === profile.id && <div className="mt-4"><ProfileForm profile={profile} onDone={done} onNeedsPin={askPin} autoFocus={profile.id === direct} /></div>}
+            {editing === profile.id && <div className="mt-4"><ProfileForm profile={profile} onDone={done} onNeedsPin={askPin} autoFocus={profile.id === direct} demo={isDemo} /></div>}
           </li>
         ))}
       </ul>
@@ -101,6 +108,8 @@ export function ProfileManager({ profiles, hasPin, editId, voltar }) {
             <button type="button" onClick={() => finishGenres(() => dismissProfileGenresAction(created.id))} className="underline">Pular</button>
           </div>
         </section>
+      ) : isDemo ? (
+        <p className="mt-6 text-sm text-muted">{DEMO_PROFILES_LOCKED}</p>
       ) : profiles.length >= MAX_PROFILES ? (
         <p className="mt-6 text-sm text-muted">Limite de 5 perfis.</p>
       ) : editing === 'novo' ? (

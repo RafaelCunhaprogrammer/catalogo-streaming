@@ -101,6 +101,17 @@ describe('Gerenciar perfis', () => {
     expect(screen.getByLabelText('Classificação máxima')).toBeInTheDocument();
   });
 
+  it('na conta de demonstração, não oferece criar nem excluir, e a edição só troca avatar e cor', async () => {
+    render(<ProfileManager profiles={[p('p1', 'Pai'), p('p2', 'Mãe')]} hasPin isDemo />);
+    expect(screen.queryByRole('button', { name: 'Adicionar perfil' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Excluir Mãe' })).not.toBeInTheDocument();
+    expect(screen.getByText(/dá para trocar só o avatar e a cor/)).toBeInTheDocument();
+    await userEvent.click(screen.getAllByRole('button', { name: 'Editar' })[0]);
+    const form = screen.getByRole('form', { name: 'Editar Pai' });
+    expect(within(form).getByLabelText('Nome')).toHaveAttribute('readonly');
+    expect(within(form).queryByLabelText('Escolher foto')).not.toBeInTheDocument();
+  });
+
   it('excluir pede confirmação', async () => {
     deleteProfileAction.mockResolvedValue({ ok: true });
     render(<ProfileManager profiles={[p('p1', 'Ana'), p('p2', 'Bia')]} hasPin isDemo={false} />);

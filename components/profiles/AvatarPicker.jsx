@@ -25,14 +25,15 @@ function Option({ value, label, checked, onChange, name, children }) {
 // A prévia usa a cor marcada no formulário.
 // min-w-0 nos fieldsets: por padrão eles não encolhem abaixo do conteúdo, e as fileiras empurrariam a página.
 // Só perfis adultos têm a fileira "Sua foto": photoSrc é a foto atual (ou a recém-recortada) e onPhoto recebe o recorte novo.
-export function AvatarPicker({ kind, color, value, onChange, initial = 'A', name = 'avatar', photoSrc = null, onPhoto }) {
+// allowPhoto={false} (conta de demonstração) esconde a fileira.
+export function AvatarPicker({ kind, color, value, onChange, initial = 'A', name = 'avatar', photoSrc = null, onPhoto, allowPhoto = true }) {
   const groups = avatarGroupsFor(kind);
   const [file, setFile] = useState(null);
   return (
     <fieldset className="min-w-0">
       <legend className="text-sm font-semibold">Avatar</legend>
       <div className="mt-2 space-y-3">
-        {kind === 'adulto' && (
+        {kind === 'adulto' && allowPhoto && (
           <fieldset className="min-w-0">
             <legend className="text-xs font-semibold text-muted">Sua foto</legend>
             <div data-avatar-row="foto" className="-mx-1 mt-2 flex flex-nowrap items-start gap-3 overflow-x-auto px-1 pb-2 pt-2 snap-x">

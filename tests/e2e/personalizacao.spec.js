@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import fs from 'node:fs';
 import path from 'node:path';
-import { prepare, signInDemo } from './helpers';
+import { prepare, signInDemo, signUpFresh } from './helpers';
 
 const tags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
 
@@ -79,10 +79,11 @@ function arquivosDeFotos() {
 test('foto própria: escolher, recortar, salvar, aparecer no topo e ser apagada ao trocar de avatar', async ({ page }) => {
   test.skip(!!process.env.BLOB_READ_WRITE_TOKEN, 'Este teste confere a pasta local de fotos; com BLOB_READ_WRITE_TOKEN definido as fotos iriam para o Blob real.');
   test.setTimeout(150000);
-  await signInDemo(page, 'Pai');
+  // A conta de demonstração não aceita foto própria (é compartilhada): o teste usa uma conta nova.
+  await signUpFresh(page, 'Ana');
   await page.goto('/perfis/gerenciar');
-  await page.getByRole('listitem').filter({ hasText: 'Pai' }).getByRole('button', { name: 'Editar' }).click();
-  const form = page.getByRole('form', { name: 'Editar Pai' });
+  await page.getByRole('listitem').filter({ hasText: 'Ana' }).getByRole('button', { name: 'Editar' }).click();
+  const form = page.getByRole('form', { name: 'Editar Ana' });
 
   await form.getByLabel('Escolher foto').setInputFiles('tests/fixtures/foto-teste.png');
   await expect(form.getByLabel('Zoom')).toBeVisible();
@@ -92,7 +93,7 @@ test('foto própria: escolher, recortar, salvar, aparecer no topo e ser apagada 
   await expect(form).toBeHidden();
 
   await page.goto('/');
-  const foto = page.getByRole('button', { name: 'Menu do perfil Pai' }).locator('img');
+  const foto = page.getByRole('button', { name: 'Menu do perfil Ana' }).locator('img');
   await expect(foto).toBeVisible();
   await expect(foto).toHaveAttribute('src', /^\/api\/foto\//);
   const guardadas = arquivosDeFotos();
@@ -100,13 +101,13 @@ test('foto própria: escolher, recortar, salvar, aparecer no topo e ser apagada 
 
   // Voltar para um desenho apaga o arquivo da foto.
   await page.goto('/perfis/gerenciar');
-  await page.getByRole('listitem').filter({ hasText: 'Pai' }).getByRole('button', { name: 'Editar' }).click();
-  const form2 = page.getByRole('form', { name: 'Editar Pai' });
+  await page.getByRole('listitem').filter({ hasText: 'Ana' }).getByRole('button', { name: 'Editar' }).click();
+  const form2 = page.getByRole('form', { name: 'Editar Ana' });
   await form2.getByText('Açaí', { exact: true }).click();
   await form2.getByRole('button', { name: 'Salvar' }).click();
   await expect(form2).toBeHidden();
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Menu do perfil Pai' }).locator('svg[data-avatar="acai"]')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Menu do perfil Ana' }).locator('svg[data-avatar="acai"]')).toBeVisible();
   const restantes = arquivosDeFotos();
   for (const f of guardadas) expect(restantes).not.toContain(f);
 });

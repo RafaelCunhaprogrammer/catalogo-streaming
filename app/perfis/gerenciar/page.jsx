@@ -18,6 +18,7 @@ export default async function ManageProfilesPage({ searchParams }) {
     <ProfileManager
       profiles={viewer.profiles}
       hasPin={await hasPin(getDb(), viewer.user.id)}
+      isDemo={viewer.isDemo}
       editId={typeof editar === 'string' ? editar : undefined}
       voltar={typeof voltar === 'string' ? safeReturnPath(voltar) : undefined}
     />

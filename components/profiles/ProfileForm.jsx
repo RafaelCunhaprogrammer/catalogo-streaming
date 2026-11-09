@@ -8,11 +8,13 @@ import { AvatarPicker } from '@/components/profiles/AvatarPicker';
 import { defaultAvatar, PHOTO_AVATAR } from '@/lib/avatars';
 import { photoUrl } from '@/lib/photos/url';
 import { Field, buttonClass, inputClass } from '@/components/auth/AuthShell';
+import { DEMO_PROFILES_LOCKED } from '@/lib/account-rules';
 
 const RATINGS = [['L', 'Livre'], ['10', '10 anos'], ['12', '12 anos'], ['14', '14 anos']];
 
 // Criar ou editar um perfil: nome, cor, tipo (adulto ou Kids) e, no Kids, a classificação máxima.
-export function ProfileForm({ profile, onDone, onNeedsPin, autoFocus = false }) {
+// demo: conta de demonstração (compartilhada), que só troca o avatar dos desenhos e a cor.
+export function ProfileForm({ profile, onDone, onNeedsPin, autoFocus = false, demo = false }) {
   // A foto recortada fica aqui (blob + endereço da prévia) e entra no FormData como o arquivo "photo" ao enviar.
   const [photo, setPhoto] = useState(null);
   const photoRef = useRef(null);
@@ -53,9 +55,10 @@ export function ProfileForm({ profile, onDone, onNeedsPin, autoFocus = false }) 
   return (
     <form action={action} aria-label={profile ? `Editar ${profile.name}` : 'Novo perfil'} className="space-y-4 rounded-xl border border-line p-4">
       {profile && <input type="hidden" name="id" value={profile.id} />}
-      <Field id={`nome-${profile?.id ?? 'novo'}`} name="name" label="Nome" maxLength={20} required defaultValue={profile?.name ?? ''} autoFocus={autoFocus} />
+      <Field id={`nome-${profile?.id ?? 'novo'}`} name="name" label="Nome" maxLength={20} required defaultValue={profile?.name ?? ''} autoFocus={autoFocus} readOnly={demo} />
       {errors.name && <p role="alert" className="text-sm text-accent-2">{errors.name}</p>}
-      <AvatarPicker kind={kind} color={color} value={avatar} onChange={chooseAvatar} onPhoto={choosePhoto} photoSrc={photo?.url ?? (profile?.photoKey ? photoUrl(profile) : null)} initial={profile?.name?.trim().charAt(0).toUpperCase() || 'A'} />
+      {demo && <p className="text-sm text-muted">{DEMO_PROFILES_LOCKED}</p>}
+      <AvatarPicker kind={kind} color={color} value={avatar} onChange={chooseAvatar} onPhoto={choosePhoto} allowPhoto={!demo} photoSrc={photo?.url ?? (profile?.photoKey ? photoUrl(profile) : null)} initial={profile?.name?.trim().charAt(0).toUpperCase() || 'A'} />
       {errors.avatar && <p role="alert" className="text-sm text-accent-2">{errors.avatar}</p>}
       <fieldset>
         <legend className="text-sm font-semibold">Cor</legend>

@@ -37,6 +37,13 @@ describe('AvatarPicker', () => {
     expect(screen.queryByLabelText('Escolher foto')).not.toBeInTheDocument();
   });
 
+  it('na conta de demonstração (allowPhoto={false}), não há fileira "Sua foto"', () => {
+    render(<AvatarPicker kind="adulto" color="#8b5cf6" value="acai" onChange={() => {}} onPhoto={() => {}} allowPhoto={false} />);
+    expect(screen.queryByText('Sua foto')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Escolher foto')).not.toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: 'Açaí' })).toBeInTheDocument();
+  });
+
   it('escolher um arquivo abre o recorte; "Usar esta foto" entrega o blob', async () => {
     const onPhoto = vi.fn();
     URL.createObjectURL = vi.fn(() => 'blob:fake');
