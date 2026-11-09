@@ -17,6 +17,7 @@ export function PlanCards({ loggedIn, blocked }) {
           )}
           <h2 className="condensado text-2xl font-black">{plan.label}</h2>
           <p className="mt-2 text-3xl font-black">{formatBRL(plan.priceCents)}</p>
+          {plan.featured && <p className="text-sm font-semibold text-accent-2">Economize 30%</p>}
           <p className="text-sm text-muted">
             {plan.months === 1 ? 'por mês' : `${formatBRL(plan.perMonthCents)} por mês · ${plan.months} meses`}
           </p>

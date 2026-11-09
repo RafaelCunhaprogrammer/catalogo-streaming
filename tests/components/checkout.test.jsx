@@ -5,7 +5,6 @@ import { CheckoutForm } from '@/components/subscription/CheckoutForm';
 import { payAction } from '@/lib/actions/assinatura';
 
 vi.mock('@/lib/actions/assinatura', () => ({ payAction: vi.fn() }));
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
 const plan = { id: 'anual', label: 'Anual', months: 12, priceCents: 16680, perMonthCents: 1390 };
 
@@ -18,7 +17,7 @@ async function fillCard(user, number) {
   await user.click(screen.getByRole('button', { name: /Pagar/ }));
 }
 
-beforeEach(() => payAction.mockReset());
+beforeEach(() => { payAction.mockReset(); });
 
 describe('CheckoutForm', () => {
   it('mostra a faixa da demonstração e o resumo do plano', () => {
@@ -95,5 +94,53 @@ describe('CheckoutForm', () => {
     render(<CheckoutForm plan={plan} />);
     await user.click(screen.getByRole('button', { name: 'Já paguei (simulação)' }));
     expect(await screen.findByText('Peça para um adulto assinar.')).toBeInTheDocument();
+  });
+  it('validade, CVV e nome vazios: cada campo com seu erro e foco no primeiro', async () => {
+    const user = userEvent.setup();
+    render(<CheckoutForm plan={plan} />);
+    await user.click(screen.getByRole('tab', { name: 'Cartão' }));
+    await user.type(screen.getByLabelText('Número do cartão'), '4242424242424242');
+    await user.click(screen.getByRole('button', { name: /Pagar/ }));
+    expect(payAction).not.toHaveBeenCalled();
+    for (const [label, msg] of [['Validade', 'Informe a validade no formato MM/AA.'], ['CVV', 'Informe o CVV com 3 ou 4 números.'], ['Nome no cartão', 'Informe o nome como está no cartão.']]) {
+      const input = screen.getByLabelText(label);
+      const error = screen.getByText(msg);
+      expect(error).toHaveAttribute('role', 'alert');
+      expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect(input.getAttribute('aria-describedby').split(' ')).toContain(error.id);
+    }
+    expect(screen.getByLabelText('Validade')).toHaveFocus();
+  });
+
+  it('validade vencida é recusada no navegador', async () => {
+    const user = userEvent.setup();
+    render(<CheckoutForm plan={plan} />);
+    await user.click(screen.getByRole('tab', { name: 'Cartão' }));
+    await user.type(screen.getByLabelText('Número do cartão'), '4242424242424242');
+    await user.type(screen.getByLabelText('Validade'), '01/20');
+    await user.type(screen.getByLabelText('CVV'), '123');
+    await user.type(screen.getByLabelText('Nome no cartão'), 'Maria');
+    await user.click(screen.getByRole('button', { name: /Pagar/ }));
+    expect(payAction).not.toHaveBeenCalled();
+    expect(screen.getByText('Informe a validade no formato MM/AA.')).toBeInTheDocument();
+  });
+
+  it('trocar de aba limpa os erros do cartão', async () => {
+    const user = userEvent.setup();
+    render(<CheckoutForm plan={plan} />);
+    await user.click(screen.getByRole('tab', { name: 'Cartão' }));
+    await user.click(screen.getByRole('button', { name: /Pagar/ }));
+    expect(screen.getByText('Use um dos cartões de teste mostrados abaixo.')).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Pix' }));
+    await user.click(screen.getByRole('tab', { name: 'Cartão' }));
+    expect(screen.queryByText('Use um dos cartões de teste mostrados abaixo.')).toBeNull();
+  });
+
+  it('erro lançado pela ação vira mensagem', async () => {
+    const user = userEvent.setup();
+    payAction.mockImplementation(() => { throw new Error('falhou'); });
+    render(<CheckoutForm plan={plan} />);
+    await user.click(screen.getByRole('button', { name: 'Já paguei (simulação)' }));
+    expect(await screen.findByText('Não foi possível concluir. Tente de novo.')).toBeInTheDocument();
   });
 });

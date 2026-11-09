@@ -11,6 +11,8 @@ describe('PlanCards', () => {
     expect(within(items[3]).getByText('R$ 166,80')).toBeInTheDocument();
     expect(within(items[3]).getByText('Mais vantajoso')).toBeInTheDocument();
     expect(screen.getAllByText('Mais vantajoso')).toHaveLength(1);
+    expect(within(items[3]).getByText('Economize 30%')).toBeInTheDocument();
+    expect(screen.getAllByText('Economize 30%')).toHaveLength(1);
   });
 
   it('logado: "Assinar" leva ao pagamento do plano', () => {

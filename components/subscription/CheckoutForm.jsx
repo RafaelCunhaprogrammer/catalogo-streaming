@@ -1,6 +1,6 @@
 'use client';
 
-import { useId, useRef, useState, useTransition } from 'react';
+import { useId, useRef, useState } from 'react';
 import Link from 'next/link';
 import { payAction } from '@/lib/actions/assinatura';
 import { cardTestResult } from '@/lib/subscription/rules';
@@ -15,8 +15,20 @@ const MESSAGES = {
   recusado: 'Pagamento recusado pelo banco (simulação). Tente outro cartão.',
   adulto: 'Peça para um adulto assinar.',
   login: 'Entre na sua conta para assinar.',
+  falha: 'Não foi possível concluir. Tente de novo.',
   invalido: 'Não foi possível concluir o pagamento. Tente de novo.',
 };
+
+// MM/AA, de um mês válido e não vencido (vale até o fim do mês).
+function expiryValid(text) {
+  const m = /^(\d{2})\s*\/?\s*(\d{2})$/.exec(text.trim());
+  if (!m) return false;
+  const month = Number(m[1]);
+  if (month < 1 || month > 12) return false;
+  const now = new Date();
+  const year = 2000 + Number(m[2]);
+  return year > now.getFullYear() || (year === now.getFullYear() && month >= now.getMonth() + 1);
+}
 
 const formatDate = (d) => new Date(d).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
@@ -41,18 +53,22 @@ function FakeQr() {
 export function CheckoutForm({ plan }) {
   const uid = useId();
   const [tab, setTab] = useState('pix');
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const [done, setDone] = useState(null);
   const [error, setError] = useState('');
-  const [numberError, setNumberError] = useState('');
+  const [errors, setErrors] = useState({});
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [holder, setHolder] = useState('');
+  const fieldRefs = useRef({});
   const [number, setNumber] = useState('');
   const tabRefs = useRef({});
-  const numberErrorId = `${uid}-numero-erro`;
   const testId = `${uid}-testes`;
 
   const select = (id, focus = false) => {
     setTab(id);
     setError('');
+    setErrors({});
     if (focus) tabRefs.current[id]?.focus();
   };
   const onTabKey = (e, index) => {
@@ -63,24 +79,35 @@ export function CheckoutForm({ plan }) {
     select(TABS[target].id, true);
   };
 
-  const send = (payload) => {
+  const send = async (payload) => {
     setError('');
-    startTransition(async () => {
+    setPending(true);
+    try {
       const result = await payAction(payload);
       if (result.ok) setDone(result);
       else setError(MESSAGES[result.error] ?? MESSAGES.invalido);
-    });
+    } catch {
+      setError(MESSAGES.falha);
+    } finally {
+      setPending(false);
+    }
   };
 
   const payCard = (e) => {
     e.preventDefault();
     const digits = number.replace(/\D/g, '');
     const testCard = cardTestResult(digits);
-    if (testCard === 'invalido') {
-      setNumberError('Use um dos cartões de teste mostrados abaixo.');
+    const found = {};
+    if (testCard === 'invalido') found.numero = 'Use um dos cartões de teste mostrados abaixo.';
+    if (!expiryValid(expiry)) found.validade = 'Informe a validade no formato MM/AA.';
+    if (!/^\d{3,4}$/.test(cvv)) found.cvv = 'Informe o CVV com 3 ou 4 números.';
+    if (!holder.trim()) found.nome = 'Informe o nome como está no cartão.';
+    setErrors(found);
+    const first = ['numero', 'validade', 'cvv', 'nome'].find((k) => found[k]);
+    if (first) {
+      fieldRefs.current[first]?.focus();
       return;
     }
-    setNumberError('');
     send({ plan: plan.id, method: 'cartao', testCard, brand: digits.startsWith('4') ? 'Visa' : 'Outra', last4: digits.slice(-4) });
   };
 
@@ -144,35 +171,33 @@ export function CheckoutForm({ plan }) {
               </div>
             ) : (
               <form onSubmit={payCard} noValidate aria-label="Pagar com cartão" className="space-y-4">
-                <label htmlFor={`${uid}-numero`} className="block text-sm font-semibold">
-                  Número do cartão
-                  <input
-                    id={`${uid}-numero`}
-                    className={inputClass}
-                    inputMode="numeric"
-                    autoComplete="cc-number"
-                    required
-                    value={number}
-                    onChange={(e) => setNumber(e.target.value.replace(/\D/g, '').slice(0, 19).replace(/(.{4})(?=.)/g, '$1 '))}
-                    aria-invalid={numberError ? 'true' : undefined}
-                    aria-describedby={numberError ? `${numberErrorId} ${testId}` : testId}
-                  />
-                </label>
-                {numberError && <p id={numberErrorId} className="-mt-2 text-sm font-semibold text-accent-2">{numberError}</p>}
-                <div className="grid grid-cols-2 gap-4">
-                  <label htmlFor={`${uid}-validade`} className="block text-sm font-semibold">
-                    Validade
-                    <input id={`${uid}-validade`} className={inputClass} autoComplete="cc-exp" placeholder="MM/AA" required />
-                  </label>
-                  <label htmlFor={`${uid}-cvv`} className="block text-sm font-semibold">
-                    CVV
-                    <input id={`${uid}-cvv`} className={inputClass} inputMode="numeric" autoComplete="cc-csc" maxLength={4} required />
-                  </label>
-                </div>
-                <label htmlFor={`${uid}-nome`} className="block text-sm font-semibold">
-                  Nome no cartão
-                  <input id={`${uid}-nome`} className={inputClass} autoComplete="cc-name" required />
-                </label>
+                {[
+                  { key: 'numero', label: 'Número do cartão', value: number, set: (v) => setNumber(v.replace(/\D/g, '').slice(0, 19).replace(/(.{4})(?=.)/g, '$1 ')), props: { inputMode: 'numeric', autoComplete: 'cc-number' }, extra: testId },
+                  { key: 'validade', label: 'Validade', value: expiry, set: setExpiry, props: { autoComplete: 'cc-exp', placeholder: 'MM/AA' } },
+                  { key: 'cvv', label: 'CVV', value: cvv, set: (v) => setCvv(v.replace(/\D/g, '').slice(0, 4)), props: { inputMode: 'numeric', autoComplete: 'cc-csc' } },
+                  { key: 'nome', label: 'Nome no cartão', value: holder, set: setHolder, props: { autoComplete: 'cc-name' } },
+                ].map((f) => {
+                  const errorId = `${uid}-${f.key}-erro`;
+                  return (
+                    <div key={f.key}>
+                      <label htmlFor={`${uid}-${f.key}`} className="block text-sm font-semibold">
+                        {f.label}
+                        <input
+                          id={`${uid}-${f.key}`}
+                          ref={(el) => { fieldRefs.current[f.key] = el; }}
+                          className={inputClass}
+                          required
+                          value={f.value}
+                          onChange={(e) => f.set(e.target.value)}
+                          aria-invalid={errors[f.key] ? 'true' : undefined}
+                          aria-describedby={[errors[f.key] && errorId, f.extra].filter(Boolean).join(' ') || undefined}
+                          {...f.props}
+                        />
+                      </label>
+                      {errors[f.key] && <p id={errorId} role="alert" className="mt-1 text-sm font-semibold text-accent-2">{errors[f.key]}</p>}
+                    </div>
+                  );
+                })}
                 <div id={testId} className="rounded-xl border border-line p-3 text-sm text-muted">
                   <p className="font-semibold text-fg">Cartões de teste</p>
                   <p>4242 4242 4242 4242: aprovado</p>
