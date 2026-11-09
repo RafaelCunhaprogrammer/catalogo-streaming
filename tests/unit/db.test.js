@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { eq, sql } from 'drizzle-orm';
 import { createTestDb } from '../helpers/test-db';
 import { createDb, pgConfig } from '@/lib/db';
-import { user, profiles, parentalPins } from '@/lib/db/schema';
+import { user, profiles, parentalPins, subscriptions, payments } from '@/lib/db/schema';
 
 describe('pgConfig', () => {
   const url = 'postgresql://postgres.ref:se%23nha@pooler.exemplo.com:6543/postgres?sslmode=require';
@@ -80,6 +80,25 @@ describe('banco de dados', () => {
     expect(u.createdAt).toBeInstanceOf(Date);
     expect(p.failedAttempts).toBe(0);
     expect(p.lockedUntil).toBeNull();
+  });
+
+  it('guarda assinatura e pagamentos e apaga os dois junto com a conta', async () => {
+    const db = await createTestDb();
+    await db.insert(user).values({ id: 'u1', name: 'Ana', email: 'ana@ex.com' });
+    const fim = new Date('2026-12-01T00:00:00Z');
+    await db.insert(subscriptions).values({ userId: 'u1', status: 'trial', plan: 'premium', trialEndsAt: fim, periodEnd: fim });
+    await db.insert(payments).values({ id: 'pay1', userId: 'u1', plan: 'premium', amountCents: 3990, method: 'cartao', cardLast4: '4242', status: 'aprovado' });
+    const [s] = await db.select().from(subscriptions);
+    const [p] = await db.select().from(payments);
+    expect(s.status).toBe('trial');
+    expect(s.trialEndsAt).toEqual(fim);
+    expect(s.updatedAt).toBeInstanceOf(Date);
+    expect(p.amountCents).toBe(3990);
+    expect(p.cardLast4).toBe('4242');
+    expect(p.createdAt).toBeInstanceOf(Date);
+    await db.delete(user).where(eq(user.id, 'u1'));
+    expect(await db.select().from(subscriptions)).toEqual([]);
+    expect(await db.select().from(payments)).toEqual([]);
   });
 
   it('dá um erro claro sem DATABASE_URL', () => {
