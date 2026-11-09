@@ -11,7 +11,7 @@ Atualizado em 08/11/2026. Marque aqui o que for sendo concluído.
 | **A – Catálogo** | O site em si: vitrine, busca, páginas de filmes e séries, visual e acessibilidade | **Publicada** (faltam ajustes pequenos) |
 | **B – Contas e Perfis** | Login, perfis, Kids com controle dos pais, favoritos, "Continuar assistindo" | **B1 e B2 prontas** e juntadas ao `main` |
 | **C – Assinatura** | Planos, teste grátis e pagamento simulado | Não iniciada |
-| **D – Personalização** | Avatares regionais e capa do perfil | Em andamento (protótipo) |
+| **D – Personalização** | Avatares regionais e capa do perfil | **D1 pronta** e juntada ao `main`; D2 (foto própria) a seguir |
 
 A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A C e a D são menores e dependem da B.
 
@@ -146,7 +146,7 @@ Protótipo aprovado em 08/11/2026: https://claude.ai/artifact/2hFdr3aR1CwZSdHQEG
 - [x] Cor de destaque tirada da imagem, ajustada para 3:1 nos temas Escuro e Claro (Noturno e Alto contraste usam a do tema)
 - [x] Demonstração: Pai com Açaí e capa do filme favorito, Mãe com Ver-o-Peso, Pequeno com Boto
 - [ ] Sua revisão no navegador
-- [ ] Juntar o ramo ao `main`
+- [x] Juntar o ramo ao `main` (09/11/2026)
 
 ### D2 – Foto própria
 - [ ] Criar o armazenamento Vercel Blob no painel da Vercel (você)
