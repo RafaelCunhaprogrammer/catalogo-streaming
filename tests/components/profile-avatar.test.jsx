@@ -48,4 +48,19 @@ describe('AvatarArt', () => {
       unmount();
     }
   });
+
+  it('com foto própria, mostra a imagem com ?v= e sem texto alternativo', () => {
+    const { container } = render(<ProfileAvatar profile={perfil({ id: 'p1', avatar: 'foto', photoKey: 'fotos/p1/abcd1234abcd1234.webp' })} />);
+    const img = container.querySelector('img');
+    expect(img.getAttribute('alt')).toBe('');
+    expect(img.getAttribute('src')).toBe('/api/foto/p1?v=abcd1234abcd1234');
+    expect(img.className).toContain('object-cover');
+    expect(container.querySelector('svg')).toBeNull();
+  });
+
+  it('avatar foto sem photoKey: a inicial', () => {
+    const { container } = render(<ProfileAvatar profile={perfil({ id: 'p1', avatar: 'foto', photoKey: null })} />);
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.textContent).toBe('A');
+  });
 });

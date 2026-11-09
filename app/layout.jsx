@@ -35,7 +35,7 @@ export default async function RootLayout({ children }) {
   const [genres, viewer] = await Promise.all([loadGenres(), getViewerOrVisitor()]);
   const account = {
     signedIn: Boolean(viewer.user),
-    profile: viewer.profile ? { id: viewer.profile.id, name: viewer.profile.name, color: viewer.profile.color, kind: viewer.profile.kind, avatar: viewer.profile.avatar ?? null } : null,
+    profile: viewer.profile ? { id: viewer.profile.id, name: viewer.profile.name, color: viewer.profile.color, kind: viewer.profile.kind, avatar: viewer.profile.avatar ?? null, photoKey: viewer.profile.photoKey ?? null } : null,
   };
   const marks = viewer.profile ? await loadInitialMarks(viewer.profile.id) : null;
   const shell = (
