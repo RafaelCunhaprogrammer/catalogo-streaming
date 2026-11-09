@@ -2,6 +2,7 @@
 import http from 'node:http';
 import { readFileSync } from 'node:fs';
 
+const TINY_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAACXBIWXMAAAPoAAAD6AG1e1JrAAAAEklEQVQImWPQWDBNY8E0BggFACSeBXl/S0F6AAAAAElFTkSuQmCC';
 const fixture = (name) => JSON.parse(readFileSync(new URL(`../fixtures/${name}.json`, import.meta.url), 'utf8'));
 
 const routes = [
@@ -29,6 +30,12 @@ const routes = [
 http
   .createServer((req, res) => {
     const url = new URL(req.url, 'http://localhost');
+    // Imagens pequenas (cor da capa do perfil): um PNG de 2×2 verde-azulado.
+    if (url.pathname.startsWith('/t/p/')) {
+      res.writeHead(200, { 'content-type': 'image/png' });
+      res.end(Buffer.from(TINY_PNG, 'base64'));
+      return;
+    }
     for (const [pattern, handler] of routes) {
       const match = url.pathname.match(pattern);
       if (match) {

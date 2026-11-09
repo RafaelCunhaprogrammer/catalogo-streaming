@@ -16,6 +16,8 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       env: {
         TMDB_BASE_URL: 'http://localhost:4010/3',
+        TMDB_IMAGE_BASE_URL: 'http://localhost:4010/t/p', // só a cor da capa; o navegador continua sem imagens
+
         TMDB_READ_TOKEN: 'token-e2e',
         DATABASE_URL: 'pglite:./.data/e2e',
         BETTER_AUTH_SECRET: 'segredo-dos-testes-e2e-com-mais-de-32-caracteres',

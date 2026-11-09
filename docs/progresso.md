@@ -135,7 +135,21 @@ Ajustes pequenos já conhecidos da B1:
 - [ ] Acesso só para assinantes ou em teste
 
 ## Etapa D – Personalização
-- [ ] Avatares regionais (açaí, jambu, manga, pupunha, cupuaçu…)
-- [ ] Capa do perfil com a imagem do filme ou série favorito
+
+Protótipo aprovado em 08/11/2026: https://claude.ai/artifact/2hFdr3aR1CwZSdHQEG7RQe · [especificação](superpowers/specs/2026-11-08-etapa-d-personalizacao-design.md) · [plano da D1](superpowers/plans/2026-11-08-etapa-d1-avatares-capa.md)
+
+### D1 – Avatares e capa (ramo `etapa-d-personalizacao`)
+- [x] 12 avatares próprios: Açaí, Cupuaçu, Pupunha, Jambu, Castanha, Ver-o-Peso (adulto) e Boto, Preguiça, Arara, Peixe-boi, Tracajá, Onça (Kids)
+- [x] Escolha do avatar ao criar e editar o perfil (já vem marcado: Açaí ou Boto; opção "Só a inicial")
+- [x] Avatar em "Quem está assistindo?", Gerenciar perfis, no topo do site e na transição
+- [x] Capa da Minha lista com a imagem de um favorito, ou "Usar página padrão"
+- [x] Cor de destaque tirada da imagem, ajustada para 3:1 nos temas Escuro e Claro (Noturno e Alto contraste usam a do tema)
+- [x] Demonstração: Pai com Açaí e capa do filme favorito, Mãe com Ver-o-Peso, Pequeno com Boto
+- [ ] Sua revisão no navegador
+- [ ] Juntar o ramo ao `main`
+
+### D2 – Foto própria
+- [ ] Criar o armazenamento Vercel Blob no painel da Vercel (você)
+- [ ] Foto só em perfis adultos (inclusive na demonstração), apagada na recriação diária
 
 Ideias novas continuam indo para [ideias-para-depois.md](ideias-para-depois.md).
