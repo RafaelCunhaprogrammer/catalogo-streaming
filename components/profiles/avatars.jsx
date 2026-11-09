@@ -353,28 +353,6 @@ function MocaDoTaxi() {
   );
 }
 
-// Uirapuru: o pássaro do canto que dá sorte, cantando.
-function Uirapuru() {
-  return (
-    <>
-      <path d="M30 78 L10 92 L16 74 Z" fill="#6b4423" />
-      <ellipse cx="54" cy="74" rx="28" ry="22" fill="#8b5a2b" />
-      <path d="M38 70 Q50 58 66 70 Q54 84 38 70 Z" fill="#6b4423" />
-      <ellipse cx="58" cy="84" rx="14" ry="8" fill="#d6a46b" />
-      <circle cx="76" cy="54" r="17" fill="#8b5a2b" />
-      <path d="M62 46 Q72 32 90 44 Q78 42 64 52 Z" fill="#dc2626" />
-      <path d="M92 54 L106 50 L93 60 Z" fill="#facc15" />
-      <Olho cx={80} cy={53} r={3.5} fill="#1c1917" glint={1.2} />
-      <path d="M50 96 V104 M60 96 V104" stroke="#3b2614" strokeWidth="3" strokeLinecap="round" />
-      <path d="M100 24 V36 M100 24 L108 21 V33" fill="none" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="97" cy="37" r="3.5" fill="#ffffff" />
-      <circle cx="105" cy="34" r="3.5" fill="#ffffff" />
-      <path d="M86 14 V24" stroke="#ffffff" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="83" cy="25" r="3.5" fill="#ffffff" />
-    </>
-  );
-}
-
 // Sabores e festas do Pará.
 function Carimbo() {
   return (
@@ -549,7 +527,6 @@ const ART = {
   iara: Iara,
   'cobra-grande': CobraGrande,
   'moca-do-taxi': MocaDoTaxi,
-  uirapuru: Uirapuru,
   carimbo: Carimbo,
   manicoba: Manicoba,
   tacaca: Tacaca,

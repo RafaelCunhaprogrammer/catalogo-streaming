@@ -29,6 +29,11 @@ test('personalização: avatares nos perfis, trocar o avatar e escolher a capa d
   await form.getByText('Jambu', { exact: true }).click(); // clica no rótulo, como uma pessoa
   await expect(form.getByRole('radio', { name: 'Jambu' })).toBeChecked();
   await expectNoViolations(page, 'formulário do perfil');
+  // No celular, as fileiras de avatares rolam de lado sem alargar a página.
+  await page.setViewportSize({ width: 390, height: 844 });
+  const largura = await page.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth]);
+  expect(largura[0]).toBeLessThanOrEqual(largura[1]);
+  await page.setViewportSize({ width: 1280, height: 720 });
   await form.getByRole('button', { name: 'Salvar' }).click();
   await expect(form).toBeHidden();
   await page.goto('/');

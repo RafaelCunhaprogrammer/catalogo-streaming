@@ -10,13 +10,15 @@ describe('AvatarPicker', () => {
     expect(grupos.map((g) => g.querySelector('legend').textContent)).toEqual(['Avatar', 'Frutas e símbolos do Pará', 'Bichos da Amazônia', 'Lendas do Pará', 'Sabores e festas do Pará']);
     expect(screen.getByRole('radio', { name: 'Açaí' })).toBeChecked();
     expect(screen.getByRole('radio', { name: 'Só a inicial' })).not.toBeChecked();
-    expect(screen.getAllByRole('radio')).toHaveLength(29);
+    expect(screen.getAllByRole('radio')).toHaveLength(28);
   });
 
   it('cada grupo é uma fileira horizontal, que rola de lado em vez de quebrar a linha', () => {
     render(<AvatarPicker kind="adulto" color="#8b5cf6" value="acai" onChange={() => {}} />);
     const fileiras = [...document.querySelectorAll('[data-avatar-row]')];
     expect(fileiras).toHaveLength(4);
+    // fieldset não encolhe abaixo do conteúdo por padrão: sem min-w-0, a fileira empurra a página para fora da tela
+    for (const fs of document.querySelectorAll('fieldset')) expect(fs.className).toContain('min-w-0');
     for (const f of fileiras) {
       expect(f.className).toContain('flex-nowrap');
       expect(f.className).toContain('overflow-x-auto');
