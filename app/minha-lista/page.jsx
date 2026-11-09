@@ -1,4 +1,4 @@
-import { requireProfile } from '@/lib/auth/guards';
+import { requireAccess } from '@/lib/auth/guards';
 import { getDb } from '@/lib/db';
 import { listMarks } from '@/lib/lists/store';
 import { ratingAllowed } from '@/lib/tmdb/ratings';
@@ -11,7 +11,7 @@ export const metadata = { title: 'Minha lista' };
 const TABS = ['favoritos', 'assistindo', 'ja-assisti'];
 
 export default async function MyListPage({ searchParams }) {
-  const viewer = await requireProfile('/minha-lista');
+  const viewer = await requireAccess('/minha-lista');
   const { aba } = await searchParams;
   const raw = Array.isArray(aba) ? aba[0] : aba;
   const initialTab = TABS.includes(raw) ? raw : 'favoritos';

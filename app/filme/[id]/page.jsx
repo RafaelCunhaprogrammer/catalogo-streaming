@@ -1,4 +1,4 @@
-import { requireProfile } from '@/lib/auth/guards';
+import { requireAccess } from '@/lib/auth/guards';
 import { TitlePage, titleMetadata } from '@/components/TitlePage';
 
 export async function generateMetadata({ params }) {
@@ -8,6 +8,6 @@ export async function generateMetadata({ params }) {
 
 export default async function MoviePage({ params }) {
   const { id } = await params;
-  const viewer = await requireProfile(`/filme/${id}`);
+  const viewer = await requireAccess(`/filme/${id}`);
   return <TitlePage type="movie" id={id} viewer={viewer} />;
 }

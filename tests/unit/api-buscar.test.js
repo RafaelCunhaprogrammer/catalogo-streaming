@@ -8,6 +8,9 @@ vi.mock('@/lib/auth/viewer', () => ({
   getViewer: async () => ({ user: { id: 'u1' }, profile: { id: 'p1' }, kids: false, maxRating: null, unlocked: new Set() }),
 }));
 
+const access = vi.hoisted(() => ({ value: { kind: 'ativa' } }));
+vi.mock('@/lib/subscription/access', () => ({ getAccess: async () => access.value }));
+
 const available = { results: { BR: { flatrate: [{ provider_id: 8 }] } } };
 
 describe('GET /api/buscar', () => {
@@ -40,5 +43,16 @@ describe('GET /api/buscar', () => {
     mockTmdb({ '/search/multi': 500 });
     const response = await GET(new NextRequest('http://localhost/api/buscar?q=matrix'));
     expect(response.status).toBe(502);
+  });
+
+  it('conta sem acesso recebe 403 sem-acesso', async () => {
+    access.value = { kind: 'sem-acesso' };
+    try {
+      const response = await GET(new NextRequest('http://localhost/api/buscar?q=matrix'));
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ error: 'sem-acesso' });
+    } finally {
+      access.value = { kind: 'ativa' };
+    }
   });
 });
