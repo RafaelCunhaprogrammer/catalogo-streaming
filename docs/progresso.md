@@ -145,6 +145,7 @@ Protótipo aprovado em 08/11/2026: https://claude.ai/artifact/2hFdr3aR1CwZSdHQEG
 - [x] Capa da Minha lista com a imagem de um favorito, ou "Usar página padrão"
 - [x] Cor de destaque tirada da imagem, ajustada para 3:1 nos temas Escuro e Claro (Noturno e Alto contraste usam a do tema)
 - [x] Demonstração: Pai com Açaí e capa do filme favorito, Mãe com Ver-o-Peso, Pequeno com Boto
+- [x] Lendas do Pará (09/11/2026): Curupira, Mapinguari, Matinta Perera, Boto encantado, Iara, Cobra Grande e Moça do Táxi, para todos os perfis (inclusive Kids); no formulário, cada grupo numa fileira que rola de lado
 - [ ] Sua revisão no navegador
 - [x] Juntar o ramo ao `main` (09/11/2026)
 

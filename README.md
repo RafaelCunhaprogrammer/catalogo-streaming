@@ -11,7 +11,7 @@
 - **Descobrir o que assistir** só entre o que está nas assinaturas brasileiras (Netflix, Prime Video, Disney+, HBO Max, Globoplay, Apple TV, Paramount+, Mercado Play), com trailer dublado ou legendado, sinopse, elenco, classificação indicativa e o botão que leva direto à plataforma.
 - **Explorar e buscar** com filtros por plataforma, gênero, ano, nota, duração e idioma; "Como você quer se sentir hoje?" sugere filmes por humor, sem pedir nenhum dado pessoal.
 - **Contas de família** com até 5 perfis e a tela "Quem está assistindo?".
-- **Cara do Pará:** cada perfil escolhe um avatar ilustrado (açaí, jambu, Ver-o-Peso, boto, preguiça, onça…) e uma capa para a Minha lista com a imagem de um favorito, com a cor de destaque tirada dela.
+- **Cara do Pará:** cada perfil escolhe um avatar ilustrado (açaí, Ver-o-Peso, boto, onça e lendas como Curupira, Iara e Matinta Perera) e uma capa para a Minha lista com a imagem de um favorito, com a cor de destaque tirada dela.
 - **Perfil Kids:** a criança vê o catálogo, mas títulos acima da faixa aparecem com cadeado e só abrem com o PIN dos pais. Sair do Kids ou entrar em áreas de adulto também pede o PIN.
 - **Listas do perfil:** ♥ Favoritos, "Assistindo" (com "Onde você parou" e "+1 episódio" nas séries) e "Já assisti", na página **Minha lista** e na fileira **Continuar assistindo**.
 - **Indicados para você**, a partir dos gêneros favoritos e do que o perfil marcou.
