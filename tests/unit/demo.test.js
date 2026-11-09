@@ -18,6 +18,7 @@ import { verifyPin } from '@/lib/pin';
 import { DEMO_EMAIL, DEMO_PIN, belemDate, ensureDemoAccount, resetDemoIfNeeded } from '@/lib/demo';
 import { listMarks, saveMark } from '@/lib/lists/store';
 import { DEMO_EMAIL as VIEWER_DEMO_EMAIL } from '@/lib/auth/viewer-core';
+import { getSubscription, recordPayment, listPayments } from '@/lib/subscription/store';
 
 describe('conta de demonstração', () => {
   it('data de Belém é UTC−3', () => {
@@ -61,6 +62,23 @@ describe('conta de demonstração', () => {
     const depois = await listProfiles(db, userId);
     expect(depois.map((p) => p.name)).toEqual(['Pai', 'Mãe', 'Pequeno']);
     expect(depois[0].avatar).toBe('acai');
+  });
+
+  it('a demonstração fica com assinatura anual ativa até amanhã e o reset apaga pagamentos', async () => {
+    const { auth, db } = await createTestAuth();
+    const now = new Date('2026-10-17T15:00:00Z');
+    const userId = await ensureDemoAccount(db, auth, 'demo-paidegua-2026', now);
+    const sub = await getSubscription(db, userId);
+    expect([sub.status, sub.plan]).toEqual(['ativa', 'anual']);
+    expect(sub.periodEnd.getTime()).toBe(now.getTime() + 24 * 3600 * 1000);
+    await recordPayment(db, userId, { plan: 'mensal', method: 'pix', approved: true }, now);
+    expect(await listPayments(db, userId)).toHaveLength(1);
+    const next = new Date('2026-10-18T04:00:00Z');
+    expect(await resetDemoIfNeeded(db, userId, next)).toBe(true);
+    const after = await getSubscription(db, userId);
+    expect([after.status, after.plan]).toEqual(['ativa', 'anual']);
+    expect(after.periodEnd.getTime()).toBe(next.getTime() + 24 * 3600 * 1000);
+    expect(await listPayments(db, userId)).toHaveLength(0);
   });
 
   describe('exemplos', () => {

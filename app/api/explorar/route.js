@@ -4,10 +4,12 @@ import { discoverPage } from '@/lib/tmdb/catalog';
 import { annotateRatings } from '@/lib/tmdb/ratings';
 import { parseProvidersCookie, PROVIDERS_COOKIE } from '@/lib/preferences';
 import { getViewer } from '@/lib/auth/viewer';
+import { getAccess } from '@/lib/subscription/access';
 
 export async function GET(request) {
   const viewer = await getViewer();
   if (!viewer.profile) return NextResponse.json({ error: 'Entre na sua conta para continuar.' }, { status: 401 });
+  if ((await getAccess())?.kind === 'sem-acesso') return NextResponse.json({ error: 'sem-acesso' }, { status: 403 });
   const filters = parseExploreParams(request.nextUrl.searchParams);
   const myProviders = parseProvidersCookie(request.cookies.get(PROVIDERS_COOKIE)?.value);
   try {

@@ -50,6 +50,10 @@ export function SearchBox({ genres, signedIn = true }) {
     const timer = setTimeout(async () => {
       try {
         const response = await fetch(`/api/buscar?${queryString}`, { signal: controller.signal });
+        if (response.status === 403) {
+          router.push('/assinar?motivo=expirou');
+          return;
+        }
         if (!response.ok) return;
         const data = await response.json();
         setResults(data.results ?? []);
@@ -63,7 +67,7 @@ export function SearchBox({ genres, signedIn = true }) {
       clearTimeout(timer);
       controller.abort();
     };
-  }, [trimmed, queryString]);
+  }, [trimmed, queryString, router]);
 
   function close() {
     setOpen(false);

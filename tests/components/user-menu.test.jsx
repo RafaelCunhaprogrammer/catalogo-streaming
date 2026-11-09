@@ -60,3 +60,15 @@ describe('topo', () => {
     expect(push).toHaveBeenCalledWith('/perfis/gerenciar?editar=p3&voltar=%2Fexplorar');
   });
 });
+
+describe('item Planos', () => {
+  it('aparece só quando showPlans', async () => {
+    const { unmount } = renderWithSettings(<Header account={adult} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Menu do perfil Ana' }));
+    expect(screen.queryByRole('link', { name: 'Planos' })).not.toBeInTheDocument();
+    unmount();
+    renderWithSettings(<Header account={{ ...adult, showPlans: true }} />);
+    await userEvent.click(screen.getByRole('button', { name: 'Menu do perfil Ana' }));
+    expect(screen.getByRole('link', { name: 'Planos' })).toHaveAttribute('href', '/assinar');
+  });
+});

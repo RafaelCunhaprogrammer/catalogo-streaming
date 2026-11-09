@@ -10,7 +10,7 @@ Atualizado em 09/11/2026. Marque aqui o que for sendo concluído.
 |---|---|---|
 | **A – Catálogo** | O site em si: vitrine, busca, páginas de filmes e séries, visual e acessibilidade | **Publicada** (faltam ajustes pequenos) |
 | **B – Contas e Perfis** | Login, perfis, Kids com controle dos pais, favoritos, "Continuar assistindo" | **B1 e B2 prontas** e juntadas ao `main` |
-| **C – Assinatura** | Planos, teste grátis e pagamento simulado | Não iniciada |
+| **C – Assinatura** | Planos, teste grátis e pagamento simulado | **Pronta** (ramo `etapa-c-assinatura`, aguardando juntar ao `main`) |
 | **D – Personalização** | Avatares regionais e capa do perfil | **D1 pronta** e juntada ao `main`; D2 (foto própria) pronta, aguardando juntar ao `main` |
 
 A Etapa B é a maior das três que faltam, porque traz banco de dados e login. A C e a D são menores e dependem da B.
@@ -129,10 +129,14 @@ Ajustes pequenos já conhecidos da B1:
 - [ ] Sua revisão no navegador
 
 ## Etapa C – Assinatura (pagamento simulado)
-- [ ] Planos mensal, trimestral, semestral e anual (anual em destaque)
-- [ ] Teste grátis de algumas horas
-- [ ] Pagamento em modo de teste (Stripe ou Mercado Pago)
-- [ ] Acesso só para assinantes ou em teste
+- [x] Planos mensal, trimestral, semestral e anual (anual em destaque)
+- [x] Teste grátis de 6 horas ao criar a conta, com faixa "Teste grátis: faltam …" e link para assinar
+- [x] Pagamento simulado, sem cobrança real: Pix ("Já paguei") e cartão de teste (4242… aprova, 4000…0002 recusa)
+- [x] Catálogo só para quem assina ou está no teste; teste acabado leva a `/assinar?motivo=expirou`
+- [x] Minha conta: situação da assinatura, histórico de pagamentos e cancelamento (acesso até o fim do período pago); a demonstração segue sempre ativa
+- [x] Teste de ponta a ponta com acessibilidade: conta nova com a faixa, teste acabado, pagar com Pix, abrir o catálogo e cancelar (assinatura.spec.js)
+- [ ] Sua revisão no navegador
+- [ ] Juntar o ramo ao `main`
 
 ## Etapa D – Personalização
 

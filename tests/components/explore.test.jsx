@@ -5,12 +5,14 @@ import { ExploreGrid } from '@/components/ExploreGrid';
 import { ExploreFilters } from '@/components/ExploreFilters';
 import { parseExploreParams } from '@/lib/explore-params';
 
-vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }) }));
+const push = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn(), push }) }));
 vi.mock('next/form', () => ({ default: ({ children, ...props }) => <form {...props}>{children}</form> }));
 
 let observerCallback;
 beforeEach(() => {
   observerCallback = null;
+  push.mockClear();
   vi.stubGlobal('IntersectionObserver', class {
     constructor(cb) { observerCallback = cb; }
     observe() {}
@@ -47,6 +49,16 @@ describe('ExploreGrid', () => {
     observerCallback([{ isIntersecting: true }]);
     await userEvent.click(await screen.findByRole('button', { name: 'Tentar novamente' }));
     expect(await screen.findByRole('link', { name: /Filme 2/ })).toBeInTheDocument();
+  });
+});
+
+describe('ExploreGrid com o teste vencido', () => {
+  it('403 leva a /assinar?motivo=expirou', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 403 })));
+    render(<ExploreGrid filters={filters()} initial={{ results: [title(1)], totalPages: 2 }} />);
+    observerCallback([{ isIntersecting: true }]);
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/assinar?motivo=expirou'));
+    expect(screen.queryByRole('button', { name: 'Tentar novamente' })).not.toBeInTheDocument();
   });
 });
 

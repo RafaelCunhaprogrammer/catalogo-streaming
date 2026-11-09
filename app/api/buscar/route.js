@@ -2,12 +2,14 @@ import { NextResponse } from 'next/server';
 import { searchAvailable } from '@/lib/tmdb/catalog';
 import { annotateRatings } from '@/lib/tmdb/ratings';
 import { getViewer } from '@/lib/auth/viewer';
+import { getAccess } from '@/lib/subscription/access';
 
 const SUGGESTIONS = 8;
 
 export async function GET(request) {
   const viewer = await getViewer();
   if (!viewer.profile) return NextResponse.json({ error: 'Entre na sua conta para continuar.' }, { status: 401 });
+  if ((await getAccess())?.kind === 'sem-acesso') return NextResponse.json({ error: 'sem-acesso' }, { status: 403 });
   const query = request.nextUrl.searchParams.get('q') ?? '';
   const tipo = request.nextUrl.searchParams.get('tipo');
   const type = tipo === 'filme' ? 'movie' : tipo === 'serie' ? 'tv' : undefined;

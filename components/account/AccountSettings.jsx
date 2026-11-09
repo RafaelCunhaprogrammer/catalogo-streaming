@@ -21,7 +21,7 @@ function Result({ state, success }) {
     : <p role="alert" className="text-sm font-semibold text-accent-2">{state.error}</p>;
 }
 
-export function AccountSettings({ email, isDemo, hasPin }) {
+export function AccountSettings({ email, isDemo, hasPin, subscription = null }) {
   const [pwState, pwAction, pwPending] = useActionState(changePasswordAction, null);
   const [delState, delAction, delPending] = useActionState(deleteAccountAction, null);
 
@@ -29,6 +29,7 @@ export function AccountSettings({ email, isDemo, hasPin }) {
     <div className="mx-auto max-w-2xl space-y-6 px-4 py-10">
       <h1 className="text-3xl font-black">Minha conta</h1>
       <p className="text-muted">Conta: <span className="font-semibold text-fg">{email}</span></p>
+      {subscription}
       {isDemo ? (
         <p className="rounded-xl border border-line p-4 text-sm">Indisponível na conta de demonstração.</p>
       ) : (

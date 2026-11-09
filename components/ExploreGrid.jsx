@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { PosterCard } from '@/components/PosterCard';
 import { LoadError } from '@/components/LoadError';
 import { toExploreQuery } from '@/lib/explore-params';
@@ -14,6 +15,7 @@ function mergeUnique(current, incoming) {
 }
 
 export function ExploreGrid({ filters, initial }) {
+  const router = useRouter();
   const [items, setItems] = useState(initial.results);
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('idle'); // idle | loading | error
@@ -25,6 +27,10 @@ export function ExploreGrid({ filters, initial }) {
     setStatus('loading');
     try {
       const response = await fetch(`/api/explorar?${toExploreQuery({ ...filters, pagina: page + 1 })}`);
+      if (response.status === 403) {
+        router.push('/assinar?motivo=expirou');
+        return;
+      }
       if (!response.ok) throw new Error(`status ${response.status}`);
       const data = await response.json();
       setItems((current) => mergeUnique(current, data.results));
@@ -33,7 +39,7 @@ export function ExploreGrid({ filters, initial }) {
     } catch {
       setStatus('error');
     }
-  }, [filters, page, hasMore]);
+  }, [filters, page, hasMore, router]);
 
   useEffect(() => {
     const el = sentinelRef.current;

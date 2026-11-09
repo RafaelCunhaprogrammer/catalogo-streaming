@@ -8,6 +8,9 @@ vi.mock('@/lib/auth/viewer', () => ({
   getViewer: async () => ({ user: { id: 'u1' }, profile: { id: 'p1' }, kids: false, maxRating: null, unlocked: new Set() }),
 }));
 
+const access = vi.hoisted(() => ({ value: { kind: 'ativa' } }));
+vi.mock('@/lib/subscription/access', () => ({ getAccess: async () => access.value }));
+
 describe('GET /api/explorar', () => {
   it('devolve a página pedida usando os filtros e o cookie de Meus streamings', async () => {
     const fetchMock = mockTmdb({ '/discover/tv': { total_pages: 4, results: [{ id: 7, name: 'Série 7', popularity: 1 }] } });
@@ -29,5 +32,16 @@ describe('GET /api/explorar', () => {
     const response = await GET(new NextRequest('http://localhost/api/explorar'));
     expect(response.status).toBe(502);
     expect(await response.json()).toEqual({ error: 'Não foi possível carregar agora.' });
+  });
+
+  it('conta sem acesso recebe 403 sem-acesso', async () => {
+    access.value = { kind: 'sem-acesso' };
+    try {
+      const response = await GET(new NextRequest('http://localhost/api/explorar?q=matrix'));
+      expect(response.status).toBe(403);
+      expect(await response.json()).toEqual({ error: 'sem-acesso' });
+    } finally {
+      access.value = { kind: 'ativa' };
+    }
   });
 });

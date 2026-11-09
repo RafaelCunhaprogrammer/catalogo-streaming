@@ -14,6 +14,7 @@
 - **Cara do Pará:** cada perfil escolhe um avatar ilustrado (açaí, Ver-o-Peso, boto, onça e lendas como Curupira, Iara e Matinta Perera) e uma capa para a Minha lista com a imagem de um favorito, com a cor de destaque tirada dela.
 - **Perfil Kids:** a criança vê o catálogo, mas títulos acima da faixa aparecem com cadeado e só abrem com o PIN dos pais. Sair do Kids ou entrar em áreas de adulto também pede o PIN.
 - **Listas do perfil:** ♥ Favoritos, "Assistindo" (com "Onde você parou" e "+1 episódio" nas séries) e "Já assisti", na página **Minha lista** e na fileira **Continuar assistindo**.
+- **Assinatura simulada:** teste grátis de 6 horas ao criar a conta e quatro planos (mensal, trimestral, semestral e anual), pagos com Pix ou cartão de teste. Nenhuma cobrança é real: o cartão 4242… é aprovado e o 4000…0002 é recusado.
 - **Indicados para você**, a partir dos gêneros favoritos e do que o perfil marcou.
 
 | Continuar assistindo e indicações | Página do título |
@@ -85,7 +86,7 @@ Em etapas, cada uma com especificação, plano e revisão de código antes de ju
 |---|---|
 | A – Catálogo | ✅ |
 | B – Contas, perfis, Kids, listas e indicações | ✅ |
-| C – Assinatura (pagamento simulado) | planejada |
+| C – Assinatura (pagamento simulado) | ✅ |
 | D – Personalização (avatares regionais e capa do perfil) | em andamento |
 
 ## Créditos

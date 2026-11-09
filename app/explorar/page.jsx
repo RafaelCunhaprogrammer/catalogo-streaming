@@ -1,4 +1,4 @@
-import { requireProfile } from '@/lib/auth/guards';
+import { requireAccess } from '@/lib/auth/guards';
 import { cookies } from 'next/headers';
 import { parseExploreParams, exploreResultsKey } from '@/lib/explore-params';
 import { discoverPage, getGenreLists } from '@/lib/tmdb/catalog';
@@ -11,7 +11,7 @@ import { ExploreGrid } from '@/components/ExploreGrid';
 export const metadata = { title: 'Explorar' };
 
 export default async function ExplorePage({ searchParams }) {
-  const viewer = await requireProfile('/explorar');
+  const viewer = await requireAccess('/explorar');
   const filters = { ...parseExploreParams(await searchParams), pagina: 1 };
   const cookieStore = await cookies();
   const myProviders = parseProvidersCookie(cookieStore.get(PROVIDERS_COOKIE)?.value);
