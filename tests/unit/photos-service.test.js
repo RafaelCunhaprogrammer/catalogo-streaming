@@ -5,10 +5,11 @@ import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import { createTestDb } from '../helpers/test-db';
-import { user } from '@/lib/db/schema';
+import { profiles, user } from '@/lib/db/schema';
 import { getPhotoStorage } from '@/lib/photos/storage';
 import { setProfilePhoto, removeProfilePhoto, deletePhotosOf } from '@/lib/photos/service';
 import { PROFILE_COLORS, createProfile, deleteProfile, getOwnedProfile, listProfiles, updateProfile } from '@/lib/profiles';
+import { eq } from 'drizzle-orm';
 import { resetDemo, DEMO_PROFILES } from '@/lib/demo';
 
 let db;
@@ -156,5 +157,32 @@ describe('exclusão', () => {
     await resetDemo(db, 'u1', new Date(), { storage });
     expect(await existe(a.photoKey)).toBe(false);
     expect(await listProfiles(db, 'u1')).toHaveLength(DEMO_PROFILES.length);
+  });
+
+  // Os arquivos saem antes das linhas: se o banco falhar no meio, nenhuma foto fica órfã.
+  it('deleteProfile apaga o arquivo enquanto a linha do perfil ainda existe', async () => {
+    await novo('u1', { name: 'Um' });
+    const p = await novo('u1', { name: 'Dois' });
+    await setProfilePhoto(db, storage, 'u1', p.id, await foto());
+    const vistos = [];
+    const espia = { ...storage, del: async (key) => {
+      vistos.push((await db.select().from(profiles).where(eq(profiles.id, p.id))).length);
+      return storage.del(key);
+    } };
+    await deleteProfile(db, 'u1', p.id, espia);
+    expect(vistos).toEqual([1]);
+  });
+
+  it('resetDemo apaga o arquivo enquanto a linha do perfil ainda existe', async () => {
+    await resetDemo(db, 'u1', new Date(), { storage });
+    const [pai] = await listProfiles(db, 'u1');
+    await setProfilePhoto(db, storage, 'u1', pai.id, await foto());
+    const vistos = [];
+    const espia = { ...storage, del: async (key) => {
+      vistos.push((await db.select().from(profiles).where(eq(profiles.id, pai.id))).length);
+      return storage.del(key);
+    } };
+    await resetDemo(db, 'u1', new Date(), { storage: espia });
+    expect(vistos).toEqual([1]);
   });
 });
