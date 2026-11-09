@@ -25,7 +25,8 @@ export function CoverHeader({ profile, cover, counts, options }) {
       aria-label="Capa do perfil"
       data-cover={image ? 'imagem' : 'padrao'}
       style={accentStyle}
-      className="relative h-60 overflow-hidden bg-surface sm:h-[22.5rem]"
+      // Com imagem, a faixa é escura em todos os temas (como o destaque do Início), para o texto branco.
+      className={`relative h-60 overflow-hidden sm:h-[22.5rem] ${image ? 'bg-[var(--hero-bg)]' : 'bg-surface'}`}
     >
       {image && (
         <>
@@ -35,7 +36,7 @@ export function CoverHeader({ profile, cover, counts, options }) {
           <div
             data-testid="capa-sombra"
             aria-hidden="true"
-            className="absolute inset-0 bg-gradient-to-t from-[var(--bg)] via-black/55 to-black/10 calm:via-black/75 calm:to-black/55"
+            className="absolute inset-0 bg-gradient-to-t from-[var(--hero-bg)] via-black/55 to-black/10 calm:via-black/75 calm:to-black/55"
           />
         </>
       )}

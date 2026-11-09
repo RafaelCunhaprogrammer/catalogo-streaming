@@ -40,6 +40,14 @@ describe('CoverHeader', () => {
     expect(container.querySelector('[data-cover]').style.getPropertyValue('--cover-accent-dark')).toBe('');
   });
 
+  it('com imagem, a faixa é sempre escura (como o destaque do Início): o texto branco tem contraste até no tema Claro', () => {
+    const { container } = render(<CoverHeader profile={profile} cover={cover} counts={counts} options={[]} />);
+    const sombra = container.querySelector('[data-testid="capa-sombra"]').className;
+    expect(sombra).toContain('from-[var(--hero-bg)]');
+    expect(sombra).not.toContain('from-[var(--bg)]');
+    expect(container.querySelector('[data-cover]').className).toContain('bg-[var(--hero-bg)]');
+  });
+
   it('no Modo sensorial calmo, a sombra sobre a imagem fica mais forte', () => {
     const { container } = render(<CoverHeader profile={profile} cover={cover} counts={counts} options={[]} />);
     expect(container.querySelector('[data-testid="capa-sombra"]').className).toMatch(/calm:/);

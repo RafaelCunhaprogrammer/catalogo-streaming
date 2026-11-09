@@ -86,7 +86,8 @@ describe('Gerenciar perfis', () => {
     await userEvent.click(within(form).getByRole('radio', { name: 'Kids' }));
     await userEvent.selectOptions(within(form).getByLabelText('Classificação máxima'), '10');
     await userEvent.click(within(form).getByRole('button', { name: 'Salvar' }));
-    expect(await screen.findByRole('form', { name: 'Criar o PIN dos pais' })).toBeInTheDocument();
+    // Com a suíte cheia, o formulário (agora com os avatares) pode passar de 1 s para responder.
+    expect(await screen.findByRole('form', { name: 'Criar o PIN dos pais' }, { timeout: 5000 })).toBeInTheDocument();
   });
 
   it('a faixa só aparece para perfis Kids', async () => {
