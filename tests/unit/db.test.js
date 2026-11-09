@@ -86,11 +86,12 @@ describe('banco de dados', () => {
     const db = await createTestDb();
     await db.insert(user).values({ id: 'u1', name: 'Ana', email: 'ana@ex.com' });
     const fim = new Date('2026-12-01T00:00:00Z');
-    await db.insert(subscriptions).values({ userId: 'u1', status: 'trial', plan: 'premium', trialEndsAt: fim, periodEnd: fim });
-    await db.insert(payments).values({ id: 'pay1', userId: 'u1', plan: 'premium', amountCents: 3990, method: 'cartao', cardLast4: '4242', status: 'aprovado' });
+    await db.insert(subscriptions).values({ userId: 'u1', status: 'teste', plan: null, trialEndsAt: fim, periodEnd: fim });
+    await db.insert(payments).values({ id: 'pay1', userId: 'u1', plan: 'mensal', amountCents: 3990, method: 'cartao', cardLast4: '4242', status: 'aprovado' });
     const [s] = await db.select().from(subscriptions);
     const [p] = await db.select().from(payments);
-    expect(s.status).toBe('trial');
+    expect(s.status).toBe('teste');
+    expect(s.plan).toBeNull();
     expect(s.trialEndsAt).toEqual(fim);
     expect(s.updatedAt).toBeInstanceOf(Date);
     expect(p.amountCents).toBe(3990);
@@ -99,6 +100,13 @@ describe('banco de dados', () => {
     await db.delete(user).where(eq(user.id, 'u1'));
     expect(await db.select().from(subscriptions)).toEqual([]);
     expect(await db.select().from(payments)).toEqual([]);
+  });
+
+  it('assinatura em teste aceita plano nulo; uma segunda assinatura da mesma conta é rejeitada', async () => {
+    const db = await createTestDb();
+    await db.insert(user).values({ id: 'u1', name: 'Ana', email: 'ana@ex.com' });
+    await db.insert(subscriptions).values({ userId: 'u1', status: 'teste' });
+    await expect(db.insert(subscriptions).values({ userId: 'u1', status: 'ativa', plan: 'anual' })).rejects.toThrow();
   });
 
   it('dá um erro claro sem DATABASE_URL', () => {

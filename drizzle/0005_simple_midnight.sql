@@ -12,7 +12,7 @@ CREATE TABLE "payments" (
 CREATE TABLE "subscriptions" (
 	"user_id" text PRIMARY KEY NOT NULL,
 	"status" text NOT NULL,
-	"plan" text NOT NULL,
+	"plan" text,
 	"trial_ends_at" timestamp,
 	"period_end" timestamp,
 	"updated_at" timestamp DEFAULT now() NOT NULL

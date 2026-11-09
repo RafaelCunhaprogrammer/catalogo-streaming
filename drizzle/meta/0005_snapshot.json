@@ -1,5 +1,5 @@
 {
-  "id": "9d66f4f5-b48c-4c2c-bf67-b000960e5269",
+  "id": "7d8c90a4-9b74-45c6-8ef6-04e4e75b27e8",
   "prevId": "5f193755-2792-408c-88e9-4f31d014f05c",
   "version": "7",
   "dialect": "postgresql",
@@ -667,7 +667,7 @@
           "name": "plan",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "trial_ends_at": {
           "name": "trial_ends_at",

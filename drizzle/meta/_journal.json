@@ -40,14 +40,14 @@
     {
       "idx": 5,
       "version": "7",
-      "when": 1794252766792,
-      "tag": "0005_fresh_redwing",
+      "when": 1794252952472,
+      "tag": "0005_simple_midnight",
       "breakpoints": true
     },
     {
       "idx": 6,
       "version": "7",
-      "when": 1794252774371,
+      "when": 1794252961206,
       "tag": "0006_rls_assinatura_e_pagamentos",
       "breakpoints": true
     }
