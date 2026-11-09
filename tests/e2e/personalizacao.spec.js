@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import fs from 'node:fs';
+import path from 'node:path';
 import { prepare, signInDemo } from './helpers';
 
 const tags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'];
@@ -63,4 +65,47 @@ test('personalização: avatares nos perfis, trocar o avatar e escolher a capa d
   await painel.getByRole('button', { name: 'Salvar' }).click();
   await expect(painel).toBeHidden();
   await expect(capa).toHaveAttribute('data-cover', 'padrao');
+});
+
+// Lista os arquivos (caminhos relativos) guardados na pasta local de fotos.
+function arquivosDeFotos() {
+  const raiz = path.resolve('.data/fotos');
+  if (!fs.existsSync(raiz)) return [];
+  return fs.readdirSync(raiz, { recursive: true, withFileTypes: true })
+    .filter((e) => e.isFile())
+    .map((e) => path.relative(raiz, path.join(e.parentPath ?? e.path, e.name)));
+}
+
+test('foto própria: escolher, recortar, salvar, aparecer no topo e ser apagada ao trocar de avatar', async ({ page }) => {
+  test.setTimeout(150000);
+  await signInDemo(page, 'Pai');
+  await page.goto('/perfis/gerenciar');
+  await page.getByRole('listitem').filter({ hasText: 'Pai' }).getByRole('button', { name: 'Editar' }).click();
+  const form = page.getByRole('form', { name: 'Editar Pai' });
+
+  await form.getByLabel('Escolher foto').setInputFiles('tests/fixtures/foto-teste.png');
+  await expect(form.getByLabel('Zoom')).toBeVisible();
+  await expectNoViolations(page, 'recorte da foto');
+  await form.getByRole('button', { name: 'Usar esta foto' }).click();
+  await form.getByRole('button', { name: 'Salvar' }).click();
+  await expect(form).toBeHidden();
+
+  await page.goto('/');
+  const foto = page.getByRole('button', { name: 'Menu do perfil Pai' }).locator('img');
+  await expect(foto).toBeVisible();
+  await expect(foto).toHaveAttribute('src', /^\/api\/foto\//);
+  const guardadas = arquivosDeFotos();
+  expect(guardadas.length).toBeGreaterThan(0);
+
+  // Voltar para um desenho apaga o arquivo da foto.
+  await page.goto('/perfis/gerenciar');
+  await page.getByRole('listitem').filter({ hasText: 'Pai' }).getByRole('button', { name: 'Editar' }).click();
+  const form2 = page.getByRole('form', { name: 'Editar Pai' });
+  await form2.getByText('Açaí', { exact: true }).click();
+  await form2.getByRole('button', { name: 'Salvar' }).click();
+  await expect(form2).toBeHidden();
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Menu do perfil Pai' }).locator('svg[data-avatar="acai"]')).toBeVisible();
+  const restantes = arquivosDeFotos();
+  for (const f of guardadas) expect(restantes).not.toContain(f);
 });

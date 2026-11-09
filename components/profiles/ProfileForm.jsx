@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from 'react';
 import { createProfileAction, updateProfileAction } from '@/lib/actions/conta';
-import { PROFILE_COLORS } from '@/lib/profiles';
+import { PROFILE_COLORS } from '@/lib/profile-limits';
 import { GenrePicker } from '@/components/lists/GenrePicker';
 import { AvatarPicker } from '@/components/profiles/AvatarPicker';
 import { defaultAvatar, PHOTO_AVATAR } from '@/lib/avatars';

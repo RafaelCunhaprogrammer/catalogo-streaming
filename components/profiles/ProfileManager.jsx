@@ -8,7 +8,7 @@ import { ProfileForm } from '@/components/profiles/ProfileForm';
 import { PinSetupForm } from '@/components/profiles/PinSetupForm';
 import { GenrePicker } from '@/components/lists/GenrePicker';
 import { deleteProfileAction, dismissProfileGenresAction, saveProfileGenresAction } from '@/lib/actions/conta';
-import { MAX_PROFILES } from '@/lib/profiles';
+import { MAX_PROFILES } from '@/lib/profile-limits';
 
 // editId/voltar: vindo do "Editar perfil" do menu, já abre aquele perfil e, ao salvar, volta para `voltar`.
 export function ProfileManager({ profiles, hasPin, editId, voltar }) {
