@@ -220,6 +220,139 @@ function Onca() {
   );
 }
 
+// Lendas do Pará: personagens simpáticos, com graça e orgulho, nada de susto.
+function Curupira() {
+  return (
+    <>
+      <path d="M26 58 Q26 22 42 36 Q44 8 60 28 Q74 6 78 36 Q94 20 94 58 Z" fill="#ef4444" />
+      <path d="M38 56 Q40 32 50 42 Q54 22 62 38 Q70 22 72 42 Q82 32 84 56 Z" fill="#f97316" />
+      <circle cx="31" cy="68" r="6" fill="#a86b3c" />
+      <circle cx="89" cy="68" r="6" fill="#a86b3c" />
+      <circle cx="60" cy="68" r="29" fill="#b7794b" />
+      <Olho cx={49} cy={64} r={4.5} fill="#1c1917" />
+      <Olho cx={71} cy={64} r={4.5} fill="#1c1917" />
+      <circle cx="42" cy="76" r="4.5" fill="#f87171" opacity="0.6" />
+      <circle cx="78" cy="76" r="4.5" fill="#f87171" opacity="0.6" />
+      <path d="M50 79 Q60 88 70 79" fill="none" stroke="#3b1d0e" strokeWidth="3" strokeLinecap="round" />
+      <ellipse cx="46" cy="102" rx="6" ry="4" fill="#22c55e" transform="rotate(-25 46 102)" />
+      <ellipse cx="60" cy="105" rx="6" ry="4" fill="#16a34a" />
+      <ellipse cx="74" cy="102" rx="6" ry="4" fill="#22c55e" transform="rotate(25 74 102)" />
+    </>
+  );
+}
+
+function Mapinguari() {
+  const tufos = 'M24 52 L30 36 L38 46 L46 28 L54 42 L60 24 L66 42 L74 28 L82 46 L90 36 L96 52 Z';
+  return (
+    <>
+      <path d={tufos} fill="#5c3a1e" />
+      <circle cx="60" cy="68" r="38" fill="#6b4423" />
+      <path d="M20 84 Q14 96 22 102 M100 84 Q106 96 98 102" stroke="#5c3a1e" strokeWidth="8" strokeLinecap="round" fill="none" />
+      <ellipse cx="60" cy="48" rx="13" ry="11" fill="#ffffff" />
+      <Olho cx={60} cy={49} r={6} fill="#1c1917" glint={2} />
+      <ellipse cx="60" cy="86" rx="20" ry="14" fill="#8a5a33" />
+      <path d="M45 82 Q60 100 75 82 Z" fill="#7f1d1d" />
+      <path d="M50 82 V86 M56 82 V87 M64 82 V87 M70 82 V86" stroke="#ffffff" strokeWidth="3" strokeLinecap="round" />
+    </>
+  );
+}
+
+function MatintaPerera() {
+  return (
+    <>
+      <path d="M22 110 Q22 30 60 26 Q98 30 98 110 Z" fill="#2e2440" />
+      <ellipse cx="60" cy="68" rx="23" ry="26" fill="#e0b48a" />
+      <path d="M38 56 Q48 44 60 50 Q72 44 82 56 Q72 50 60 56 Q48 50 38 56 Z" fill="#cbd5e1" />
+      <path d="M47 66 q4 -4 8 0 M65 66 q4 -4 8 0" fill="none" stroke="#3b2614" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="44" cy="76" r="4" fill="#f87171" opacity="0.6" />
+      <circle cx="76" cy="76" r="4" fill="#f87171" opacity="0.6" />
+      <path d="M52 82 Q60 89 68 82" fill="none" stroke="#7c2d12" strokeWidth="2.5" strokeLinecap="round" />
+      <ellipse cx="92" cy="30" rx="11" ry="8" fill="#111111" />
+      <circle cx="100" cy="24" r="6" fill="#111111" />
+      <path d="M105 24 L112 26 L105 28 Z" fill="#facc15" />
+      <circle cx="101" cy="22" r="1.6" fill="#ffffff" />
+    </>
+  );
+}
+
+function BotoEncantado() {
+  return (
+    <>
+      <path d="M24 120 L38 96 L60 106 L82 96 L96 120 Z" fill="#f8fafc" />
+      <path d="M60 106 L54 120 H66 Z" fill="#f472b6" />
+      <circle cx="74" cy="106" r="3.5" fill="#ec4899" />
+      <circle cx="60" cy="70" r="25" fill="#f1c7a6" />
+      <path d="M36 68 Q36 50 44 50 L44 70 Z M84 68 Q84 50 76 50 L76 70 Z" fill="#3f2a14" />
+      <ellipse cx="60" cy="48" rx="40" ry="8" fill="#f8fafc" />
+      <rect x="38" y="22" width="44" height="26" rx="9" fill="#f8fafc" />
+      <rect x="38" y="38" width="44" height="7" fill="#f472b6" />
+      <Olho cx={51} cy={68} r={4} fill="#1e1433" />
+      <Olho cx={69} cy={68} r={4} fill="#1e1433" />
+      <circle cx="44" cy="78" r="4.5" fill="#f472b6" opacity="0.6" />
+      <circle cx="76" cy="78" r="4.5" fill="#f472b6" opacity="0.6" />
+      <path d="M51 82 Q60 90 69 82" fill="none" stroke="#9d174d" strokeWidth="2.5" strokeLinecap="round" />
+    </>
+  );
+}
+
+function Iara() {
+  return (
+    <>
+      <path d="M26 106 Q20 40 60 30 Q100 40 94 106 Z" fill="#1e1b4b" />
+      <ellipse cx="60" cy="62" rx="20" ry="23" fill="#c68642" />
+      <path d="M40 56 Q46 36 60 38 Q74 36 80 56 Q70 46 60 48 Q50 46 40 56 Z" fill="#1e1b4b" />
+      <circle cx="80" cy="44" r="6" fill="#f472b6" />
+      <circle cx="80" cy="44" r="2.5" fill="#fde047" />
+      <Olho cx={52} cy={62} r={4} fill="#1c1917" />
+      <Olho cx={68} cy={62} r={4} fill="#1c1917" />
+      <circle cx="46" cy="71" r="4" fill="#f87171" opacity="0.6" />
+      <circle cx="74" cy="71" r="4" fill="#f87171" opacity="0.6" />
+      <path d="M53 75 Q60 81 67 75" fill="none" stroke="#7c2d12" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M0 92 Q15 86 30 92 T60 92 T90 92 T120 92 V120 H0 Z" fill="#0ea5e9" />
+      <path d="M0 102 Q15 96 30 102 T60 102 T90 102 T120 102 V120 H0 Z" fill="#0369a1" />
+      <path d="M88 96 Q100 84 112 92 Q104 94 101 102 Q97 96 88 96 Z" fill="#10b981" />
+    </>
+  );
+}
+
+function CobraGrande() {
+  const pintas = [[30, 92], [50, 98], [72, 98], [92, 92], [44, 80], [76, 80]];
+  return (
+    <>
+      <ellipse cx="60" cy="94" rx="44" ry="16" fill="#15803d" />
+      <ellipse cx="60" cy="80" rx="32" ry="12" fill="#16a34a" />
+      {pintas.map(([cx, cy]) => <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="3" fill="#facc15" />)}
+      <path d="M52 76 Q50 64 52 58 L68 58 Q70 64 68 76 Z" fill="#22c55e" />
+      <ellipse cx="60" cy="46" rx="25" ry="20" fill="#22c55e" />
+      <ellipse cx="60" cy="54" rx="15" ry="8" fill="#bbf7d0" />
+      <Olho cx={50} cy={42} r={5} fill="#1c1917" glint={1.7} />
+      <Olho cx={70} cy={42} r={5} fill="#1c1917" glint={1.7} />
+      <path d="M52 55 Q60 61 68 55" fill="none" stroke="#14532d" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M60 60 V68 L56 72 M60 68 L64 72" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" />
+    </>
+  );
+}
+
+function MocaDoTaxi() {
+  return (
+    <>
+      <path d="M30 120 L30 80 Q30 58 60 58 Q90 58 90 80 L90 120 Q82 112 75 120 Q67 112 60 120 Q53 112 45 120 Q37 112 30 120 Z" fill="#f8fafc" opacity="0.95" />
+      <path d="M38 52 Q36 26 60 24 Q84 26 82 52 L82 62 L38 62 Z" fill="#3f2a14" />
+      <circle cx="60" cy="48" r="19" fill="#f5e1d5" />
+      <path d="M41 44 Q48 30 60 32 Q72 30 79 44 Q70 38 60 40 Q50 38 41 44 Z" fill="#3f2a14" />
+      <circle cx="44" cy="34" r="5" fill="#ffffff" />
+      <circle cx="44" cy="34" r="2" fill="#f472b6" />
+      <Olho cx={53} cy={49} r={3.5} fill="#1e1433" glint={1.2} />
+      <Olho cx={67} cy={49} r={3.5} fill="#1e1433" glint={1.2} />
+      <circle cx="48" cy="56" r="3.5" fill="#f9a8d4" />
+      <circle cx="72" cy="56" r="3.5" fill="#f9a8d4" />
+      <path d="M55 59 Q60 63 65 59" fill="none" stroke="#9d174d" strokeWidth="2" strokeLinecap="round" />
+      <rect x="78" y="8" width="34" height="14" rx="3" fill="#facc15" />
+      <text x="95" y="18.5" textAnchor="middle" fontFamily="Archivo, system-ui, sans-serif" fontSize="9" fontWeight="900" fill="#1c1917">TÁXI</text>
+    </>
+  );
+}
+
 const ART = {
   acai: Acai,
   cupuacu: Cupuacu,
@@ -233,6 +366,13 @@ const ART = {
   'peixe-boi': PeixeBoi,
   tracaja: Tracaja,
   onca: Onca,
+  curupira: Curupira,
+  mapinguari: Mapinguari,
+  'matinta-perera': MatintaPerera,
+  'boto-encantado': BotoEncantado,
+  iara: Iara,
+  'cobra-grande': CobraGrande,
+  'moca-do-taxi': MocaDoTaxi,
 };
 
 export const hasArt = (slug) => Object.hasOwn(ART, slug ?? '');
