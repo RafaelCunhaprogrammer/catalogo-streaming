@@ -27,11 +27,13 @@ describe('GET /api/foto/[id]', () => {
   });
 
   it('sem sessão: 404', async () => {
-    viewer.atual = { user: null, profiles: [] };
+    viewer.atual = { user: null, profiles: [{ id: 'p1', userId: 'u1', photoKey: 'fotos/p1/abcd1234abcd1234.webp' }] };
     expect((await chamar('p1')).status).toBe(404);
+    expect(storage.get).not.toHaveBeenCalled();
   });
 
   it('perfil de outra conta: 404', async () => {
+    viewer.atual = conta([{ id: 'p9', userId: 'outra-conta', photoKey: 'fotos/p9/abcd1234abcd1234.webp' }]);
     expect((await chamar('p9')).status).toBe(404);
     expect(storage.get).not.toHaveBeenCalled();
   });
