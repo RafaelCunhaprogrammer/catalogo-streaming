@@ -13,6 +13,8 @@ import { Footer } from '@/components/Footer';
 import { BrightnessOverlay } from '@/components/BrightnessOverlay';
 import { IntroScene } from '@/components/IntroScene';
 import { IdleScreensaver } from '@/components/IdleScreensaver';
+import { TrialBanner } from '@/components/subscription/TrialBanner';
+import { getAccess } from '@/lib/subscription/access';
 
 // Uma família só: o eixo de largura faz o papel de letra de cartaz nos títulos (classe "condensado").
 const archivo = Archivo({ subsets: ['latin'], axes: ['wdth'], display: 'swap', variable: '--font-archivo' });
@@ -32,15 +34,17 @@ async function loadGenres() {
 }
 
 export default async function RootLayout({ children }) {
-  const [genres, viewer] = await Promise.all([loadGenres(), getViewerOrVisitor()]);
+  const [genres, viewer, access] = await Promise.all([loadGenres(), getViewerOrVisitor(), getAccess()]);
   const account = {
     signedIn: Boolean(viewer.user),
     profile: viewer.profile ? { id: viewer.profile.id, name: viewer.profile.name, color: viewer.profile.color, kind: viewer.profile.kind, avatar: viewer.profile.avatar ?? null, photoKey: viewer.profile.photoKey ?? null } : null,
+    showPlans: access?.kind === 'teste' || access?.kind === 'sem-acesso',
   };
   const marks = viewer.profile ? await loadInitialMarks(viewer.profile.id) : null;
   const shell = (
     <>
       <Header genres={genres} account={account} />
+      <TrialBanner access={access} />
       <main id="conteudo">{children}</main>
       <Footer />
     </>

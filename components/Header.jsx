@@ -80,7 +80,7 @@ export function Header({ genres, account = { signedIn: false, profile: null } })
             <Settings aria-hidden="true" className="h-6 w-6" strokeWidth={1.75} />
           </button>
           {account.signedIn && account.profile ? (
-            <UserMenu profile={account.profile} kids={account.profile.kind === 'kids'} />
+            <UserMenu profile={account.profile} kids={account.profile.kind === 'kids'} showPlans={Boolean(account.showPlans)} />
           ) : (
             !account.signedIn && (
               <Link href="/entrar" className="neon-gradient rounded-full px-5 py-2 text-sm font-bold text-white shadow-glow">

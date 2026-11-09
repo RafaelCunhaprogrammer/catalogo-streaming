@@ -17,10 +17,10 @@ const OTHER_ITEMS = [
 const itemClass = 'block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-surface-2';
 
 // Menu do avatar. No Kids, todos os itens pedem o PIN dos pais antes.
-export function UserMenu({ profile, kids }) {
+export function UserMenu({ profile, kids, showPlans = false }) {
   const router = useRouter();
   const pathname = usePathname();
-  const items = [{ href: editHref(profile, pathname), label: 'Editar perfil' }, ...OTHER_ITEMS];
+  const items = [{ href: editHref(profile, pathname), label: 'Editar perfil' }, ...(showPlans ? [{ href: '/assinar', label: 'Planos' }] : []), ...OTHER_ITEMS];
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(null); // item que espera o PIN
   const wrapper = useRef(null);
