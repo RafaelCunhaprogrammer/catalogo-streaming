@@ -179,4 +179,34 @@ describe('foto do perfil nas ações', () => {
     expect(res.errors.form).toBe('Não foi possível usar essa imagem. Tente outra foto.');
     expect((await state.db.select().from(profiles).where(eq(profiles.name, 'Nova'))).length).toBe(0);
   });
+
+  const SALVAR = 'Não foi possível salvar. Tente de novo.';
+  const quebrado = { put: async () => { throw new Error('disco cheio'); }, del: async () => {} };
+
+  it('criar com falha ao guardar a foto não deixa perfil e devolve o erro de salvar', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    state.storage = quebrado;
+    const res = await createProfileAction(null, await comFoto({ name: 'Nova', color: '#8b5cf6', kind: 'adulto', avatar: 'foto' }));
+    expect(res).toEqual({ ok: false, errors: { form: SALVAR } });
+    expect((await state.db.select().from(profiles).where(eq(profiles.name, 'Nova'))).length).toBe(0);
+  });
+
+  it('editar com falha ao guardar a foto não muda nome nem cor', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    state.storage = quebrado;
+    const res = await updateProfileAction(null, await comFoto({ ...base, name: 'Mudou', color: '#ec4899' }));
+    expect(res).toEqual({ ok: false, errors: { form: SALVAR } });
+    const p = await row('pa');
+    expect(p.name).toBe('Adulto');
+    expect(p.color).toBe('#000');
+  });
+
+  it('erro "perfil" do serviço da foto mostra o erro de salvar e não muda nada', async () => {
+    // perfil de outra conta: o serviço da foto responde 'perfil'
+    const res = await updateProfileAction(null, await comFoto({ ...base, id: 'po', name: 'Invadido' }));
+    expect(res).toEqual({ ok: false, errors: { form: SALVAR } });
+    const o = await row('po');
+    expect(o.name).toBe('Outro');
+    expect(o.photoKey).toBeNull();
+  });
 });
