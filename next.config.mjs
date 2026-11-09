@@ -6,6 +6,10 @@ const nextConfig = {
   devIndicators: false,
   // O PGlite carrega WebAssembly e não deve ser empacotado.
   serverExternalPackages: ['@electric-sql/pglite'],
+  // Não leva dados locais, testes nem documentos para dentro das funções publicadas.
+  outputFileTracingExcludes: {
+    '/*': ['.data/**', '.next/cache/**', 'test-results/**', 'tests/**', 'docs/**'],
+  },
   turbopack: {
     rules: {
       "*.css": {

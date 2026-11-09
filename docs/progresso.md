@@ -1,6 +1,6 @@
 # Pai d'Égua: progresso do projeto
 
-Atualizado em 08/11/2026. Marque aqui o que for sendo concluído.
+Atualizado em 09/11/2026. Marque aqui o que for sendo concluído.
 
 **No ar:** [pai-degua.vercel.app](https://pai-degua.vercel.app)
 
